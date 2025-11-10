@@ -11,6 +11,8 @@ class SD_Template_Loader {
      * Boot the template loader.
      */
     public function register() {
+        add_action( 'init', array( $this, 'prime_template_cache' ) );
+        add_action( 'after_switch_theme', array( $this, 'prime_template_cache' ) );
         add_filter( 'theme_page_templates', array( $this, 'register_template' ), 10, 4 );
         add_filter( 'template_include', array( $this, 'maybe_load_template' ) );
     }
@@ -25,7 +27,7 @@ class SD_Template_Loader {
      *
      * @return array
      */
-    public function register_template( $page_templates, $wp_theme, $post, $post_type ) {
+    public function register_template( $page_templates, $wp_theme, $post = null, $post_type = 'page' ) {
         unset( $post, $post_type );
 
         if ( ! is_array( $page_templates ) ) {
@@ -35,11 +37,66 @@ class SD_Template_Loader {
         $page_templates[ SD_DIRECTORY_TEMPLATE_SLUG ] = __( 'SuperDirectory Listing Page', 'super-directory' );
 
         if ( class_exists( 'WP_Theme' ) && $wp_theme instanceof WP_Theme ) {
-            $cache_hash = md5( $wp_theme->get_stylesheet() . $wp_theme->get_template() );
-            wp_cache_delete( 'page_templates-' . $cache_hash, 'themes' );
+            $this->flush_theme_template_cache( $wp_theme );
         }
 
         return $page_templates;
+    }
+
+    /**
+     * Ensure WordPress caches are aware of the SuperDirectory template.
+     */
+    public function prime_template_cache() {
+        if ( ! function_exists( 'wp_get_theme' ) ) {
+            return;
+        }
+
+        $theme = wp_get_theme();
+
+        if ( ! $theme || ! $theme->exists() ) {
+            return;
+        }
+
+        $templates = $theme->get_page_templates();
+
+        if ( ! is_array( $templates ) ) {
+            $templates = array();
+        }
+
+        if ( ! isset( $templates[ SD_DIRECTORY_TEMPLATE_SLUG ] ) ) {
+            $templates[ SD_DIRECTORY_TEMPLATE_SLUG ] = __( 'SuperDirectory Listing Page', 'super-directory' );
+            $this->cache_templates_for_theme( $theme, $templates );
+        }
+    }
+
+    /**
+     * Flush the template cache for a theme and replace it with the latest values.
+     *
+     * @param WP_Theme $theme Theme instance.
+     */
+    private function flush_theme_template_cache( $theme ) {
+        $cache_hash = md5( $theme->get_stylesheet() . $theme->get_template() );
+        wp_cache_delete( 'page_templates-' . $cache_hash, 'themes' );
+
+        $templates = $theme->get_page_templates();
+
+        if ( ! is_array( $templates ) ) {
+            $templates = array();
+        }
+
+        $templates[ SD_DIRECTORY_TEMPLATE_SLUG ] = __( 'SuperDirectory Listing Page', 'super-directory' );
+        $this->cache_templates_for_theme( $theme, $templates );
+    }
+
+    /**
+     * Store the provided templates for the supplied theme in WordPress' cache.
+     *
+     * @param WP_Theme $theme      Theme instance.
+     * @param array    $templates  Template mapping.
+     */
+    private function cache_templates_for_theme( $theme, array $templates ) {
+        $cache_hash = md5( $theme->get_stylesheet() . $theme->get_template() );
+        wp_cache_set( 'page_templates-' . $cache_hash, $templates, 'themes', 1800 );
     }
 
     /**
@@ -63,23 +120,21 @@ class SD_Template_Loader {
             return $template;
         }
 
-        if ( defined( 'SD_DIRECTORY_TEMPLATE_LEGACY_SLUG' ) && SD_DIRECTORY_TEMPLATE_LEGACY_SLUG === $assigned_template ) {
-            update_post_meta( $post->ID, '_wp_page_template', SD_DIRECTORY_TEMPLATE_SLUG );
-            $assigned_template = SD_DIRECTORY_TEMPLATE_SLUG;
+        $valid_templates = array( SD_DIRECTORY_TEMPLATE_SLUG );
+
+        if ( defined( 'SD_DIRECTORY_TEMPLATE_LEGACY_SLUG' ) && SD_DIRECTORY_TEMPLATE_LEGACY_SLUG ) {
+            $valid_templates[] = SD_DIRECTORY_TEMPLATE_LEGACY_SLUG;
         }
 
-        if ( SD_DIRECTORY_TEMPLATE_SLUG !== $assigned_template ) {
+        if ( empty( $assigned_template ) || ! in_array( $assigned_template, $valid_templates, true ) ) {
             update_post_meta( $post->ID, '_wp_page_template', SD_DIRECTORY_TEMPLATE_SLUG );
             $assigned_template = SD_DIRECTORY_TEMPLATE_SLUG;
-        }
-
-        if ( SD_DIRECTORY_TEMPLATE_SLUG !== $assigned_template ) {
-            return $template;
         }
 
         add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_directory_assets' ) );
 
-        $plugin_template = trailingslashit( SD_PLUGIN_DIR ) . SD_DIRECTORY_TEMPLATE_SLUG;
+        $template_file = defined( 'SD_DIRECTORY_TEMPLATE_FILE' ) ? SD_DIRECTORY_TEMPLATE_FILE : SD_DIRECTORY_TEMPLATE_SLUG;
+        $plugin_template = trailingslashit( SD_PLUGIN_DIR ) . $template_file;
 
         if ( file_exists( $plugin_template ) ) {
             return $plugin_template;

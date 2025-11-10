@@ -36,53 +36,41 @@ class SD_Ajax {
         $name = $this->sanitize_text_value( 'name' );
 
         if ( '' === $name ) {
-            $name = $this->sanitize_text_value( 'placeholder_1' );
+            $this->maybe_delay( $start );
+            wp_send_json_error(
+                array(
+                    'message' => __( 'Please provide a Resource / Company / Vendor Name.', 'super-directory' ),
+                )
+            );
         }
 
         $state_options          = $this->get_us_states();
         $extended_state_options = $this->get_us_states_and_territories();
-        $opt_in_keys            = array(
-            'opt_in_marketing_email',
-            'opt_in_marketing_sms',
-            'opt_in_event_update_email',
-            'opt_in_event_update_sms',
-        );
+        $category_keys          = $this->get_directory_category_keys();
+        $service_model_keys     = $this->get_service_model_keys();
 
         $data = array(
-            'name'                        => $name,
-            'placeholder_1'               => $this->sanitize_text_value( 'placeholder_1' ),
-            'placeholder_2'               => $this->sanitize_text_value( 'placeholder_2' ),
-            'placeholder_3'               => $this->sanitize_date_value( 'placeholder_3' ),
-            'placeholder_4'               => $this->sanitize_select_value( 'placeholder_4', array( '0', '1' ) ),
-            'placeholder_5'               => $this->sanitize_time_value( 'placeholder_5' ),
-            'placeholder_6'               => $this->sanitize_time_value( 'placeholder_6' ),
-            'placeholder_7'               => $this->sanitize_select_value( 'placeholder_7', array( '0', '1' ) ),
-            'placeholder_8'               => $this->sanitize_text_value( 'placeholder_8' ),
-            'placeholder_9'               => $this->sanitize_text_value( 'placeholder_9' ),
-            'placeholder_10'              => $this->sanitize_text_value( 'placeholder_10' ),
-            'placeholder_11'              => $this->sanitize_state_value( 'placeholder_11', $state_options ),
-            'placeholder_12'              => $this->sanitize_text_value( 'placeholder_12' ),
-            'placeholder_13'              => $this->sanitize_text_value( 'placeholder_13' ),
-            'placeholder_14'              => $this->sanitize_url_value( 'placeholder_14' ),
-            'placeholder_15'              => $this->sanitize_select_value( 'placeholder_15', array( 'option1', 'option2', 'option3' ) ),
-            'placeholder_16'              => $this->sanitize_decimal_value( 'placeholder_16' ),
-            'placeholder_17'              => $this->sanitize_decimal_value( 'placeholder_17' ),
-            'placeholder_18'              => $this->sanitize_decimal_value( 'placeholder_18' ),
-            'placeholder_19'              => $this->sanitize_select_value( 'placeholder_19', array( '0', '1' ) ),
-            'placeholder_20'              => $this->sanitize_select_value( 'placeholder_20', array( '0', '1' ) ),
-            'placeholder_21'              => $this->sanitize_state_value( 'placeholder_21', $extended_state_options ),
-            'placeholder_22'              => $this->sanitize_text_value( 'placeholder_22' ),
-            'placeholder_23'              => $this->sanitize_select_value( 'placeholder_23', array( 'option1', 'option2', 'option3' ) ),
-            'placeholder_24'              => $this->sanitize_opt_in_summary( $opt_in_keys ),
-            'placeholder_25'              => $this->sanitize_items_value( 'placeholder_25' ),
-            'placeholder_26'              => $this->sanitize_color_value( 'placeholder_26' ),
-            'placeholder_27'              => $this->sanitize_image_value( 'placeholder_27' ),
-            'placeholder_28'              => $this->sanitize_editor_value( 'placeholder_28' ),
-            'opt_in_marketing_email'      => $this->sanitize_checkbox_value( 'opt_in_marketing_email' ),
-            'opt_in_marketing_sms'        => $this->sanitize_checkbox_value( 'opt_in_marketing_sms' ),
-            'opt_in_event_update_email'   => $this->sanitize_checkbox_value( 'opt_in_event_update_email' ),
-            'opt_in_event_update_sms'     => $this->sanitize_checkbox_value( 'opt_in_event_update_sms' ),
-            'updated_at'                  => $now,
+            'name'                     => $name,
+            'category'                 => $this->sanitize_select_value( 'category', $category_keys ),
+            'industry_vertical'        => $this->sanitize_text_value( 'industry_vertical' ),
+            'service_model'            => $this->sanitize_select_value( 'service_model', $service_model_keys ),
+            'website_url'              => $this->sanitize_url_value( 'website_url' ),
+            'phone_number'             => $this->sanitize_text_value( 'phone_number' ),
+            'email_address'            => $this->sanitize_email_value( 'email_address' ),
+            'state'                    => $this->sanitize_state_value( 'state', $extended_state_options ),
+            'city'                     => $this->sanitize_text_value( 'city' ),
+            'street_address'           => $this->sanitize_text_value( 'street_address' ),
+            'zip_code'                 => $this->sanitize_text_value( 'zip_code' ),
+            'country'                  => $this->sanitize_text_value( 'country' ),
+            'short_description'        => $this->sanitize_textarea_value( 'short_description' ),
+            'long_description_primary' => $this->sanitize_editor_value( 'long_description_primary' ),
+            'long_description_secondary' => $this->sanitize_editor_value( 'long_description_secondary' ),
+            'facebook_url'             => $this->sanitize_url_value( 'facebook_url' ),
+            'instagram_url'            => $this->sanitize_url_value( 'instagram_url' ),
+            'youtube_url'              => $this->sanitize_url_value( 'youtube_url' ),
+            'linkedin_url'             => $this->sanitize_url_value( 'linkedin_url' ),
+            'google_business_url'      => $this->sanitize_url_value( 'google_business_url' ),
+            'updated_at'               => $now,
         );
 
         $formats = array_fill( 0, count( $data ), '%s' );
@@ -164,16 +152,9 @@ class SD_Ajax {
         $entities = array();
 
         if ( $total > 0 ) {
-            $opt_in_keys = array(
-                'opt_in_marketing_email',
-                'opt_in_marketing_sms',
-                'opt_in_event_update_email',
-                'opt_in_event_update_sms',
-            );
-
             $entities = $wpdb->get_results(
                 $wpdb->prepare(
-                    "SELECT * FROM $table ORDER BY placeholder_1 ASC, id ASC LIMIT %d OFFSET %d",
+                    "SELECT * FROM $table ORDER BY name ASC, id ASC LIMIT %d OFFSET %d",
                     $per_page,
                     $offset
                 ),
@@ -181,48 +162,13 @@ class SD_Ajax {
             );
 
             foreach ( $entities as &$entity ) {
-                $entity['placeholder_3']  = $this->format_date_for_response( $entity['placeholder_3'] );
-                $entity['placeholder_5']  = $this->format_time_for_response( $entity['placeholder_5'] );
-                $entity['placeholder_6']  = $this->format_time_for_response( $entity['placeholder_6'] );
-                $entity['placeholder_16'] = $this->format_decimal_for_response( $entity['placeholder_16'] );
-                $entity['placeholder_17'] = $this->format_decimal_for_response( $entity['placeholder_17'] );
-                $entity['placeholder_18'] = $this->format_decimal_for_response( $entity['placeholder_18'] );
-                $entity['placeholder_24'] = $this->format_json_field( $entity['placeholder_24'] );
-                $entity['placeholder_25'] = $this->format_json_field( $entity['placeholder_25'] );
-                $entity['placeholder_26'] = $this->format_color_for_response( $entity['placeholder_26'] );
-                $entity['placeholder_27'] = (string) absint( $entity['placeholder_27'] );
-                $entity['placeholder_27_url'] = $this->get_attachment_url( $entity['placeholder_27'] );
-                $entity['placeholder_28'] = $this->format_editor_content_for_response( $entity['placeholder_28'] );
+                $entity['long_description_primary'] = $this->format_editor_content_for_response( isset( $entity['long_description_primary'] ) ? $entity['long_description_primary'] : '' );
+                $entity['long_description_secondary'] = $this->format_editor_content_for_response( isset( $entity['long_description_secondary'] ) ? $entity['long_description_secondary'] : '' );
+                $entity['short_description']        = wp_kses_post( isset( $entity['short_description'] ) ? $entity['short_description'] : '' );
 
-                foreach ( array( 'placeholder_4', 'placeholder_7', 'placeholder_19', 'placeholder_20', 'opt_in_marketing_email', 'opt_in_marketing_sms', 'opt_in_event_update_email', 'opt_in_event_update_sms' ) as $bool_key ) {
-                    if ( isset( $entity[ $bool_key ] ) ) {
-                        $entity[ $bool_key ] = (string) ( (int) $entity[ $bool_key ] );
-                    }
-                }
-
-                if ( ! isset( $entity['placeholder_21'] ) ) {
-                    $entity['placeholder_21'] = '';
-                }
-
-                if ( ! isset( $entity['placeholder_22'] ) ) {
-                    $entity['placeholder_22'] = '';
-                }
-
-                if ( ! isset( $entity['placeholder_23'] ) ) {
-                    $entity['placeholder_23'] = '';
-                }
-
-                if ( ! isset( $entity['placeholder_24'] ) ) {
-                    $entity['placeholder_24'] = wp_json_encode( array() );
-                }
-
-                if ( ! isset( $entity['placeholder_25'] ) ) {
-                    $entity['placeholder_25'] = wp_json_encode( array() );
-                }
-
-                foreach ( $opt_in_keys as $opt_in_key ) {
-                    if ( ! isset( $entity[ $opt_in_key ] ) ) {
-                        $entity[ $opt_in_key ] = '0';
+                foreach ( array( 'name', 'category', 'industry_vertical', 'service_model', 'website_url', 'phone_number', 'email_address', 'state', 'city', 'street_address', 'zip_code', 'country', 'facebook_url', 'instagram_url', 'youtube_url', 'linkedin_url', 'google_business_url' ) as $text_key ) {
+                    if ( ! isset( $entity[ $text_key ] ) ) {
+                        $entity[ $text_key ] = '';
                     }
                 }
             }
@@ -310,7 +256,7 @@ class SD_Ajax {
         return $allow_empty ? '' : reset( $allowed );
     }
 
-    private function sanitize_date_value( $key ) {
+    private function sanitize_textarea_value( $key ) {
         $value = $this->get_post_value( $key );
 
         if ( null === $value ) {
@@ -318,25 +264,13 @@ class SD_Ajax {
         }
 
         if ( is_array( $value ) ) {
-            $value = reset( $value );
+            $value = implode( "\n", array_map( 'sanitize_textarea_field', $value ) );
         }
 
-        $value = sanitize_text_field( $value );
-
-        if ( '' === $value ) {
-            return '';
-        }
-
-        $date = date_create_from_format( 'Y-m-d', $value );
-
-        if ( ! $date ) {
-            return '';
-        }
-
-        return $date->format( 'Y-m-d' );
+        return sanitize_textarea_field( $value );
     }
 
-    private function sanitize_time_value( $key ) {
+    private function sanitize_email_value( $key ) {
         $value = $this->get_post_value( $key );
 
         if ( null === $value ) {
@@ -347,49 +281,9 @@ class SD_Ajax {
             $value = reset( $value );
         }
 
-        $value = sanitize_text_field( $value );
+        $value = sanitize_email( $value );
 
-        if ( '' === $value ) {
-            return '';
-        }
-
-        if ( preg_match( '/^(\d{2}):(\d{2})$/', $value, $matches ) ) {
-            $hours = (int) $matches[1];
-            $mins  = (int) $matches[2];
-
-            $hours = max( 0, min( 23, $hours ) );
-            $mins  = max( 0, min( 59, $mins ) );
-
-            return sprintf( '%02d:%02d', $hours, $mins );
-        }
-
-        return '';
-    }
-
-    private function sanitize_decimal_value( $key ) {
-        $value = $this->get_post_value( $key );
-
-        if ( null === $value ) {
-            return '0.00';
-        }
-
-        if ( is_array( $value ) ) {
-            $value = reset( $value );
-        }
-
-        $value = trim( (string) $value );
-
-        if ( '' === $value ) {
-            return '0.00';
-        }
-
-        $normalized = preg_replace( '/[^0-9\-\.]/', '', $value );
-
-        if ( '' === $normalized ) {
-            return '0.00';
-        }
-
-        return number_format( (float) $normalized, 2, '.', '' );
+        return $value ? $value : '';
     }
 
     private function sanitize_url_value( $key ) {
@@ -430,97 +324,6 @@ class SD_Ajax {
         return '';
     }
 
-    private function sanitize_checkbox_value( $key ) {
-        $value = $this->get_post_value( $key );
-
-        if ( null === $value ) {
-            return '0';
-        }
-
-        if ( is_array( $value ) ) {
-            $value = reset( $value );
-        }
-
-        return ! empty( $value ) ? '1' : '0';
-    }
-
-    private function sanitize_opt_in_summary( $keys ) {
-        $selected = array();
-
-        foreach ( $keys as $key ) {
-            if ( '1' === $this->sanitize_checkbox_value( $key ) ) {
-                $selected[] = $key;
-            }
-        }
-
-        return wp_json_encode( $selected );
-    }
-
-    private function sanitize_items_value( $key ) {
-        $value = $this->get_post_value( $key );
-
-        if ( null === $value ) {
-            return wp_json_encode( array() );
-        }
-
-        $items = array();
-
-        if ( is_array( $value ) ) {
-            foreach ( $value as $item ) {
-                $item = sanitize_text_field( $item );
-
-                if ( '' !== $item ) {
-                    $items[] = $item;
-                }
-            }
-        } else {
-            $value = sanitize_textarea_field( $value );
-            $split = preg_split( '/\r?\n/', $value );
-
-            if ( is_array( $split ) ) {
-                foreach ( $split as $item ) {
-                    $item = trim( $item );
-
-                    if ( '' !== $item ) {
-                        $items[] = $item;
-                    }
-                }
-            }
-        }
-
-        return wp_json_encode( $items );
-    }
-
-    private function sanitize_color_value( $key ) {
-        $value = $this->get_post_value( $key );
-
-        if ( null === $value ) {
-            return '';
-        }
-
-        if ( is_array( $value ) ) {
-            $value = reset( $value );
-        }
-
-        $value = sanitize_hex_color( $value );
-
-        return $value ? $value : '';
-    }
-
-    private function sanitize_image_value( $key ) {
-        $value = $this->get_post_value( $key );
-
-        if ( null === $value ) {
-            return '';
-        }
-
-        if ( is_array( $value ) ) {
-            $value = reset( $value );
-        }
-
-        return (string) absint( $value );
-    }
-
     private function sanitize_editor_value( $key ) {
         $value = $this->get_post_value( $key );
 
@@ -535,68 +338,6 @@ class SD_Ajax {
         return wp_kses_post( $value );
     }
 
-    private function format_date_for_response( $value ) {
-        if ( empty( $value ) || '0000-00-00' === $value ) {
-            return '';
-        }
-
-        $date = date_create( $value );
-
-        if ( ! $date ) {
-            return '';
-        }
-
-        return $date->format( 'Y-m-d' );
-    }
-
-    private function format_time_for_response( $value ) {
-        if ( empty( $value ) || '00:00:00' === $value ) {
-            return '';
-        }
-
-        if ( preg_match( '/^(\d{2}:\d{2})/', $value, $matches ) ) {
-            return $matches[1];
-        }
-
-        return '';
-    }
-
-    private function format_decimal_for_response( $value ) {
-        if ( null === $value || '' === $value ) {
-            return '0.00';
-        }
-
-        return number_format( (float) $value, 2, '.', '' );
-    }
-
-    private function format_json_field( $value ) {
-        if ( empty( $value ) ) {
-            return wp_json_encode( array() );
-        }
-
-        if ( is_array( $value ) ) {
-            return wp_json_encode( array_values( $value ) );
-        }
-
-        $decoded = json_decode( $value, true );
-
-        if ( is_array( $decoded ) ) {
-            return wp_json_encode( array_values( $decoded ) );
-        }
-
-        return wp_json_encode( array() );
-    }
-
-    private function format_color_for_response( $value ) {
-        $value = sanitize_hex_color( $value );
-
-        if ( ! $value ) {
-            return '';
-        }
-
-        return $value;
-    }
-
     private function format_editor_content_for_response( $value ) {
         if ( empty( $value ) ) {
             return '';
@@ -605,20 +346,45 @@ class SD_Ajax {
         return wp_kses_post( $value );
     }
 
-    private function get_attachment_url( $attachment_id ) {
-        $attachment_id = absint( $attachment_id );
+    private function get_directory_category_keys() {
+        $options = array(
+            'crm'                  => __( 'CRM', 'super-directory' ),
+            'chatbots'             => __( 'Chatbots', 'super-directory' ),
+            'hiring_platform'      => __( 'Hiring Platform', 'super-directory' ),
+            'lead_generation'      => __( 'Lead Generation', 'super-directory' ),
+            'answering_service'    => __( 'Answering Service', 'super-directory' ),
+            'csr_training'         => __( 'CSR Training', 'super-directory' ),
+            'business_development' => __( 'Business Development', 'super-directory' ),
+            'onboarding_companies' => __( 'Onboarding Companies', 'super-directory' ),
+        );
 
-        if ( ! $attachment_id ) {
-            return '';
+        $options = apply_filters( 'sd_directory_categories', $options );
+
+        $keys = array();
+
+        foreach ( $options as $value => $label ) {
+            $keys[] = sanitize_key( $value );
         }
 
-        $url = wp_get_attachment_url( $attachment_id );
+        return array_values( array_unique( $keys ) );
+    }
 
-        if ( ! $url ) {
-            return '';
+    private function get_service_model_keys() {
+        $options = array(
+            'local'  => __( 'Local Customers Only', 'super-directory' ),
+            'virtual' => __( 'Virtual / National', 'super-directory' ),
+            'both'    => __( 'Both Local & National', 'super-directory' ),
+        );
+
+        $options = apply_filters( 'sd_directory_service_models', $options );
+
+        $keys = array();
+
+        foreach ( $options as $value => $label ) {
+            $keys[] = sanitize_key( $value );
         }
 
-        return esc_url_raw( $url );
+        return array_values( array_unique( $keys ) );
     }
 
     private function get_us_states() {

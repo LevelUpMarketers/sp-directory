@@ -4,7 +4,7 @@ SuperDirectory is a WordPress plugin that streamlines the process of collecting 
 
 ## Features
 - Guided admin experience with tabbed navigation for adding and editing directory listings.
-- Placeholder-driven data model that demonstrates how to capture addresses, contact information, marketing preferences, and service details.
+- Opinionated data model that captures business identifiers, contact channels, coverage areas, and marketing narratives tailored to Home Services listings.
 - Log management tools that surface generated content history for quick auditing and cleanup.
 - Gutenberg block and shortcode for rendering directory listings on the front end.
 
@@ -18,10 +18,44 @@ SuperDirectory is a WordPress plugin that streamlines the process of collecting 
 - JavaScript and CSS assets live under `assets/` and are prepped for modular enhancements.
 - All user-facing strings leverage the `super-directory` text domain; update `languages/super-directory.pot` when adding translations.
 
+## Directory entry fields
+
+SuperDirectory groups the directory authoring experience into clear sections so administrators can capture consistent, high-value information for each listing:
+
+### Listing basics
+- Resource / Company / Vendor Name
+- Category
+- Related Industry / Vertical
+- Serving Only Local Customers, Virtual/National, or Both?
+
+### Contact & web presence
+- Website URL
+- Phone Number
+- Email
+
+### Location & coverage
+- Street Address
+- City
+- State
+- Zip Code
+- Country
+
+### Descriptions & messaging
+- Short Description
+- Long Description 1
+- Long Description 2
+
+### Social & listings
+- Facebook URL
+- Instagram URL
+- YouTube URL
+- LinkedIn URL
+- Google Business Listing URL
+
 ## Roadmap
 - Automate WordPress page generation for each directory listing.
 - Deliver a searchable and filterable front-end directory archive.
-- Replace placeholder form fields with production-ready Home Services data requirements.
+- Introduce import and synchronization tools for populating listings from external CRMs.
 
 ## License
 Distributed under the same license as WordPress. See the plugin header for details.

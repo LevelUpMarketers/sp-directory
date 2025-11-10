@@ -89,9 +89,9 @@ jQuery(document).ready(function($){
         var $pagination = $('#sd-entity-pagination');
         var $paginationContainer = $pagination.closest('.tablenav');
         var $entityFeedback = $('#sd-entity-feedback');
-        var placeholderMap = sdAdmin.placeholderMap || {};
-        var placeholderList = Array.isArray(sdAdmin.placeholders) ? sdAdmin.placeholders : [];
+        var fieldMap = sdAdmin.fieldMap || {};
         var entityFields = Array.isArray(sdAdmin.entityFields) ? sdAdmin.entityFields : [];
+        var tableColumns = Array.isArray(sdAdmin.tableColumns) ? sdAdmin.tableColumns : [];
         var pendingFeedbackMessage = '';
         var currentPage = 1;
         var emptyValue = '—';
@@ -122,18 +122,32 @@ jQuery(document).ready(function($){
             }
         }
 
-        function getPlaceholderLabel(index){
-            var mapKey = 'placeholder_' + index;
-
-            if (Object.prototype.hasOwnProperty.call(placeholderMap, mapKey) && placeholderMap[mapKey]){
-                return placeholderMap[mapKey];
+        function getFieldConfig(name){
+            if (!name){
+                return null;
             }
 
-            if (placeholderList.length >= index){
-                return placeholderList[index - 1];
+            if (Object.prototype.hasOwnProperty.call(fieldMap, name)){
+                return fieldMap[name];
             }
 
-            return 'Placeholder ' + index;
+            for (var i = 0; i < entityFields.length; i++){
+                if (entityFields[i] && entityFields[i].name === name){
+                    return entityFields[i];
+                }
+            }
+
+            return null;
+        }
+
+        function getFieldLabel(name){
+            var config = getFieldConfig(name);
+
+            if (config && config.label){
+                return config.label;
+            }
+
+            return '';
         }
 
         function formatValue(value){
@@ -142,6 +156,70 @@ jQuery(document).ready(function($){
             }
 
             return String(value);
+        }
+
+        function formatFieldDisplay(name, value){
+            var config = getFieldConfig(name);
+            var stringValue = value === null || typeof value === 'undefined' ? '' : value;
+
+            if (!config){
+                return stringValue === '' ? emptyValue : String(stringValue);
+            }
+
+            switch (config.type){
+                case 'select':
+                    var options = config.options || {};
+
+                    if (Object.prototype.hasOwnProperty.call(options, stringValue)){
+                        return options[stringValue] || emptyValue;
+                    }
+
+                    return stringValue === '' ? emptyValue : String(stringValue);
+                case 'items':
+                    var items = parseItemsValue(stringValue);
+                    return items.length ? items.join(', ') : emptyValue;
+                case 'editor':
+                    if (!stringValue){
+                        return emptyValue;
+                    }
+
+                    return $('<div/>').html(stringValue).text() || emptyValue;
+                case 'textarea':
+                    return stringValue === '' ? emptyValue : String(stringValue);
+                default:
+                    if (name === 'featured_image_id'){
+                        return stringValue ? (sdAdmin.mediaButton || sdAdmin.mediaTitle || 'Select Image') : emptyValue;
+                    }
+
+                    return stringValue === '' ? emptyValue : String(stringValue);
+            }
+        }
+
+        if (!tableColumns.length){
+            tableColumns = [
+                { key: 'name', type: 'title', label: getFieldLabel('name') || 'Listing Name' },
+                { key: 'category', type: 'meta', label: getFieldLabel('category') || 'Category' },
+                { key: 'industry_vertical', type: 'meta', label: getFieldLabel('industry_vertical') || 'Industry / Vertical' },
+                { key: 'service_model', type: 'meta', label: getFieldLabel('service_model') || 'Service Model' },
+                { key: 'website_url', type: 'meta', label: getFieldLabel('website_url') || 'Website' },
+                { key: 'actions', type: 'actions', label: sdAdmin.editAction || 'Edit' }
+            ];
+        }
+
+        var hasTitleColumn = tableColumns.some(function(column){
+            return column && column.type === 'title';
+        });
+
+        if (!hasTitleColumn){
+            tableColumns.unshift({ key: 'name', type: 'title', label: getFieldLabel('name') || 'Listing Name' });
+        }
+
+        var hasActionsColumn = tableColumns.some(function(column){
+            return column && column.type === 'actions';
+        });
+
+        if (!hasActionsColumn){
+            tableColumns.push({ key: 'actions', type: 'actions', label: sdAdmin.editAction || 'Edit' });
         }
 
         function getFieldValue(entity, key){
@@ -295,12 +373,30 @@ jQuery(document).ready(function($){
 
                     $container.append($fieldset);
                     break;
+                case 'textarea':
+                    var $textarea = $('<textarea/>', {
+                        name: fieldName
+                    }).val(stringValue);
+
+                    if (field.attrs){
+                        field.attrs.replace(/([\w-]+)="([^"]*)"/g, function(match, attrName, attrValue){
+                            $textarea.attr(attrName, attrValue);
+                            return match;
+                        });
+                    }
+
+                    if (!$textarea.attr('rows')){
+                        $textarea.attr('rows', 4);
+                    }
+
+                    $container.append($textarea);
+                    break;
                 case 'items':
                     var containerId = baseId + '-container';
                     var $itemsContainer = $('<div/>', {
                         id: containerId,
                         'class': 'sd-items-container',
-                        'data-placeholder': fieldName
+                        'data-field': fieldName
                     });
                     var items = parseItemsValue(stringValue);
 
@@ -410,7 +506,6 @@ jQuery(document).ready(function($){
             var $flex = $('<div/>', { 'class': 'sd-flex-form' });
 
             $form.append($('<input/>', { type: 'hidden', name: 'id', value: entityId }));
-            $form.append($('<input/>', { type: 'hidden', name: 'name', value: entity && entity.name ? entity.name : '' }));
 
             entityFields.forEach(function(field){
                 if (!field || !field.name){
@@ -542,31 +637,48 @@ jQuery(document).ready(function($){
                     'aria-controls': panelId
                 });
 
-                var $titleCell = $('<td/>', {'class': 'sd-accordion__cell sd-accordion__cell--title'});
-                var $titleText = $('<span/>', {'class': 'sd-accordion__title-text'}).text(formatValue(entity.placeholder_1));
-                $titleCell.append($titleText);
-                $summaryRow.append($titleCell);
+                tableColumns.forEach(function(column){
+                    if (!column){
+                        return;
+                    }
 
-                for (var index = 2; index <= 5; index++) {
-                    var label = getPlaceholderLabel(index);
-                    var valueKey = 'placeholder_' + index;
-                    var value = formatValue(entity[valueKey]);
+                    var columnKey = column.key || '';
+                    var columnType = column.type || 'meta';
+                    var labelText = column.label || getFieldLabel(columnKey);
+                    var cellValue = getFieldValue(entity, columnKey);
+
+                    if (columnType === 'actions'){
+                        var $actionsCell = $('<td/>', {'class': 'sd-accordion__cell sd-accordion__cell--actions'});
+                        var $editText = $('<span/>', {'class': 'sd-accordion__action-link', 'aria-hidden': 'true'}).text(sdAdmin.editAction);
+                        var $icon = $('<span/>', {'class': 'dashicons dashicons-arrow-down-alt2 sd-accordion__icon', 'aria-hidden': 'true'});
+                        var $srText = $('<span/>', {'class': 'screen-reader-text'}).text(sdAdmin.toggleDetails);
+                        $actionsCell.append($editText);
+                        $actionsCell.append($icon).append($srText);
+                        $summaryRow.append($actionsCell);
+                        return;
+                    }
+
+                    if (columnType === 'title'){
+                        var $titleCell = $('<td/>', {'class': 'sd-accordion__cell sd-accordion__cell--title'});
+                        var displayTitle = formatFieldDisplay(columnKey, cellValue);
+                        $titleCell.append($('<span/>', {'class': 'sd-accordion__title-text'}).text(displayTitle));
+                        $summaryRow.append($titleCell);
+                        return;
+                    }
+
+                    var displayValue = formatFieldDisplay(columnKey, cellValue);
                     var $metaCell = $('<td/>', {'class': 'sd-accordion__cell sd-accordion__cell--meta'});
                     var $metaText = $('<span/>', {'class': 'sd-accordion__meta-text'});
-                    $metaText.append($('<span/>', {'class': 'sd-accordion__meta-label'}).text(label + ':'));
-                    $metaText.append(' ');
-                    $metaText.append($('<span/>', {'class': 'sd-accordion__meta-value'}).text(value));
+
+                    if (labelText){
+                        $metaText.append($('<span/>', {'class': 'sd-accordion__meta-label'}).text(labelText + ':'));
+                        $metaText.append(' ');
+                    }
+
+                    $metaText.append($('<span/>', {'class': 'sd-accordion__meta-value'}).text(displayValue));
                     $metaCell.append($metaText);
                     $summaryRow.append($metaCell);
-                }
-
-                var $actionsCell = $('<td/>', {'class': 'sd-accordion__cell sd-accordion__cell--actions'});
-                var $editText = $('<span/>', {'class': 'sd-accordion__action-link', 'aria-hidden': 'true'}).text(sdAdmin.editAction);
-                var $icon = $('<span/>', {'class': 'dashicons dashicons-arrow-down-alt2 sd-accordion__icon', 'aria-hidden': 'true'});
-                var $srText = $('<span/>', {'class': 'screen-reader-text'}).text(sdAdmin.toggleDetails);
-                $actionsCell.append($editText);
-                $actionsCell.append($icon).append($srText);
-                $summaryRow.append($actionsCell);
+                });
                 $entityTableBody.append($summaryRow);
 
                 var $panelRow = $('<tr/>', {
@@ -842,7 +954,11 @@ jQuery(document).ready(function($){
             return;
         }
 
-        var fieldName = $button.data('field-name') || $container.data('placeholder') || 'placeholder_25';
+        var fieldName = $button.data('field-name') || $container.data('field') || '';
+
+        if (!fieldName){
+            fieldName = 'items_field';
+        }
         var count = $container.find('.sd-item-row').length + 1;
         var placeholderText = sdAdmin.itemPlaceholder ? formatString(sdAdmin.itemPlaceholder, count) : '';
         var $row = $('<div/>', {

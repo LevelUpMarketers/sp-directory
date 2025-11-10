@@ -41,3 +41,5 @@
 39. 2025-11-05: Added a 50px minimum height to Directory Listing accordion summary cells to eliminate row shifts when toggling panels.
 40. 2025-11-05: Rebranded the boilerplate into SuperDirectory, renaming prefixes, assets, and documentation for the Home Services directory focus.
 41. 2025-11-06: Retired unused admin tabs and related assets to focus on core directory tooling and streamline the plugin.
+42. 2025-11-06: Replaced placeholder-driven schema with SuperDirectory field groups, updated admin UI/JS for the new workflow, and refreshed AJAX/database handling to match the production data model.
+43. 2025-11-06: Realigned directory fields to the resource spreadsheet, adding address, industry, and social URL support across the admin forms, AJAX, and schema.

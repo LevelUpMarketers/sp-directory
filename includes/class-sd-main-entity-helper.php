@@ -65,64 +65,7 @@ class SD_Main_Entity_Helper {
             return '';
         }
 
-        if ( 'placeholder_3' === $key ) {
-            $value = (string) $value;
-
-            if ( '' === $value || '0000-00-00' === $value ) {
-                return '';
-            }
-
-            $date = date_create( $value );
-
-            return $date ? $date->format( 'Y-m-d' ) : '';
-        }
-
-        if ( in_array( $key, array( 'placeholder_5', 'placeholder_6' ), true ) ) {
-            $value = (string) $value;
-
-            if ( preg_match( '/^(\d{2}:\d{2})/', $value, $matches ) ) {
-                return $matches[1];
-            }
-
-            return '';
-        }
-
-        if ( in_array( $key, array( 'placeholder_16', 'placeholder_17', 'placeholder_18' ), true ) ) {
-            return number_format( (float) $value, 2, '.', '' );
-        }
-
-        if ( in_array( $key, array( 'placeholder_24', 'placeholder_25' ), true ) ) {
-            if ( is_array( $value ) ) {
-                $items = $value;
-            } else {
-                $decoded = json_decode( (string) $value, true );
-                $items   = is_array( $decoded ) ? $decoded : array();
-            }
-
-            if ( empty( $items ) ) {
-                return '';
-            }
-
-            $items = array_map( 'strval', $items );
-            $items = array_map( 'wp_kses_post', $items );
-            $items = array_filter( $items, 'strlen' );
-
-            return implode( ', ', $items );
-        }
-
-        if ( 'placeholder_26' === $key ) {
-            $color = sanitize_hex_color( (string) $value );
-            return $color ? $color : '';
-        }
-
-        if ( 'placeholder_27' === $key ) {
-            $attachment_id = absint( $value );
-            $url           = $attachment_id ? wp_get_attachment_url( $attachment_id ) : '';
-
-            return $url ? esc_url_raw( $url ) : '';
-        }
-
-        if ( 'placeholder_28' === $key ) {
+        if ( in_array( $key, array( 'long_description_primary', 'long_description_secondary' ), true ) ) {
             return wp_kses_post( (string) $value );
         }
 

@@ -43,86 +43,101 @@ class SD_Admin {
         if ( false === strpos( $hook, 'sd' ) ) {
             return;
         }
+
         wp_enqueue_style( 'sd-admin', SD_PLUGIN_URL . 'assets/css/admin.css', array(), SD_VERSION );
         wp_enqueue_script( 'sd-admin', SD_PLUGIN_URL . 'assets/js/admin.js', array( 'jquery' ), SD_VERSION, true );
         wp_enqueue_media();
         wp_enqueue_editor();
 
-        $placeholder_labels = $this->get_placeholder_labels();
-        $field_definitions  = $this->prepare_main_entity_fields_for_js();
+        $field_definitions = $this->prepare_main_entity_fields_for_js();
+        $field_map         = array();
+
+        foreach ( $field_definitions as $definition ) {
+            if ( empty( $definition['name'] ) ) {
+                continue;
+            }
+
+            $field_map[ $definition['name'] ] = $definition;
+        }
+
+        $table_columns = $this->prepare_table_columns_for_js();
 
         wp_localize_script( 'sd-admin', 'sdAjax', array(
             'ajaxurl' => admin_url( 'admin-ajax.php' ),
             'nonce'   => wp_create_nonce( 'sd_ajax_nonce' ),
         ) );
+
         wp_localize_script( 'sd-admin', 'sdAdmin', array(
-            'placeholders' => array_values( $placeholder_labels ),
-            'placeholderMap' => $placeholder_labels,
-            'delete'       => __( 'Delete', 'super-directory' ),
-            'none'         => __( 'No entries found.', 'super-directory' ),
-            'mediaTitle'   => __( 'Select Image', 'super-directory' ),
-            'mediaButton'  => __( 'Use this image', 'super-directory' ),
+            'fields'          => $field_definitions,
+            'fieldMap'        => $field_map,
+            'tableColumns'    => $table_columns,
+            'delete'          => __( 'Delete', 'super-directory' ),
+            'none'            => __( 'No entries found.', 'super-directory' ),
+            'mediaTitle'      => __( 'Select Image', 'super-directory' ),
+            'mediaButton'     => __( 'Use this image', 'super-directory' ),
             'itemPlaceholder' => __( 'Item #%d', 'super-directory' ),
-            'addAnotherItem' => __( '+ Add Another Item', 'super-directory' ),
-            'makeSelection' => __( 'Make a Selection...', 'super-directory' ),
-            'error'        => __( 'Something went wrong. Please try again.', 'super-directory' ),
-            'loadError'    => __( 'Unable to load records. Please try again.', 'super-directory' ),
-            'totalRecords' => __( 'Total records: %s', 'super-directory' ),
-            'pageOf'       => __( 'Page %1$s of %2$s', 'super-directory' ),
-            'firstPage'    => __( 'First page', 'super-directory' ),
-            'prevPage'     => __( 'Previous page', 'super-directory' ),
-            'nextPage'     => __( 'Next page', 'super-directory' ),
-            'lastPage'     => __( 'Last page', 'super-directory' ),
-            'toggleDetails' => __( 'Toggle entity details', 'super-directory' ),
-            'nameLabel'    => __( 'Name', 'super-directory' ),
-            'editAction'   => __( 'Edit', 'super-directory' ),
-            'saveChanges'  => __( 'Save Changes', 'super-directory' ),
-            'entityFields' => $field_definitions,
-            'editorSettings' => $this->get_inline_editor_settings(),
-            'previewEntity' => SD_Main_Entity_Helper::get_first_preview_data(),
-            'previewEmptyMessage' => __( 'Enter a subject or body to generate the preview.', 'super-directory' ),
+            'addAnotherItem'  => __( '+ Add Another Item', 'super-directory' ),
+            'makeSelection'   => __( 'Make a Selection...', 'super-directory' ),
+            'error'           => __( 'Something went wrong. Please try again.', 'super-directory' ),
+            'loadError'       => __( 'Unable to load records. Please try again.', 'super-directory' ),
+            'totalRecords'    => __( 'Total records: %s', 'super-directory' ),
+            'pageOf'          => __( 'Page %1$s of %2$s', 'super-directory' ),
+            'firstPage'       => __( 'First page', 'super-directory' ),
+            'prevPage'        => __( 'Previous page', 'super-directory' ),
+            'nextPage'        => __( 'Next page', 'super-directory' ),
+            'lastPage'        => __( 'Last page', 'super-directory' ),
+            'toggleDetails'   => __( 'Toggle entity details', 'super-directory' ),
+            'editAction'      => __( 'Edit', 'super-directory' ),
+            'saveChanges'     => __( 'Save Changes', 'super-directory' ),
+            'entityFields'    => $field_definitions,
+            'editorSettings'  => $this->get_inline_editor_settings(),
+            'previewEntity'   => SD_Main_Entity_Helper::get_first_preview_data(),
+            'previewEmptyMessage'      => __( 'Add a summary or description to generate the preview.', 'super-directory' ),
             'previewUnavailableMessage' => __( 'Add a Directory Listing entry to generate a preview.', 'super-directory' ),
-            'testEmailRequired' => __( 'Enter an email address before sending a test.', 'super-directory' ),
-            'testEmailSuccess'  => __( 'Test email sent.', 'super-directory' ),
-            'emailLogCleared'   => __( 'Email log cleared.', 'super-directory' ),
-            'emailLogError'     => __( 'Unable to clear the email log. Please try again.', 'super-directory' ),
-            'emailLogEmpty'     => __( 'No email activity has been recorded yet.', 'super-directory' ),
         ) );
     }
 
-    private function get_placeholder_labels() {
-        static $labels = null;
+    private function get_category_options() {
+        $options = array(
+            'crm'                   => __( 'CRM', 'super-directory' ),
+            'chatbots'              => __( 'Chatbots', 'super-directory' ),
+            'hiring_platform'       => __( 'Hiring Platform', 'super-directory' ),
+            'lead_generation'       => __( 'Lead Generation', 'super-directory' ),
+            'answering_service'     => __( 'Answering Service', 'super-directory' ),
+            'csr_training'          => __( 'CSR Training', 'super-directory' ),
+            'business_development'  => __( 'Business Development', 'super-directory' ),
+            'onboarding_companies'  => __( 'Onboarding Companies', 'super-directory' ),
+        );
 
-        if ( null === $labels ) {
-            $labels = array();
+        $options = apply_filters( 'sd_directory_categories', $options );
 
-            for ( $i = 1; $i <= 28; $i++ ) {
-                $labels[ 'placeholder_' . $i ] = sprintf( __( 'Placeholder %d', 'super-directory' ), $i );
-            }
+        $normalized = array();
 
-            /**
-             * Allow customizing placeholder labels across the admin experience when cloning the plugin.
-             *
-             * Updating this filter ensures the edit table, creation form, and localized JavaScript
-             * all stay in sync when Placeholder 1 becomes "Resource Name", "Student Name", etc.
-             *
-             * @param array $labels Associative array of placeholder slugs to labels.
-             */
-            $labels = apply_filters( 'sd_main_entity_placeholder_labels', $labels );
+        foreach ( $options as $value => $label ) {
+            $key              = sanitize_key( $value );
+            $normalized[ $key ] = wp_strip_all_tags( (string) $label );
         }
 
-        return $labels;
+        return array( '' => __( 'Make a Selection...', 'super-directory' ) ) + $normalized;
     }
 
-    private function get_placeholder_label( $index ) {
-        $labels = $this->get_placeholder_labels();
-        $key    = 'placeholder_' . absint( $index );
+    private function get_service_model_options() {
+        $options = array(
+            'local'  => __( 'Local Customers Only', 'super-directory' ),
+            'virtual' => __( 'Virtual / National', 'super-directory' ),
+            'both'    => __( 'Both Local & National', 'super-directory' ),
+        );
 
-        if ( isset( $labels[ $key ] ) ) {
-            return $labels[ $key ];
+        $options = apply_filters( 'sd_directory_service_models', $options );
+
+        $normalized = array();
+
+        foreach ( $options as $value => $label ) {
+            $key              = sanitize_key( $value );
+            $normalized[ $key ] = wp_strip_all_tags( (string) $label );
         }
 
-        return sprintf( __( 'Placeholder %d', 'super-directory' ), absint( $index ) );
+        return array( '' => __( 'Make a Selection...', 'super-directory' ) ) + $normalized;
     }
 
     private function get_us_states() {
@@ -194,15 +209,423 @@ class SD_Admin {
         );
     }
 
-    private function get_tooltips() {
-        $tooltips = array();
-        for ( $i = 1; $i <= 28; $i++ ) {
-            $tooltips[ 'placeholder_' . $i ] = sprintf(
-                __( 'Tooltip placeholder text for Placeholder %d', 'super-directory' ),
-                $i
+    private function get_main_entity_field_groups() {
+        $category_options      = $this->get_category_options();
+        $service_model_options = $this->get_service_model_options();
+
+        return array(
+            'basics' => array(
+                'label'       => __( 'Listing Basics', 'super-directory' ),
+                'description' => __( 'Identify the company and how it fits within the directory.', 'super-directory' ),
+                'fields'      => array(
+                    array(
+                        'name'      => 'name',
+                        'label'     => __( 'Resource / Company / Vendor Name', 'super-directory' ),
+                        'type'      => 'text',
+                        'tooltip'   => __( 'This name is shown on cards, generated pages, and search results.', 'super-directory' ),
+                    ),
+                    array(
+                        'name'      => 'category',
+                        'label'     => __( 'Category', 'super-directory' ),
+                        'type'      => 'select',
+                        'options'   => $category_options,
+                        'tooltip'   => __( 'Choose the closest category from the curated SuperDirectory list.', 'super-directory' ),
+                    ),
+                    array(
+                        'name'      => 'industry_vertical',
+                        'label'     => __( 'Related Industry / Vertical', 'super-directory' ),
+                        'type'      => 'text',
+                        'tooltip'   => __( 'Note the primary industry focus that best describes this listing.', 'super-directory' ),
+                    ),
+                    array(
+                        'name'      => 'service_model',
+                        'label'     => __( 'Serving Only Local Customers, Virtual/National, or Both?', 'super-directory' ),
+                        'type'      => 'select',
+                        'options'   => $service_model_options,
+                        'tooltip'   => __( 'Clarify the service footprint so prospects know where support is available.', 'super-directory' ),
+                    ),
+                ),
+            ),
+            'contact' => array(
+                'label'       => __( 'Contact & Web Presence', 'super-directory' ),
+                'description' => __( 'Share the primary ways prospects can learn more or get in touch.', 'super-directory' ),
+                'fields'      => array(
+                    array(
+                        'name'    => 'website_url',
+                        'label'   => __( 'Website URL', 'super-directory' ),
+                        'type'    => 'url',
+                        'tooltip' => __( 'Primary marketing or sign-up destination for this listing.', 'super-directory' ),
+                    ),
+                    array(
+                        'name'    => 'phone_number',
+                        'label'   => __( 'Phone Number', 'super-directory' ),
+                        'type'    => 'tel',
+                        'tooltip' => __( 'Main phone number for customers to call.', 'super-directory' ),
+                    ),
+                    array(
+                        'name'    => 'email_address',
+                        'label'   => __( 'Email', 'super-directory' ),
+                        'type'    => 'email',
+                        'tooltip' => __( 'Customer-facing inbox used for questions or onboarding.', 'super-directory' ),
+                    ),
+                ),
+            ),
+            'location' => array(
+                'label'       => __( 'Location & Coverage', 'super-directory' ),
+                'description' => __( 'Capture where the resource is based and how to find it.', 'super-directory' ),
+                'fields'      => array(
+                    array(
+                        'name'       => 'street_address',
+                        'label'      => __( 'Street Address', 'super-directory' ),
+                        'type'       => 'text',
+                        'tooltip'    => __( 'Headquarters or primary service location street address.', 'super-directory' ),
+                        'full_width' => true,
+                    ),
+                    array(
+                        'name'    => 'city',
+                        'label'   => __( 'City', 'super-directory' ),
+                        'type'    => 'text',
+                        'tooltip' => __( 'City associated with the headquarters or primary facility.', 'super-directory' ),
+                    ),
+                    array(
+                        'name'    => 'state',
+                        'label'   => __( 'State', 'super-directory' ),
+                        'type'    => 'state',
+                        'options' => $this->get_us_states_and_territories(),
+                        'tooltip' => __( 'Select the applicable U.S. state or territory.', 'super-directory' ),
+                    ),
+                    array(
+                        'name'    => 'zip_code',
+                        'label'   => __( 'Zip Code', 'super-directory' ),
+                        'type'    => 'text',
+                        'tooltip' => __( 'Postal or ZIP code used for mailing and lookups.', 'super-directory' ),
+                    ),
+                    array(
+                        'name'    => 'country',
+                        'label'   => __( 'Country', 'super-directory' ),
+                        'type'    => 'text',
+                        'tooltip' => __( 'Country where the business is based or primarily serves.', 'super-directory' ),
+                    ),
+                ),
+            ),
+            'descriptions' => array(
+                'label'       => __( 'Descriptions & Messaging', 'super-directory' ),
+                'description' => __( 'Tell the story with short and long-form content.', 'super-directory' ),
+                'fields'      => array(
+                    array(
+                        'name'       => 'short_description',
+                        'label'      => __( 'Short Description', 'super-directory' ),
+                        'type'       => 'textarea',
+                        'tooltip'    => __( 'A brief overview used on condensed directory layouts.', 'super-directory' ),
+                        'full_width' => true,
+                    ),
+                    array(
+                        'name'       => 'long_description_primary',
+                        'label'      => __( 'Long Description 1', 'super-directory' ),
+                        'type'       => 'editor',
+                        'tooltip'    => __( 'Primary body content for the generated detail page.', 'super-directory' ),
+                        'full_width' => true,
+                    ),
+                    array(
+                        'name'       => 'long_description_secondary',
+                        'label'      => __( 'Long Description 2', 'super-directory' ),
+                        'type'       => 'editor',
+                        'tooltip'    => __( 'Secondary narrative space for testimonials, processes, or offers.', 'super-directory' ),
+                        'full_width' => true,
+                    ),
+                ),
+            ),
+            'social' => array(
+                'label'       => __( 'Social & Listings', 'super-directory' ),
+                'description' => __( 'Log the primary social channels and directory listings to promote credibility.', 'super-directory' ),
+                'fields'      => array(
+                    array(
+                        'name'    => 'facebook_url',
+                        'label'   => __( 'Facebook URL', 'super-directory' ),
+                        'type'    => 'url',
+                        'tooltip' => __( 'Public Facebook page or group associated with the listing.', 'super-directory' ),
+                    ),
+                    array(
+                        'name'    => 'instagram_url',
+                        'label'   => __( 'Instagram URL', 'super-directory' ),
+                        'type'    => 'url',
+                        'tooltip' => __( 'Instagram profile that showcases work, culture, or resources.', 'super-directory' ),
+                    ),
+                    array(
+                        'name'    => 'youtube_url',
+                        'label'   => __( 'YouTube URL', 'super-directory' ),
+                        'type'    => 'url',
+                        'tooltip' => __( 'YouTube channel or playlist featuring video content.', 'super-directory' ),
+                    ),
+                    array(
+                        'name'    => 'linkedin_url',
+                        'label'   => __( 'LinkedIn URL', 'super-directory' ),
+                        'type'    => 'url',
+                        'tooltip' => __( 'LinkedIn company page or showcase profile.', 'super-directory' ),
+                    ),
+                    array(
+                        'name'    => 'google_business_url',
+                        'label'   => __( 'Google Business Listing URL', 'super-directory' ),
+                        'type'    => 'url',
+                        'tooltip' => __( 'Direct link to the Google Business Profile listing.', 'super-directory' ),
+                    ),
+                ),
+            ),
+        );
+    }
+
+    private function get_main_entity_fields() {
+        $groups = $this->get_main_entity_field_groups();
+        $fields = array();
+
+        foreach ( $groups as $group_key => $group ) {
+            if ( empty( $group['fields'] ) || ! is_array( $group['fields'] ) ) {
+                continue;
+            }
+
+            foreach ( $group['fields'] as $field ) {
+                $field['group'] = $group_key;
+
+                if ( ! isset( $field['full_width'] ) ) {
+                    $field['full_width'] = false;
+                }
+
+                $fields[] = $field;
+            }
+        }
+
+        return $fields;
+    }
+
+    private function get_edit_table_columns() {
+        return array(
+            array(
+                'key'   => 'name',
+                'label' => __( 'Listing Name', 'super-directory' ),
+                'type'  => 'title',
+            ),
+            array(
+                'key'   => 'category',
+                'label' => __( 'Category', 'super-directory' ),
+                'type'  => 'meta',
+            ),
+            array(
+                'key'   => 'industry_vertical',
+                'label' => __( 'Industry / Vertical', 'super-directory' ),
+                'type'  => 'meta',
+            ),
+            array(
+                'key'   => 'service_model',
+                'label' => __( 'Service Model', 'super-directory' ),
+                'type'  => 'meta',
+            ),
+            array(
+                'key'   => 'website_url',
+                'label' => __( 'Website', 'super-directory' ),
+                'type'  => 'meta',
+            ),
+            array(
+                'key'   => 'actions',
+                'label' => __( 'Actions', 'super-directory' ),
+                'type'  => 'actions',
+            ),
+        );
+    }
+
+    private function prepare_main_entity_fields_for_js() {
+        $fields   = $this->get_main_entity_fields();
+        $prepared = array();
+
+        foreach ( $fields as $field ) {
+            $prepared_field = array(
+                'name'      => $field['name'],
+                'type'      => $field['type'],
+                'label'     => $field['label'],
+                'tooltip'   => $field['tooltip'],
+                'fullWidth' => ! empty( $field['full_width'] ),
+                'group'     => isset( $field['group'] ) ? $field['group'] : '',
+            );
+
+            if ( isset( $field['options'] ) ) {
+                $prepared_field['options'] = $field['options'];
+            }
+
+            if ( isset( $field['attrs'] ) ) {
+                $prepared_field['attrs'] = $field['attrs'];
+            }
+
+            $prepared[] = $prepared_field;
+        }
+
+        return $prepared;
+    }
+
+    private function prepare_table_columns_for_js() {
+        $columns  = $this->get_edit_table_columns();
+        $prepared = array();
+
+        foreach ( $columns as $column ) {
+            $prepared[] = array(
+                'key'   => $column['key'],
+                'label' => isset( $column['label'] ) ? $column['label'] : '',
+                'type'  => isset( $column['type'] ) ? $column['type'] : 'meta',
             );
         }
-        return $tooltips;
+
+        return $prepared;
+    }
+
+    private function get_inline_editor_settings() {
+        $default_settings = array(
+            'tinymce'   => array(
+                'wpautop' => true,
+            ),
+            'quicktags' => true,
+        );
+
+        if ( function_exists( 'wp_get_editor_settings' ) ) {
+            $settings = wp_get_editor_settings( 'long_description_primary', array( 'textarea_name' => 'long_description_primary' ) );
+
+            if ( is_array( $settings ) ) {
+                return $settings;
+            }
+        }
+
+        return $default_settings;
+    }
+
+    private function render_create_tab() {
+        $groups = $this->get_main_entity_field_groups();
+
+        echo '<form id="sd-create-form"><div class="sd-flex-form">';
+
+        foreach ( $groups as $group_key => $group ) {
+            $group_label       = isset( $group['label'] ) ? $group['label'] : '';
+            $group_description = isset( $group['description'] ) ? $group['description'] : '';
+
+            if ( $group_label || $group_description ) {
+                echo '<div class="sd-field sd-field-full sd-field-group">';
+
+                if ( $group_label ) {
+                    echo '<h3 class="sd-field-group__title">' . esc_html( $group_label ) . '</h3>';
+                }
+
+                if ( $group_description ) {
+                    echo '<p class="sd-field-group__description">' . esc_html( $group_description ) . '</p>';
+                }
+
+                echo '</div>';
+            }
+
+            if ( empty( $group['fields'] ) || ! is_array( $group['fields'] ) ) {
+                continue;
+            }
+
+            foreach ( $group['fields'] as $field ) {
+                $classes = 'sd-field';
+
+                if ( ! empty( $field['full_width'] ) ) {
+                    $classes .= ' sd-field-full';
+                }
+
+                echo '<div class="' . esc_attr( $classes ) . '">';
+                echo '<label><span class="sd-tooltip-icon dashicons dashicons-editor-help" data-tooltip="' . esc_attr( $field['tooltip'] ) . '"></span>' . esc_html( $field['label'] ) . '</label>';
+
+                switch ( $field['type'] ) {
+                    case 'select':
+                        $options = isset( $field['options'] ) ? $field['options'] : array( '' => __( 'Make a Selection...', 'super-directory' ) );
+                        echo '<select name="' . esc_attr( $field['name'] ) . '">';
+
+                        foreach ( $options as $value => $label ) {
+                            if ( '' === (string) $value ) {
+                                echo '<option value="" disabled selected>' . esc_html( $label ) . '</option>';
+                            } else {
+                                echo '<option value="' . esc_attr( $value ) . '">' . esc_html( $label ) . '</option>';
+                            }
+                        }
+
+                        echo '</select>';
+                        break;
+                    case 'state':
+                        $states = isset( $field['options'] ) ? $field['options'] : $this->get_us_states();
+                        echo '<select name="' . esc_attr( $field['name'] ) . '">';
+                        echo '<option value="" disabled selected>' . esc_html__( 'Make a Selection...', 'super-directory' ) . '</option>';
+
+                        foreach ( $states as $state ) {
+                            echo '<option value="' . esc_attr( $state ) . '">' . esc_html( $state ) . '</option>';
+                        }
+
+                        echo '</select>';
+                        break;
+                    case 'editor':
+                        wp_editor( '', $field['name'], array( 'textarea_name' => $field['name'] ) );
+                        break;
+                    case 'items':
+                        $container_id = 'sd-items-' . sanitize_html_class( $field['name'] );
+                        echo '<div id="' . esc_attr( $container_id ) . '" class="sd-items-container" data-field="' . esc_attr( $field['name'] ) . '">';
+                        echo '<div class="sd-item-row" style="margin-bottom:8px; display:flex; align-items:center;">';
+                        echo '<input type="text" name="' . esc_attr( $field['name'] ) . '[]" class="regular-text sd-item-field" placeholder="' . esc_attr__( 'Item #1', 'super-directory' ) . '" />';
+                        echo '</div></div>';
+                        echo '<button type="button" class="button sd-add-item" data-target="#' . esc_attr( $container_id ) . '" data-field-name="' . esc_attr( $field['name'] ) . '" style="margin-top:8px;">' . esc_html__( '+ Add Another Item', 'super-directory' ) . '</button>';
+                        break;
+                    case 'textarea':
+                        echo '<textarea name="' . esc_attr( $field['name'] ) . '" rows="4"></textarea>';
+                        break;
+                    case 'image':
+                        $input_id = sanitize_html_class( $field['name'] );
+                        echo '<input type="hidden" name="' . esc_attr( $field['name'] ) . '" id="' . esc_attr( $input_id ) . '" />';
+                        echo '<button type="button" class="button sd-upload" data-target="#' . esc_attr( $input_id ) . '">' . esc_html__( 'Select Image', 'super-directory' ) . '</button>';
+                        echo '<div id="' . esc_attr( $input_id ) . '-preview" style="margin-top:10px;"></div>';
+                        break;
+                    default:
+                        $attrs = isset( $field['attrs'] ) ? ' ' . $field['attrs'] : '';
+                        echo '<input type="' . esc_attr( $field['type'] ) . '" name="' . esc_attr( $field['name'] ) . '"' . $attrs . ' />';
+                        break;
+                }
+
+                echo '</div>';
+            }
+        }
+
+        echo '</div>';
+        $submit_button = get_submit_button( __( 'Save', 'super-directory' ), 'primary', 'submit', false );
+        echo '<p class="submit">' . $submit_button;
+        echo '<span class="sd-feedback-area sd-feedback-area--inline"><span id="sd-spinner" class="spinner" aria-hidden="true"></span><span id="sd-feedback" role="status" aria-live="polite"></span></span>';
+        echo '</p>';
+        echo '</form>';
+    }
+
+    private function render_edit_tab() {
+        $per_page     = 20;
+        $columns      = $this->get_edit_table_columns();
+        $column_count = count( $columns );
+
+        echo '<div class="sd-directory-table sd-directory-table--main-entities">';
+        echo '<div class="sd-accordion-group sd-accordion-group--table" data-sd-accordion-group="main-entities">';
+        echo '<table class="wp-list-table widefat striped sd-accordion-table">';
+        echo '<thead>';
+        echo '<tr>';
+
+        foreach ( $columns as $column ) {
+            $heading_class = 'sd-accordion__heading sd-accordion__heading--' . sanitize_html_class( $column['key'] );
+            $label         = isset( $column['label'] ) ? $column['label'] : '';
+
+            echo '<th scope="col" class="' . esc_attr( $heading_class ) . '">' . esc_html( $label ) . '</th>';
+        }
+
+        echo '</tr>';
+        echo '</thead>';
+        printf(
+            '<tbody id="sd-entity-list" data-per-page="%1$d" data-column-count="%2$d">',
+            absint( $per_page ),
+            absint( $column_count )
+        );
+        echo '</tbody>';
+        echo '</table>';
+        echo '</div>';
+        echo '<div class="tablenav"><div id="sd-entity-pagination" class="tablenav-pages"></div></div>';
+        echo '</div>';
+        echo '<div id="sd-entity-feedback" class="sd-feedback-area sd-feedback-area--block" role="status" aria-live="polite"></div>';
     }
 
     private function top_message_center() {
@@ -283,8 +706,8 @@ class SD_Admin {
         );
 
         $tab_descriptions = array(
-            'create' => __( 'Build a new directory listing record by completing the placeholder fields and saving your changes.', 'super-directory' ),
-            'edit'   => __( 'Review saved entities to confirm their data, trigger edits, or remove records you no longer need.', 'super-directory' ),
+            'create' => __( 'Capture the resource details, contact info, and highlights for a new SuperDirectory listing.', 'super-directory' ),
+            'edit'   => __( 'Review saved listings to confirm their data, trigger edits, or remove records you no longer need.', 'super-directory' ),
         );
 
         $title       = isset( $tab_titles[ $active_tab ] ) ? $tab_titles[ $active_tab ] : '';
@@ -300,440 +723,6 @@ class SD_Admin {
 
         $this->bottom_message_center();
         echo '</div>';
-    }
-
-    private function get_main_entity_fields() {
-        $tooltips = $this->get_tooltips();
-        $fields    = array(
-            array(
-                'name'    => 'placeholder_1',
-                'label'   => $this->get_placeholder_label( 1 ),
-                'type'    => 'text',
-                'tooltip' => $tooltips['placeholder_1'],
-            ),
-            array(
-                'name'    => 'placeholder_2',
-                'label'   => $this->get_placeholder_label( 2 ),
-                'type'    => 'text',
-                'tooltip' => $tooltips['placeholder_2'],
-            ),
-            array(
-                'name'    => 'placeholder_3',
-                'label'   => $this->get_placeholder_label( 3 ),
-                'type'    => 'date',
-                'tooltip' => $tooltips['placeholder_3'],
-            ),
-            array(
-                'name'    => 'placeholder_4',
-                'label'   => $this->get_placeholder_label( 4 ),
-                'type'    => 'select',
-                'options' => array(
-                    ''  => __( 'Make a Selection...', 'super-directory' ),
-                    '0' => __( 'No', 'super-directory' ),
-                    '1' => __( 'Yes', 'super-directory' ),
-                ),
-                'tooltip' => $tooltips['placeholder_4'],
-            ),
-            array(
-                'name'    => 'placeholder_5',
-                'label'   => $this->get_placeholder_label( 5 ),
-                'type'    => 'time',
-                'tooltip' => $tooltips['placeholder_5'],
-            ),
-            array(
-                'name'    => 'placeholder_6',
-                'label'   => $this->get_placeholder_label( 6 ),
-                'type'    => 'time',
-                'tooltip' => $tooltips['placeholder_6'],
-            ),
-            array(
-                'name'    => 'placeholder_7',
-                'label'   => $this->get_placeholder_label( 7 ),
-                'type'    => 'select',
-                'options' => array(
-                    ''  => __( 'Make a Selection...', 'super-directory' ),
-                    '0' => __( 'No', 'super-directory' ),
-                    '1' => __( 'Yes', 'super-directory' ),
-                ),
-                'tooltip' => $tooltips['placeholder_7'],
-            ),
-            array(
-                'name'    => 'placeholder_8',
-                'label'   => $this->get_placeholder_label( 8 ),
-                'type'    => 'text',
-                'tooltip' => $tooltips['placeholder_8'],
-            ),
-            array(
-                'name'    => 'placeholder_9',
-                'label'   => $this->get_placeholder_label( 9 ),
-                'type'    => 'text',
-                'tooltip' => $tooltips['placeholder_9'],
-            ),
-            array(
-                'name'    => 'placeholder_10',
-                'label'   => $this->get_placeholder_label( 10 ),
-                'type'    => 'text',
-                'tooltip' => $tooltips['placeholder_10'],
-            ),
-            array(
-                'name'    => 'placeholder_11',
-                'label'   => $this->get_placeholder_label( 11 ),
-                'type'    => 'state',
-                'options' => $this->get_us_states(),
-                'tooltip' => $tooltips['placeholder_11'],
-            ),
-            array(
-                'name'    => 'placeholder_12',
-                'label'   => $this->get_placeholder_label( 12 ),
-                'type'    => 'text',
-                'tooltip' => $tooltips['placeholder_12'],
-            ),
-            array(
-                'name'    => 'placeholder_13',
-                'label'   => $this->get_placeholder_label( 13 ),
-                'type'    => 'text',
-                'tooltip' => $tooltips['placeholder_13'],
-            ),
-            array(
-                'name'    => 'placeholder_14',
-                'label'   => $this->get_placeholder_label( 14 ),
-                'type'    => 'url',
-                'tooltip' => $tooltips['placeholder_14'],
-            ),
-            array(
-                'name'    => 'placeholder_15',
-                'label'   => $this->get_placeholder_label( 15 ),
-                'type'    => 'select',
-                'options' => array(
-                    ''        => __( 'Make a Selection...', 'super-directory' ),
-                    'option1' => __( 'Option 1', 'super-directory' ),
-                    'option2' => __( 'Option 2', 'super-directory' ),
-                    'option3' => __( 'Option 3', 'super-directory' ),
-                ),
-                'tooltip' => $tooltips['placeholder_15'],
-            ),
-            array(
-                'name'    => 'placeholder_16',
-                'label'   => $this->get_placeholder_label( 16 ),
-                'type'    => 'number',
-                'attrs'   => 'step="0.01" min="0"',
-                'tooltip' => $tooltips['placeholder_16'],
-            ),
-            array(
-                'name'    => 'placeholder_17',
-                'label'   => $this->get_placeholder_label( 17 ),
-                'type'    => 'number',
-                'attrs'   => 'step="0.01" min="0"',
-                'tooltip' => $tooltips['placeholder_17'],
-            ),
-            array(
-                'name'    => 'placeholder_18',
-                'label'   => $this->get_placeholder_label( 18 ),
-                'type'    => 'number',
-                'attrs'   => 'step="0.01" min="0"',
-                'tooltip' => $tooltips['placeholder_18'],
-            ),
-            array(
-                'name'    => 'placeholder_19',
-                'label'   => $this->get_placeholder_label( 19 ),
-                'type'    => 'select',
-                'options' => array(
-                    ''  => __( 'Make a Selection...', 'super-directory' ),
-                    '0' => __( 'No', 'super-directory' ),
-                    '1' => __( 'Yes', 'super-directory' ),
-                ),
-                'tooltip' => $tooltips['placeholder_19'],
-            ),
-            array(
-                'name'    => 'placeholder_20',
-                'label'   => $this->get_placeholder_label( 20 ),
-                'type'    => 'select',
-                'options' => array(
-                    ''  => __( 'Make a Selection...', 'super-directory' ),
-                    '0' => __( 'No', 'super-directory' ),
-                    '1' => __( 'Yes', 'super-directory' ),
-                ),
-                'tooltip' => $tooltips['placeholder_20'],
-            ),
-            array(
-                'name'    => 'placeholder_21',
-                'label'   => $this->get_placeholder_label( 21 ),
-                'type'    => 'state',
-                'options' => $this->get_us_states_and_territories(),
-                'tooltip' => $tooltips['placeholder_21'],
-            ),
-            array(
-                'name'    => 'placeholder_22',
-                'label'   => $this->get_placeholder_label( 22 ),
-                'type'    => 'text',
-                'tooltip' => $tooltips['placeholder_22'],
-            ),
-            array(
-                'name'    => 'placeholder_23',
-                'label'   => $this->get_placeholder_label( 23 ),
-                'type'    => 'radio',
-                'options' => array(
-                    'option1' => array(
-                        'label'   => __( 'Option 1', 'super-directory' ),
-                        'tooltip' => __( 'Tooltip placeholder text for Placeholder 22 Option 1', 'super-directory' ),
-                    ),
-                    'option2' => array(
-                        'label'   => __( 'Option 2', 'super-directory' ),
-                        'tooltip' => __( 'Tooltip placeholder text for Placeholder 22 Option 2', 'super-directory' ),
-                    ),
-                    'option3' => array(
-                        'label'   => __( 'Option 3', 'super-directory' ),
-                        'tooltip' => __( 'Tooltip placeholder text for Placeholder 22 Option 3', 'super-directory' ),
-                    ),
-                ),
-                'tooltip' => $tooltips['placeholder_23'],
-            ),
-            array(
-                'name'    => 'placeholder_24',
-                'label'   => $this->get_placeholder_label( 24 ),
-                'type'    => 'opt_in',
-                'tooltip' => $tooltips['placeholder_24'],
-                'options' => array(
-                    array(
-                        'name'    => 'opt_in_marketing_email',
-                        'label'   => __( 'Option 1', 'super-directory' ),
-                        'tooltip' => __( 'Tooltip placeholder text for Placeholder 23 Option 1', 'super-directory' ),
-                    ),
-                    array(
-                        'name'    => 'opt_in_marketing_sms',
-                        'label'   => __( 'Option 2', 'super-directory' ),
-                        'tooltip' => __( 'Tooltip placeholder text for Placeholder 23 Option 2', 'super-directory' ),
-                    ),
-                    array(
-                        'name'    => 'opt_in_event_update_email',
-                        'label'   => __( 'Option 3', 'super-directory' ),
-                        'tooltip' => __( 'Tooltip placeholder text for Placeholder 23 Option 3', 'super-directory' ),
-                    ),
-                    array(
-                        'name'    => 'opt_in_event_update_sms',
-                        'label'   => __( 'Option 4', 'super-directory' ),
-                        'tooltip' => __( 'Tooltip placeholder text for Placeholder 23 Option 4', 'super-directory' ),
-                    ),
-                ),
-            ),
-            array(
-                'name'    => 'placeholder_25',
-                'label'   => $this->get_placeholder_label( 25 ),
-                'type'    => 'items',
-                'tooltip' => $tooltips['placeholder_25'],
-            ),
-            array(
-                'name'    => 'placeholder_26',
-                'label'   => $this->get_placeholder_label( 26 ),
-                'type'    => 'color',
-                'attrs'   => 'value="#000000"',
-                'tooltip' => $tooltips['placeholder_26'],
-            ),
-            array(
-                'name'    => 'placeholder_27',
-                'label'   => $this->get_placeholder_label( 27 ),
-                'type'    => 'image',
-                'tooltip' => $tooltips['placeholder_27'],
-            ),
-            array(
-                'name'    => 'placeholder_28',
-                'label'   => $this->get_placeholder_label( 28 ),
-                'type'    => 'editor',
-                'tooltip' => $tooltips['placeholder_28'],
-                'full_width' => true,
-            ),
-        );
-        return $fields;
-    }
-
-    private function prepare_main_entity_fields_for_js() {
-        $fields    = $this->get_main_entity_fields();
-        $prepared  = array();
-
-        foreach ( $fields as $field ) {
-            $prepared_field = array(
-                'name'      => $field['name'],
-                'type'      => $field['type'],
-                'label'     => $field['label'],
-                'tooltip'   => $field['tooltip'],
-                'fullWidth' => ! empty( $field['full_width'] ),
-            );
-
-            if ( isset( $field['options'] ) ) {
-                $prepared_field['options'] = $field['options'];
-            }
-
-            if ( isset( $field['attrs'] ) ) {
-                $prepared_field['attrs'] = $field['attrs'];
-            }
-
-            $prepared[] = $prepared_field;
-        }
-
-        return $prepared;
-    }
-
-    private function get_inline_editor_settings() {
-        $default_settings = array(
-            'tinymce'   => array(
-                'wpautop' => true,
-            ),
-            'quicktags' => true,
-        );
-
-        if ( function_exists( 'wp_get_editor_settings' ) ) {
-            $settings = wp_get_editor_settings( 'placeholder_28', array( 'textarea_name' => 'placeholder_28' ) );
-
-            if ( is_array( $settings ) ) {
-                return $settings;
-            }
-        }
-
-        return $default_settings;
-    }
-
-    private function render_create_tab() {
-        $fields = $this->get_main_entity_fields();
-
-        echo '<form id="sd-create-form"><div class="sd-flex-form">';
-        foreach ( $fields as $field ) {
-            $classes = 'sd-field';
-            if ( ! empty( $field['full_width'] ) ) {
-                $classes .= ' sd-field-full';
-            }
-            echo '<div class="' . $classes . '">';
-            echo '<label><span class="sd-tooltip-icon dashicons dashicons-editor-help" data-tooltip="' . esc_attr( $field['tooltip'] ) . '"></span>' . esc_html( $field['label'] ) . '</label>';
-            switch ( $field['type'] ) {
-                case 'select':
-                    echo '<select name="' . esc_attr( $field['name'] ) . '">';
-                    foreach ( $field['options'] as $value => $label ) {
-                        if ( '' === $value ) {
-                            echo '<option value="" disabled selected>' . esc_html( $label ) . '</option>';
-                        } else {
-                            echo '<option value="' . esc_attr( $value ) . '">' . esc_html( $label ) . '</option>';
-                        }
-                    }
-                    echo '</select>';
-                    break;
-                case 'state':
-                    $states = isset( $field['options'] ) ? $field['options'] : $this->get_us_states();
-                    echo '<select name="' . esc_attr( $field['name'] ) . '">';
-                    echo '<option value="" disabled selected>' . esc_html__( 'Make a Selection...', 'super-directory' ) . '</option>';
-                    foreach ( $states as $state ) {
-                        echo '<option value="' . esc_attr( $state ) . '">' . esc_html( $state ) . '</option>';
-                    }
-                    echo '</select>';
-                    break;
-                case 'radio':
-                    foreach ( $field['options'] as $value => $opt ) {
-                        echo '<label class="sd-radio-option"><input type="radio" name="' . esc_attr( $field['name'] ) . '" value="' . esc_attr( $value ) . '" />';
-                        echo ' <span class="sd-tooltip-icon dashicons dashicons-editor-help" data-tooltip="' . esc_attr( $opt['tooltip'] ) . '"></span>';
-                        echo esc_html( $opt['label'] ) . '</label>';
-                    }
-                    break;
-                case 'editor':
-                    wp_editor( '', $field['name'], array( 'textarea_name' => $field['name'] ) );
-                    break;
-                case 'opt_in':
-                    $opts = isset( $field['options'] ) ? $field['options'] : array();
-
-                    if ( empty( $opts ) ) {
-                        $opts = array(
-                            array(
-                                'name'    => 'opt_in_marketing_email',
-                                'label'   => __( 'Option 1', 'super-directory' ),
-                                'tooltip' => __( 'Tooltip placeholder text for Placeholder 23 Option 1', 'super-directory' ),
-                            ),
-                            array(
-                                'name'    => 'opt_in_marketing_sms',
-                                'label'   => __( 'Option 2', 'super-directory' ),
-                                'tooltip' => __( 'Tooltip placeholder text for Placeholder 23 Option 2', 'super-directory' ),
-                            ),
-                            array(
-                                'name'    => 'opt_in_event_update_email',
-                                'label'   => __( 'Option 3', 'super-directory' ),
-                                'tooltip' => __( 'Tooltip placeholder text for Placeholder 23 Option 3', 'super-directory' ),
-                            ),
-                            array(
-                                'name'    => 'opt_in_event_update_sms',
-                                'label'   => __( 'Option 4', 'super-directory' ),
-                                'tooltip' => __( 'Tooltip placeholder text for Placeholder 23 Option 4', 'super-directory' ),
-                            ),
-                        );
-                    }
-
-                    echo '<fieldset>';
-                    foreach ( $opts as $opt ) {
-                        echo '<label class="sd-opt-in-option"><input type="checkbox" name="' . esc_attr( $opt['name'] ) . '" value="1" />';
-                        echo ' <span class="sd-tooltip-icon dashicons dashicons-editor-help" data-tooltip="' . esc_attr( $opt['tooltip'] ) . '"></span>';
-                        echo esc_html( $opt['label'] ) . '</label>';
-                    }
-                    echo '</fieldset>';
-                    break;
-                case 'items':
-                    echo '<div id="sd-items-container" class="sd-items-container" data-placeholder="' . esc_attr( $field['name'] ) . '">';
-                    echo '<div class="sd-item-row" style="margin-bottom:8px; display:flex; align-items:center;">';
-                    echo '<input type="text" name="' . esc_attr( $field['name'] ) . '[]" class="regular-text sd-item-field" placeholder="' . esc_attr__( 'Item #1', 'super-directory' ) . '" />';
-                    echo '</div></div>';
-                    echo '<button type="button" class="button sd-add-item" id="sd-add-item" data-target="#sd-items-container" style="margin-top:8px;">' . esc_html__( '+ Add Another Item', 'super-directory' ) . '</button>';
-                    break;
-                case 'textarea':
-                    echo '<textarea name="' . esc_attr( $field['name'] ) . '"></textarea>';
-                    break;
-                case 'image':
-                    echo '<input type="hidden" name="' . esc_attr( $field['name'] ) . '" id="' . esc_attr( $field['name'] ) . '" />';
-                    echo '<button type="button" class="button sd-upload" data-target="#' . esc_attr( $field['name'] ) . '">' . esc_html__( 'Select Image', 'super-directory' ) . '</button>';
-                    echo '<div id="' . esc_attr( $field['name'] ) . '-preview" style="margin-top:10px;"></div>';
-                    break;
-                default:
-                    $attrs = isset( $field['attrs'] ) ? ' ' . $field['attrs'] : '';
-                    echo '<input type="' . esc_attr( $field['type'] ) . '" name="' . esc_attr( $field['name'] ) . '"' . $attrs . ' />';
-                    break;
-            }
-            echo '</div>';
-        }
-        echo '</div>';
-        $submit_button = get_submit_button( __( 'Save', 'super-directory' ), 'primary', 'submit', false );
-        echo '<p class="submit">' . $submit_button;
-        echo '<span class="sd-feedback-area sd-feedback-area--inline"><span id="sd-spinner" class="spinner" aria-hidden="true"></span><span id="sd-feedback" role="status" aria-live="polite"></span></span>';
-        echo '</p>';
-        echo '</form>';
-    }
-
-    private function render_edit_tab() {
-        $per_page     = 20;
-        $column_count = 6; // Five placeholder columns plus actions.
-
-        echo '<div class="sd-directory-table sd-directory-table--main-entities">';
-        echo '<div class="sd-accordion-group sd-accordion-group--table" data-sd-accordion-group="main-entities">';
-        echo '<table class="wp-list-table widefat striped sd-accordion-table">';
-        echo '<thead>';
-        echo '<tr>';
-
-        for ( $i = 1; $i <= 5; $i++ ) {
-            $label = $this->get_placeholder_label( $i );
-
-            printf(
-                '<th scope="col" class="sd-accordion__heading sd-accordion__heading--placeholder-%1$d">%2$s</th>',
-                absint( $i ),
-                esc_html( $label )
-            );
-        }
-
-        echo '<th scope="col" class="sd-accordion__heading sd-accordion__heading--actions">' . esc_html__( 'Actions', 'super-directory' ) . '</th>';
-        echo '</tr>';
-        echo '</thead>';
-        printf(
-            '<tbody id="sd-entity-list" data-per-page="%1$d" data-column-count="%2$d">',
-            absint( $per_page ),
-            absint( $column_count )
-        );
-        echo '</tbody>';
-        echo '</table>';
-        echo '</div>';
-        echo '<div class="tablenav"><div id="sd-entity-pagination" class="tablenav-pages"></div></div>';
-        echo '</div>';
-        echo '<div id="sd-entity-feedback" class="sd-feedback-area sd-feedback-area--block" role="status" aria-live="polite"></div>';
     }
 
     public function render_settings_page() {

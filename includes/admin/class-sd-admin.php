@@ -80,6 +80,8 @@ class SD_Admin {
             'makeSelection'   => __( 'Make a Selection...', 'super-directory' ),
             'error'           => __( 'Something went wrong. Please try again.', 'super-directory' ),
             'loadError'       => __( 'Unable to load records. Please try again.', 'super-directory' ),
+            'saved'           => __( 'Saved', 'super-directory' ),
+            'changesSaved'    => __( 'Changes saved.', 'super-directory' ),
             'totalRecords'    => __( 'Total records: %s', 'super-directory' ),
             'pageOf'          => __( 'Page %1$s of %2$s', 'super-directory' ),
             'firstPage'       => __( 'First page', 'super-directory' ),

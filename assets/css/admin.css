@@ -171,7 +171,6 @@
 
 #sd-create-form .submit,
 #sd-general-settings-form .submit,
-#sd-style-settings-form .submit,
 .sd-entity-edit-form .submit {
     display: flex;
     align-items: center;
@@ -193,7 +192,6 @@
 
 #sd-create-form .submit .sd-feedback-area--inline,
 #sd-general-settings-form .submit .sd-feedback-area--inline,
-#sd-style-settings-form .submit .sd-feedback-area--inline,
 .sd-entity-edit-form .submit .sd-feedback-area--inline {
     margin-left: 0;
 }
@@ -204,18 +202,43 @@
 }
 
 #sd-spinner,
-.sd-entity-spinner,
+.sd-entity-spinner {
+    visibility: hidden;
+}
+
 #sd-spinner.is-active,
-.sd-entity-spinner.is-active,
+.sd-entity-spinner.is-active {
+    visibility: visible;
+}
+
 #sd-feedback,
 .sd-entity-feedback,
+#sd-entity-feedback {
+    display: none;
+    font-weight: 600;
+    color: #1d2327;
+}
+
 #sd-feedback.is-visible,
 .sd-entity-feedback.is-visible,
-#sd-feedback:not(.is-visible),
-.sd-entity-feedback:not(.is-visible),
-.sd-accordion .item {
-    border: 1px solid #ccc;
-    margin-bottom: 5px;
+#sd-entity-feedback.is-visible {
+    display: inline;
+}
+
+.sd-feedback-area--block #sd-entity-feedback.is-visible {
+    display: block;
+}
+
+#sd-feedback.is-success,
+.sd-entity-feedback.is-success,
+#sd-entity-feedback.is-success {
+    color: #007cba;
+}
+
+#sd-feedback.is-error,
+.sd-entity-feedback.is-error,
+#sd-entity-feedback.is-error {
+    color: #d63638;
 }
 
 .sd-accordion .item-header {

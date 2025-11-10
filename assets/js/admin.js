@@ -1,41 +1,207 @@
 jQuery(document).ready(function($){
-    function handleForm(selector, action){
-        var spinnerHideTimer;
-        $(selector).on('submit', function(e){
-            e.preventDefault();
-            var data = $(this).serialize();
-            var $spinner = $('#sd-spinner');
-            var $feedback = $('#sd-feedback');
-            if ($feedback.length) {
-                $feedback.removeClass('is-visible').text('');
+    function extractAjaxMessage(response){
+        if (!response) {
+            return '';
+        }
+
+        if (typeof response === 'string') {
+            return response;
+        }
+
+        if (typeof response === 'object') {
+            if (typeof response.message === 'string' && response.message.trim() !== '') {
+                return response.message.trim();
             }
+
+            if (typeof response.error === 'string' && response.error.trim() !== '') {
+                return response.error.trim();
+            }
+
+            if (response.data) {
+                if (typeof response.data.message === 'string' && response.data.message.trim() !== '') {
+                    return response.data.message.trim();
+                }
+
+                if (typeof response.data.error === 'string' && response.data.error.trim() !== '') {
+                    return response.data.error.trim();
+                }
+
+                if (typeof response.data.notice === 'string' && response.data.notice.trim() !== '') {
+                    return response.data.notice.trim();
+                }
+            }
+        }
+
+        return '';
+    }
+
+    function clearFeedbackMessage($target){
+        if (!$target || !$target.length) {
+            return;
+        }
+
+        $target.removeClass('is-visible is-success is-error').text('');
+    }
+
+    function showFeedbackMessage($target, message, status){
+        if (!$target || !$target.length) {
+            return;
+        }
+
+        clearFeedbackMessage($target);
+
+        if (!message) {
+            return;
+        }
+
+        $target.text(message).addClass('is-visible');
+
+        if (status === 'error') {
+            $target.addClass('is-error');
+        } else if (status === 'success') {
+            $target.addClass('is-success');
+        }
+    }
+
+    function prepareEditorsForSubmit($context){
+        if (!$context || !$context.length) {
+            return;
+        }
+
+        var ids = {};
+
+        $context.find('.wp-editor-area, .sd-editor-field').each(function(){
+            var id = $(this).attr('id');
+
+            if (id) {
+                ids[id] = true;
+            }
+        });
+
+        if (typeof wp !== 'undefined' && wp.editor && typeof wp.editor.save === 'function') {
+            Object.keys(ids).forEach(function(id){
+                try {
+                    wp.editor.save(id);
+                } catch (err) {
+                    // Ignore save errors for editors that may not be initialised yet.
+                }
+            });
+        } else if (typeof tinymce !== 'undefined' && typeof tinymce.triggerSave === 'function') {
+            tinymce.triggerSave();
+        }
+    }
+
+    function handleForm(selector, action, options){
+        var settings = $.extend({
+            successMessage: '',
+            errorMessage: sdAdmin.error || '',
+            resetOnSuccess: false,
+            onSuccess: null
+        }, options || {});
+
+        var $forms = $(selector);
+
+        if (!$forms.length) {
+            return;
+        }
+
+        var spinnerHideTimer;
+
+        $forms.on('submit', function(e){
+            e.preventDefault();
+
+            var $form = $(this);
+            var $feedbackArea = $form.find('.sd-feedback-area').first();
+            var $spinner = $feedbackArea.find('.spinner').first();
+            var $feedback = $feedbackArea.find('[role="status"]').first();
+
             if (spinnerHideTimer) {
                 clearTimeout(spinnerHideTimer);
             }
-            $spinner.addClass('is-active');
-            $.post(sdAjax.ajaxurl, data + '&action=' + action + '&_ajax_nonce=' + sdAjax.nonce)
-                .done(function(response){
-                    if ($feedback.length && response && response.data) {
-                        var message = response.data.message || response.data.error;
-                        if (message) {
-                            $feedback.text(message).addClass('is-visible');
-                        }
+
+            if ($spinner.length) {
+                $spinner.addClass('is-active');
+            }
+
+            if ($feedback.length) {
+                clearFeedbackMessage($feedback);
+            }
+
+            prepareEditorsForSubmit($form);
+
+            var dataArray = $form.serializeArray();
+            dataArray.push({ name: 'action', value: action });
+            dataArray.push({ name: '_ajax_nonce', value: sdAjax.nonce });
+
+            $.ajax({
+                url: sdAjax.ajaxurl,
+                method: 'POST',
+                dataType: 'json',
+                data: $.param(dataArray)
+            }).done(function(response){
+                var message = extractAjaxMessage(response);
+
+                if (response && response.success) {
+                    var successMessage = message || settings.successMessage || sdAdmin.saved || '';
+
+                    if ($feedback.length) {
+                        showFeedbackMessage($feedback, successMessage, 'success');
                     }
-                })
-                .fail(function(){
-                    if ($feedback.length && sdAdmin.error) {
-                        $feedback.text(sdAdmin.error).addClass('is-visible');
+
+                    if (settings.resetOnSuccess && $form.length && $form[0]) {
+                        $form[0].reset();
+
+                        $form.find('.sd-items-container').each(function(){
+                            var $container = $(this);
+                            $container.find('.sd-item-row').slice(1).remove();
+                            $container.find('.sd-item-field').val('');
+                        });
                     }
-                })
-                .always(function(){
-                    spinnerHideTimer = setTimeout(function(){
+
+                    if (typeof settings.onSuccess === 'function') {
+                        settings.onSuccess(response, $form);
+                    }
+                } else {
+                    var errorMessage = message || settings.errorMessage || sdAdmin.error || '';
+
+                    if ($feedback.length) {
+                        showFeedbackMessage($feedback, errorMessage, 'error');
+                    }
+                }
+            }).fail(function(jqXHR){
+                var fallbackMessage = settings.errorMessage || sdAdmin.error || '';
+                var parsedMessage = '';
+
+                if (jqXHR && jqXHR.responseJSON) {
+                    parsedMessage = extractAjaxMessage(jqXHR.responseJSON);
+                }
+
+                if (!parsedMessage && jqXHR && typeof jqXHR.responseText === 'string') {
+                    try {
+                        var parsedJSON = JSON.parse(jqXHR.responseText);
+                        parsedMessage = extractAjaxMessage(parsedJSON);
+                    } catch (err) {
+                        parsedMessage = jqXHR.responseText.replace(/<[^>]+>/g, '').trim();
+                    }
+                }
+
+                var message = parsedMessage || fallbackMessage;
+
+                if ($feedback.length) {
+                    showFeedbackMessage($feedback, message, 'error');
+                }
+            }).always(function(){
+                spinnerHideTimer = setTimeout(function(){
+                    if ($spinner.length) {
                         $spinner.removeClass('is-active');
-                    }, 150);
-                });
+                    }
+                }, 150);
+            });
         });
     }
-    handleForm('#sd-create-form','sd_save_main_entity');
-    handleForm('#sd-general-settings-form','sd_save_main_entity');
+
+    handleForm('#sd-create-form', 'sd_save_main_entity', { successMessage: sdAdmin.saved });
+    handleForm('#sd-general-settings-form', 'sd_save_main_entity', { successMessage: sdAdmin.changesSaved });
 
     function formatString(template){
         if (typeof template !== 'string') {
@@ -93,11 +259,13 @@ jQuery(document).ready(function($){
         var entityFields = Array.isArray(sdAdmin.entityFields) ? sdAdmin.entityFields : [];
         var tableColumns = Array.isArray(sdAdmin.tableColumns) ? sdAdmin.tableColumns : [];
         var pendingFeedbackMessage = '';
+        var pendingFeedbackType = 'success';
         var currentPage = 1;
         var emptyValue = '—';
 
         if ($entityFeedback.length){
-            $entityFeedback.hide().removeClass('is-visible');
+            $entityFeedback.hide();
+            clearFeedbackMessage($entityFeedback);
         }
 
         if ($paginationContainer.length){
@@ -106,17 +274,19 @@ jQuery(document).ready(function($){
 
         function clearFeedback(){
             if ($entityFeedback.length){
-                $entityFeedback.text('').hide().removeClass('is-visible');
+                $entityFeedback.hide();
+                clearFeedbackMessage($entityFeedback);
             }
         }
 
-        function showFeedback(message){
+        function showFeedback(message, type){
             if (!$entityFeedback.length){
                 return;
             }
 
             if (message){
-                $entityFeedback.text(message).show().addClass('is-visible');
+                showFeedbackMessage($entityFeedback, message, type || 'success');
+                $entityFeedback.show();
             } else {
                 clearFeedback();
             }
@@ -745,17 +915,20 @@ jQuery(document).ready(function($){
                 .done(function(response){
                     if (response && response.success && response.data){
                         renderEntities(response.data);
+
                         if (pendingFeedbackMessage){
-                            showFeedback(pendingFeedbackMessage);
+                            showFeedback(pendingFeedbackMessage, pendingFeedbackType);
                             pendingFeedbackMessage = '';
+                            pendingFeedbackType = 'success';
                         }
                     } else {
-                        showFeedback(sdAdmin.loadError || sdAdmin.error);
+                        showFeedback(sdAdmin.loadError || sdAdmin.error, 'error');
                     }
                 })
                 .fail(function(){
-                    showFeedback(sdAdmin.loadError || sdAdmin.error);
+                    showFeedback(sdAdmin.loadError || sdAdmin.error, 'error');
                     pendingFeedbackMessage = '';
+                    pendingFeedbackType = 'success';
                 });
         }
 
@@ -787,37 +960,68 @@ jQuery(document).ready(function($){
             }
 
             if ($feedback.length){
-                $feedback.removeClass('is-visible').text('');
+                clearFeedbackMessage($feedback);
             }
 
-            var formData = $form.serialize();
-            formData += '&action=sd_save_main_entity&_ajax_nonce=' + encodeURIComponent(sdAjax.nonce);
+            prepareEditorsForSubmit($form);
 
-            $.post(sdAjax.ajaxurl, formData)
-                .done(function(resp){
-                    if (resp && resp.success){
-                        pendingFeedbackMessage = resp.data && resp.data.message ? resp.data.message : '';
-                        fetchEntities(currentPage);
-                    } else {
-                        var message = resp && resp.data && resp.data.message ? resp.data.message : (sdAdmin.error || '');
+            var formData = $form.serializeArray();
+            formData.push({ name: 'action', value: 'sd_save_main_entity' });
+            formData.push({ name: '_ajax_nonce', value: sdAjax.nonce });
 
-                        if ($feedback.length && message){
-                            $feedback.text(message).addClass('is-visible');
-                        }
+            $.ajax({
+                url: sdAjax.ajaxurl,
+                method: 'POST',
+                dataType: 'json',
+                data: $.param(formData)
+            }).done(function(resp){
+                if (resp && resp.success){
+                    var message = extractAjaxMessage(resp) || sdAdmin.changesSaved || sdAdmin.saved || '';
+
+                    if ($feedback.length){
+                        showFeedbackMessage($feedback, message, 'success');
                     }
-                })
-                .fail(function(){
-                    if ($feedback.length && sdAdmin.error){
-                        $feedback.text(sdAdmin.error).addClass('is-visible');
+
+                    pendingFeedbackMessage = message;
+                    pendingFeedbackType = 'success';
+                    fetchEntities(currentPage);
+                } else {
+                    var message = extractAjaxMessage(resp) || sdAdmin.error || '';
+
+                    if ($feedback.length){
+                        showFeedbackMessage($feedback, message, 'error');
                     }
-                })
-                .always(function(){
-                    if ($spinner.length){
-                        setTimeout(function(){
-                            $spinner.removeClass('is-active');
-                        }, 150);
+                }
+            }).fail(function(jqXHR){
+                var message = '';
+
+                if (jqXHR && jqXHR.responseJSON) {
+                    message = extractAjaxMessage(jqXHR.responseJSON);
+                }
+
+                if (!message && jqXHR && typeof jqXHR.responseText === 'string') {
+                    try {
+                        var parsed = JSON.parse(jqXHR.responseText);
+                        message = extractAjaxMessage(parsed);
+                    } catch (err) {
+                        message = jqXHR.responseText.replace(/<[^>]+>/g, '').trim();
                     }
-                });
+                }
+
+                if (!message) {
+                    message = sdAdmin.error || '';
+                }
+
+                if ($feedback.length){
+                    showFeedbackMessage($feedback, message, 'error');
+                }
+            }).always(function(){
+                if ($spinner.length){
+                    setTimeout(function(){
+                        $spinner.removeClass('is-active');
+                    }, 150);
+                }
+            });
         });
 
         $entityTableBody.on('click', '.sd-delete', function(e){
@@ -839,13 +1043,14 @@ jQuery(document).ready(function($){
                 .done(function(resp){
                     if (resp && resp.success){
                         pendingFeedbackMessage = resp.data && resp.data.message ? resp.data.message : '';
+                        pendingFeedbackType = 'success';
                         fetchEntities(currentPage);
                     } else {
-                        showFeedback(sdAdmin.error);
+                        showFeedback(sdAdmin.error, 'error');
                     }
                 })
                 .fail(function(){
-                    showFeedback(sdAdmin.error);
+                    showFeedback(sdAdmin.error, 'error');
                 });
         });
     }

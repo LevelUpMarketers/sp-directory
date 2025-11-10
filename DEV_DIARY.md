@@ -46,3 +46,4 @@
 44. 2025-11-06: Synced TinyMCE fields before saving, standardized spinner/message styling, and improved create/edit AJAX responses with inline success and error feedback.
 45. 2025-11-06: Cast the AJAX delay timer to integers so save responses stay well-formed even when other plugins monitor PHP warnings.
 46. 2025-11-06: Auto-generated directory pages on save, applied the SuperDirectory template, and revamped the generated content log with accordion listings.
+47. 2025-11-06: Populated the directory entry template with listing data, added public-facing styles, and removed legacy shortcode content from generated pages.

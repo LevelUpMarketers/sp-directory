@@ -57,6 +57,8 @@ class SD_Template_Loader {
             return $template;
         }
 
+        add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_directory_assets' ) );
+
         $plugin_template = trailingslashit( SD_PLUGIN_DIR . 'templates' ) . SD_DIRECTORY_TEMPLATE_SLUG;
 
         if ( file_exists( $plugin_template ) ) {
@@ -64,5 +66,17 @@ class SD_Template_Loader {
         }
 
         return $template;
+    }
+
+    /**
+     * Enqueue front-end assets for the directory template.
+     */
+    public function enqueue_directory_assets() {
+        wp_enqueue_style(
+            'sd-directory-entry',
+            SD_PLUGIN_URL . 'assets/css/templates/directory-entry.css',
+            array(),
+            SD_VERSION
+        );
     }
 }

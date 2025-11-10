@@ -23,16 +23,14 @@ class SD_Main_Entity_Helper {
             return $preview_data;
         }
 
-        global $wpdb;
+        $table_name = self::get_main_table_name();
 
-        $table_name = $wpdb->prefix . 'sd_main_entity';
-        $like       = $wpdb->esc_like( $table_name );
-        $found      = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $like ) );
-
-        if ( $found !== $table_name ) {
+        if ( ! self::table_exists( $table_name ) ) {
             $preview_data = array();
             return $preview_data;
         }
+
+        global $wpdb;
 
         $row = $wpdb->get_row( "SELECT * FROM $table_name ORDER BY id ASC LIMIT 1", ARRAY_A );
 
@@ -50,6 +48,40 @@ class SD_Main_Entity_Helper {
         $preview_data = $prepared;
 
         return $preview_data;
+    }
+
+    /**
+     * Retrieve a Directory Listing for use on the public template.
+     *
+     * @param int $entity_id Entity identifier stored on the generated page.
+     *
+     * @return array
+     */
+    public static function get_entity_for_template( $entity_id ) {
+        $entity_id = absint( $entity_id );
+
+        if ( ! $entity_id ) {
+            return array();
+        }
+
+        $table_name = self::get_main_table_name();
+
+        if ( ! self::table_exists( $table_name ) ) {
+            return array();
+        }
+
+        global $wpdb;
+
+        $row = $wpdb->get_row(
+            $wpdb->prepare( "SELECT * FROM $table_name WHERE id = %d", $entity_id ),
+            ARRAY_A
+        );
+
+        if ( ! $row ) {
+            return array();
+        }
+
+        return self::prepare_template_entity( $row );
     }
 
     /**
@@ -76,5 +108,77 @@ class SD_Main_Entity_Helper {
         }
 
         return '';
+    }
+
+    /**
+     * Prepare stored data for template output.
+     *
+     * @param array $row Raw database row.
+     *
+     * @return array
+     */
+    private static function prepare_template_entity( array $row ) {
+        $prepared = array();
+
+        $text_fields = array(
+            'name',
+            'category',
+            'industry_vertical',
+            'service_model',
+            'state',
+            'city',
+            'street_address',
+            'zip_code',
+            'country',
+        );
+
+        foreach ( $text_fields as $field ) {
+            $prepared[ $field ] = isset( $row[ $field ] ) ? sanitize_text_field( (string) $row[ $field ] ) : '';
+        }
+
+        $prepared['phone_number']  = isset( $row['phone_number'] ) ? sanitize_text_field( (string) $row['phone_number'] ) : '';
+        $prepared['email_address'] = isset( $row['email_address'] ) ? sanitize_email( $row['email_address'] ) : '';
+        $prepared['website_url']       = isset( $row['website_url'] ) ? esc_url_raw( $row['website_url'] ) : '';
+        $prepared['facebook_url']      = isset( $row['facebook_url'] ) ? esc_url_raw( $row['facebook_url'] ) : '';
+        $prepared['instagram_url']     = isset( $row['instagram_url'] ) ? esc_url_raw( $row['instagram_url'] ) : '';
+        $prepared['youtube_url']       = isset( $row['youtube_url'] ) ? esc_url_raw( $row['youtube_url'] ) : '';
+        $prepared['linkedin_url']      = isset( $row['linkedin_url'] ) ? esc_url_raw( $row['linkedin_url'] ) : '';
+        $prepared['google_business_url'] = isset( $row['google_business_url'] ) ? esc_url_raw( $row['google_business_url'] ) : '';
+
+        $prepared['short_description']        = isset( $row['short_description'] ) ? wp_kses_post( (string) $row['short_description'] ) : '';
+        $prepared['long_description_primary'] = isset( $row['long_description_primary'] ) ? wp_kses_post( (string) $row['long_description_primary'] ) : '';
+        $prepared['long_description_secondary'] = isset( $row['long_description_secondary'] ) ? wp_kses_post( (string) $row['long_description_secondary'] ) : '';
+
+        $prepared['id']                = isset( $row['id'] ) ? absint( $row['id'] ) : 0;
+        $prepared['directory_page_id'] = isset( $row['directory_page_id'] ) ? absint( $row['directory_page_id'] ) : 0;
+
+        return $prepared;
+    }
+
+    /**
+     * Retrieve the SuperDirectory listings table name.
+     *
+     * @return string
+     */
+    private static function get_main_table_name() {
+        global $wpdb;
+
+        return $wpdb->prefix . 'sd_main_entity';
+    }
+
+    /**
+     * Determine whether the listings table exists.
+     *
+     * @param string $table_name Table name to validate.
+     *
+     * @return bool
+     */
+    private static function table_exists( $table_name ) {
+        global $wpdb;
+
+        $like  = $wpdb->esc_like( $table_name );
+        $found = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $like ) );
+
+        return ( $found === $table_name );
     }
 }

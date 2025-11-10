@@ -5,7 +5,8 @@ SuperDirectory is a WordPress plugin that streamlines the process of collecting 
 ## Features
 - Guided admin experience with tabbed navigation for adding and editing directory listings.
 - Opinionated data model that captures business identifiers, contact channels, coverage areas, and marketing narratives tailored to Home Services listings.
-- Automatic creation of dedicated WordPress pages for each listing using the bundled SuperDirectory template.
+- Automatic creation of dedicated WordPress pages for each listing using the bundled SuperDirectory template and layout.
+- Responsive front-end styling that highlights each listing's overview, contact channels, address, and social profiles.
 - Log management tools that surface generated content history for quick auditing and cleanup.
 - Gutenberg block and shortcode for rendering directory listings on the front end.
 
@@ -53,8 +54,15 @@ SuperDirectory groups the directory authoring experience into clear sections so 
 - LinkedIn URL
 - Google Business Listing URL
 
+## Front-end output
+
+Every time a listing is saved, SuperDirectory ensures its generated page uses the plugin's template. The template automatically
+renders the listing's descriptions, location, contact links, and social profiles while keeping any additional page content you
+publish beneath the structured layout. Styles specific to the template ship with the plugin, so the page looks polished without
+requiring theme overrides.
+
 ## Roadmap
-- Build dynamic front-end templates that render full directory listing details on the generated pages.
+- Expand the listing template with richer media support and testimonials sourced from future data fields.
 - Deliver a searchable and filterable front-end directory archive.
 - Introduce import and synchronization tools for populating listings from external CRMs.
 

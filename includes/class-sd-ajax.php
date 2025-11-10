@@ -245,9 +245,8 @@ class SD_Ajax {
 
     private function create_directory_page( $entity_id, $name ) {
         $parent_id = $this->ensure_resources_parent_page();
-        $slug      = $this->prepare_directory_slug( $name );
-        $unique    = wp_unique_post_slug( $slug, 0, 'publish', 'page', $parent_id );
-        $content   = sprintf( '[sd-main-entity id="%d"]', absint( $entity_id ) );
+        $slug   = $this->prepare_directory_slug( $name );
+        $unique = wp_unique_post_slug( $slug, 0, 'publish', 'page', $parent_id );
 
         $page_id = wp_insert_post(
             array(
@@ -256,7 +255,7 @@ class SD_Ajax {
                 'post_type'    => 'page',
                 'post_status'  => 'publish',
                 'post_parent'  => $parent_id,
-                'post_content' => $content,
+                'post_content' => '',
                 'meta_input'   => array(
                     '_wp_page_template'  => SD_DIRECTORY_TEMPLATE_SLUG,
                     '_sd_main_entity_id' => absint( $entity_id ),
@@ -309,6 +308,31 @@ class SD_Ajax {
     private function sync_directory_page_meta( $page_id, $entity_id ) {
         update_post_meta( $page_id, '_wp_page_template', SD_DIRECTORY_TEMPLATE_SLUG );
         update_post_meta( $page_id, '_sd_main_entity_id', absint( $entity_id ) );
+
+        $this->maybe_clear_legacy_shortcode_content( $page_id );
+    }
+
+    private function maybe_clear_legacy_shortcode_content( $page_id ) {
+        $page = get_post( $page_id );
+
+        if ( ! $page || 'page' !== $page->post_type ) {
+            return;
+        }
+
+        $content = trim( (string) $page->post_content );
+
+        if ( '' === $content ) {
+            return;
+        }
+
+        if ( preg_match( '/^\[sd-main-entity[^\]]*\]$/', $content ) ) {
+            wp_update_post(
+                array(
+                    'ID'           => $page_id,
+                    'post_content' => '',
+                )
+            );
+        }
     }
 
     private function ensure_resources_parent_page() {

@@ -4,8 +4,8 @@ jQuery(document).ready(function($){
         $(selector).on('submit', function(e){
             e.preventDefault();
             var data = $(this).serialize();
-            var $spinner = $('#cpb-spinner');
-            var $feedback = $('#cpb-feedback');
+            var $spinner = $('#sd-spinner');
+            var $feedback = $('#sd-feedback');
             if ($feedback.length) {
                 $feedback.removeClass('is-visible').text('');
             }
@@ -13,7 +13,7 @@ jQuery(document).ready(function($){
                 clearTimeout(spinnerHideTimer);
             }
             $spinner.addClass('is-active');
-            $.post(cpbAjax.ajaxurl, data + '&action=' + action + '&_ajax_nonce=' + cpbAjax.nonce)
+            $.post(sdAjax.ajaxurl, data + '&action=' + action + '&_ajax_nonce=' + sdAjax.nonce)
                 .done(function(response){
                     if ($feedback.length && response && response.data) {
                         var message = response.data.message || response.data.error;
@@ -23,8 +23,8 @@ jQuery(document).ready(function($){
                     }
                 })
                 .fail(function(){
-                    if ($feedback.length && cpbAdmin.error) {
-                        $feedback.text(cpbAdmin.error).addClass('is-visible');
+                    if ($feedback.length && sdAdmin.error) {
+                        $feedback.text(sdAdmin.error).addClass('is-visible');
                     }
                 })
                 .always(function(){
@@ -34,9 +34,9 @@ jQuery(document).ready(function($){
                 });
         });
     }
-    handleForm('#cpb-create-form','cpb_save_main_entity');
-    handleForm('#cpb-general-settings-form','cpb_save_main_entity');
-    handleForm('#cpb-style-settings-form','cpb_save_main_entity');
+    handleForm('#sd-create-form','sd_save_main_entity');
+    handleForm('#sd-general-settings-form','sd_save_main_entity');
+    handleForm('#sd-style-settings-form','sd_save_main_entity');
 
     function formatString(template){
         if (typeof template !== 'string') {
@@ -71,10 +71,10 @@ jQuery(document).ready(function($){
         });
     }
 
-    $(document).on('click','.cpb-upload',function(e){
+    $(document).on('click','.sd-upload',function(e){
         e.preventDefault();
         var target=$(this).data('target');
-        var frame=wp.media({title:cpbAdmin.mediaTitle,button:{text:cpbAdmin.mediaButton},multiple:false});
+        var frame=wp.media({title:sdAdmin.mediaTitle,button:{text:sdAdmin.mediaButton},multiple:false});
         frame.on('select',function(){
             var attachment=frame.state().get('selection').first().toJSON();
             $(target).val(attachment.id);
@@ -83,16 +83,16 @@ jQuery(document).ready(function($){
         frame.open();
     });
 
-    if($('#cpb-entity-list').length){
-        var $entityTableBody = $('#cpb-entity-list');
+    if($('#sd-entity-list').length){
+        var $entityTableBody = $('#sd-entity-list');
         var perPage = parseInt($entityTableBody.data('per-page'), 10) || 20;
         var columnCount = parseInt($entityTableBody.data('column-count'), 10) || 6;
-        var $pagination = $('#cpb-entity-pagination');
+        var $pagination = $('#sd-entity-pagination');
         var $paginationContainer = $pagination.closest('.tablenav');
-        var $entityFeedback = $('#cpb-entity-feedback');
-        var placeholderMap = cpbAdmin.placeholderMap || {};
-        var placeholderList = Array.isArray(cpbAdmin.placeholders) ? cpbAdmin.placeholders : [];
-        var entityFields = Array.isArray(cpbAdmin.entityFields) ? cpbAdmin.entityFields : [];
+        var $entityFeedback = $('#sd-entity-feedback');
+        var placeholderMap = sdAdmin.placeholderMap || {};
+        var placeholderList = Array.isArray(sdAdmin.placeholders) ? sdAdmin.placeholders : [];
+        var entityFields = Array.isArray(sdAdmin.entityFields) ? sdAdmin.entityFields : [];
         var pendingFeedbackMessage = '';
         var currentPage = 1;
         var emptyValue = '—';
@@ -190,7 +190,7 @@ jQuery(document).ready(function($){
             var fieldName = field.name;
             var stringValue = value === null || typeof value === 'undefined' ? '' : value;
             var baseId = fieldName + '-' + entityId;
-            var addAnotherLabel = cpbAdmin.addAnotherItem || '+ Add Another Item';
+            var addAnotherLabel = sdAdmin.addAnotherItem || '+ Add Another Item';
 
             switch (type){
                 case 'select':
@@ -219,7 +219,7 @@ jQuery(document).ready(function($){
                     var $stateSelect = $('<select/>', { name: fieldName });
                     var placeholderOption = $('<option/>', {
                         value: '',
-                        text: cpbAdmin.makeSelection || ''
+                        text: sdAdmin.makeSelection || ''
                     }).prop('disabled', true);
 
                     if (!stringValue){
@@ -245,7 +245,7 @@ jQuery(document).ready(function($){
 
                     Object.keys(radioOptions).forEach(function(optionValue){
                         var option = radioOptions[optionValue] || {};
-                        var $label = $('<label/>', { 'class': 'cpb-radio-option' });
+                        var $label = $('<label/>', { 'class': 'sd-radio-option' });
                         var $input = $('<input/>', {
                             type: 'radio',
                             name: fieldName,
@@ -259,7 +259,7 @@ jQuery(document).ready(function($){
                         $label.append($input);
                         $label.append(' ');
                         $label.append($('<span/>', {
-                            'class': 'cpb-tooltip-icon dashicons dashicons-editor-help',
+                            'class': 'sd-tooltip-icon dashicons dashicons-editor-help',
                             'data-tooltip': option.tooltip || ''
                         }));
                         $label.append(document.createTextNode(option.label || ''));
@@ -273,7 +273,7 @@ jQuery(document).ready(function($){
                     optInOptions.forEach(function(option){
                         var optionName = option.name || '';
                         var isChecked = entity && (entity[optionName] === '1' || entity[optionName] === 1 || entity[optionName] === true);
-                        var $label = $('<label/>', { 'class': 'cpb-opt-in-option' });
+                        var $label = $('<label/>', { 'class': 'sd-opt-in-option' });
                         var $input = $('<input/>', {
                             type: 'checkbox',
                             name: optionName,
@@ -287,7 +287,7 @@ jQuery(document).ready(function($){
                         $label.append($input);
                         $label.append(' ');
                         $label.append($('<span/>', {
-                            'class': 'cpb-tooltip-icon dashicons dashicons-editor-help',
+                            'class': 'sd-tooltip-icon dashicons dashicons-editor-help',
                             'data-tooltip': option.tooltip || ''
                         }));
                         $label.append(document.createTextNode(option.label || ''));
@@ -300,7 +300,7 @@ jQuery(document).ready(function($){
                     var containerId = baseId + '-container';
                     var $itemsContainer = $('<div/>', {
                         id: containerId,
-                        'class': 'cpb-items-container',
+                        'class': 'sd-items-container',
                         'data-placeholder': fieldName
                     });
                     var items = parseItemsValue(stringValue);
@@ -311,21 +311,21 @@ jQuery(document).ready(function($){
 
                     items.forEach(function(itemValue, index){
                         var $row = $('<div/>', {
-                            'class': 'cpb-item-row',
+                            'class': 'sd-item-row',
                             style: 'margin-bottom:8px; display:flex; align-items:center;'
                         });
-                        var placeholderText = cpbAdmin.itemPlaceholder ? formatString(cpbAdmin.itemPlaceholder, index + 1) : '';
+                        var placeholderText = sdAdmin.itemPlaceholder ? formatString(sdAdmin.itemPlaceholder, index + 1) : '';
                         var $input = $('<input/>', {
                             type: 'text',
                             name: fieldName + '[]',
-                            'class': 'regular-text cpb-item-field',
+                            'class': 'regular-text sd-item-field',
                             placeholder: placeholderText,
                             value: itemValue
                         });
                         $row.append($input);
                         var $removeButton = $('<button/>', {
                             type: 'button',
-                            'class': 'cpb-delete-item',
+                            'class': 'sd-delete-item',
                             'aria-label': 'Remove',
                             style: 'background:none;border:none;cursor:pointer;margin-left:8px;'
                         }).append($('<span/>', { 'class': 'dashicons dashicons-no-alt' }));
@@ -337,7 +337,7 @@ jQuery(document).ready(function($){
 
                     var $addButton = $('<button/>', {
                         type: 'button',
-                        'class': 'button cpb-add-item',
+                        'class': 'button sd-add-item',
                         'data-target': '#' + containerId,
                         'data-field-name': fieldName,
                         style: 'margin-top:8px;'
@@ -355,9 +355,9 @@ jQuery(document).ready(function($){
                     });
                     var $button = $('<button/>', {
                         type: 'button',
-                        'class': 'button cpb-upload',
+                        'class': 'button sd-upload',
                         'data-target': '#' + inputId
-                    }).text(cpbAdmin.mediaTitle);
+                    }).text(sdAdmin.mediaTitle);
                     var previewId = inputId + '-preview';
                     var $preview = $('<div/>', {
                         id: previewId,
@@ -380,7 +380,7 @@ jQuery(document).ready(function($){
                     var $textarea = $('<textarea/>', {
                         name: fieldName,
                         id: editorId,
-                        'class': 'cpb-editor-field'
+                        'class': 'sd-editor-field'
                     }).val(stringValue);
                     $container.append($textarea);
                     break;
@@ -405,10 +405,10 @@ jQuery(document).ready(function($){
         function buildEntityForm(entity){
             var entityId = entity && entity.id ? entity.id : 0;
             var $form = $('<form/>', {
-                'class': 'cpb-entity-edit-form',
+                'class': 'sd-entity-edit-form',
                 'data-entity-id': entityId
             });
-            var $flex = $('<div/>', { 'class': 'cpb-flex-form' });
+            var $flex = $('<div/>', { 'class': 'sd-flex-form' });
 
             $form.append($('<input/>', { type: 'hidden', name: 'id', value: entityId }));
             $form.append($('<input/>', { type: 'hidden', name: 'name', value: entity && entity.name ? entity.name : '' }));
@@ -419,17 +419,17 @@ jQuery(document).ready(function($){
                 }
 
                 var value = getFieldValue(entity, field.name);
-                var fieldClasses = 'cpb-field';
+                var fieldClasses = 'sd-field';
 
                 if (field.fullWidth){
-                    fieldClasses += ' cpb-field-full';
+                    fieldClasses += ' sd-field-full';
                 }
 
                 var $fieldWrapper = $('<div/>', { 'class': fieldClasses });
                 var $label = $('<label/>');
 
                 $label.append($('<span/>', {
-                    'class': 'cpb-tooltip-icon dashicons dashicons-editor-help',
+                    'class': 'sd-tooltip-icon dashicons dashicons-editor-help',
                     'data-tooltip': field.tooltip || ''
                 }));
                 $label.append(document.createTextNode(field.label || ''));
@@ -440,19 +440,19 @@ jQuery(document).ready(function($){
 
             $form.append($flex);
 
-            var $actions = $('<p/>', { 'class': 'cpb-entity__actions submit' });
+            var $actions = $('<p/>', { 'class': 'sd-entity__actions submit' });
             var $saveButton = $('<button/>', {
                 type: 'submit',
-                'class': 'button button-primary cpb-entity-save'
-            }).text(cpbAdmin.saveChanges || 'Save Changes');
+                'class': 'button button-primary sd-entity-save'
+            }).text(sdAdmin.saveChanges || 'Save Changes');
             var $deleteButton = $('<button/>', {
                 type: 'button',
-                'class': 'button button-secondary cpb-delete',
+                'class': 'button button-secondary sd-delete',
                 'data-id': entityId
-            }).text(cpbAdmin.delete);
-            var $feedbackArea = $('<span/>', { 'class': 'cpb-feedback-area cpb-feedback-area--inline' });
-            var $spinner = $('<span/>', { 'class': 'spinner cpb-entity-spinner', 'aria-hidden': 'true' });
-            var $feedback = $('<span/>', { 'class': 'cpb-entity-feedback', 'role': 'status', 'aria-live': 'polite' });
+            }).text(sdAdmin.delete);
+            var $feedbackArea = $('<span/>', { 'class': 'sd-feedback-area sd-feedback-area--inline' });
+            var $spinner = $('<span/>', { 'class': 'spinner sd-entity-spinner', 'aria-hidden': 'true' });
+            var $feedback = $('<span/>', { 'class': 'sd-entity-feedback', 'role': 'status', 'aria-live': 'polite' });
             $feedbackArea.append($spinner).append($feedback);
             $actions.append($saveButton).append(' ').append($deleteButton).append($feedbackArea);
             $form.append($actions);
@@ -477,24 +477,24 @@ jQuery(document).ready(function($){
 
             var totalPagesSafe = totalPages && totalPages > 0 ? totalPages : 1;
             var pageSafe = page && page > 0 ? page : 1;
-            var html = '<span class="displaying-num">' + formatString(cpbAdmin.totalRecords, total) + '</span>';
+            var html = '<span class="displaying-num">' + formatString(sdAdmin.totalRecords, total) + '</span>';
 
             if (totalPagesSafe > 1){
                 html += '<span class="pagination-links">';
 
                 if (pageSafe > 1){
-                    html += '<a class="first-page button cpb-entity-page" href="#" data-page="1"><span class="screen-reader-text">' + cpbAdmin.firstPage + '</span><span aria-hidden="true">&laquo;</span></a>';
-                    html += '<a class="prev-page button cpb-entity-page" href="#" data-page="' + (pageSafe - 1) + '"><span class="screen-reader-text">' + cpbAdmin.prevPage + '</span><span aria-hidden="true">&lsaquo;</span></a>';
+                    html += '<a class="first-page button sd-entity-page" href="#" data-page="1"><span class="screen-reader-text">' + sdAdmin.firstPage + '</span><span aria-hidden="true">&laquo;</span></a>';
+                    html += '<a class="prev-page button sd-entity-page" href="#" data-page="' + (pageSafe - 1) + '"><span class="screen-reader-text">' + sdAdmin.prevPage + '</span><span aria-hidden="true">&lsaquo;</span></a>';
                 } else {
                     html += '<span class="tablenav-pages-navspan button disabled" aria-hidden="true">&laquo;</span>';
                     html += '<span class="tablenav-pages-navspan button disabled" aria-hidden="true">&lsaquo;</span>';
                 }
 
-                html += '<span class="tablenav-paging-text">' + formatString(cpbAdmin.pageOf, pageSafe, totalPagesSafe) + '</span>';
+                html += '<span class="tablenav-paging-text">' + formatString(sdAdmin.pageOf, pageSafe, totalPagesSafe) + '</span>';
 
                 if (pageSafe < totalPagesSafe){
-                    html += '<a class="next-page button cpb-entity-page" href="#" data-page="' + (pageSafe + 1) + '"><span class="screen-reader-text">' + cpbAdmin.nextPage + '</span><span aria-hidden="true">&rsaquo;</span></a>';
-                    html += '<a class="last-page button cpb-entity-page" href="#" data-page="' + totalPagesSafe + '"><span class="screen-reader-text">' + cpbAdmin.lastPage + '</span><span aria-hidden="true">&raquo;</span></a>';
+                    html += '<a class="next-page button sd-entity-page" href="#" data-page="' + (pageSafe + 1) + '"><span class="screen-reader-text">' + sdAdmin.nextPage + '</span><span aria-hidden="true">&rsaquo;</span></a>';
+                    html += '<a class="last-page button sd-entity-page" href="#" data-page="' + totalPagesSafe + '"><span class="screen-reader-text">' + sdAdmin.lastPage + '</span><span aria-hidden="true">&raquo;</span></a>';
                 } else {
                     html += '<span class="tablenav-pages-navspan button disabled" aria-hidden="true">&rsaquo;</span>';
                     html += '<span class="tablenav-pages-navspan button disabled" aria-hidden="true">&raquo;</span>';
@@ -502,7 +502,7 @@ jQuery(document).ready(function($){
 
                 html += '</span>';
             } else {
-                html += '<span class="tablenav-paging-text">' + formatString(cpbAdmin.pageOf, pageSafe, totalPagesSafe) + '</span>';
+                html += '<span class="tablenav-paging-text">' + formatString(sdAdmin.pageOf, pageSafe, totalPagesSafe) + '</span>';
             }
 
             $pagination.html(html);
@@ -522,7 +522,7 @@ jQuery(document).ready(function($){
 
             if (!entities.length){
                 var $emptyRow = $('<tr class="no-items"></tr>');
-                var $emptyCell = $('<td/>').attr('colspan', columnCount).text(cpbAdmin.none);
+                var $emptyCell = $('<td/>').attr('colspan', columnCount).text(sdAdmin.none);
                 $emptyRow.append($emptyCell);
                 $entityTableBody.append($emptyRow);
                 updatePagination(total, totalPages, currentPage);
@@ -531,20 +531,20 @@ jQuery(document).ready(function($){
 
             entities.forEach(function(entity){
                 var entityId = entity.id || 0;
-                var headerId = 'cpb-entity-' + entityId + '-header';
-                var panelId = 'cpb-entity-' + entityId + '-panel';
+                var headerId = 'sd-entity-' + entityId + '-header';
+                var panelId = 'sd-entity-' + entityId + '-panel';
 
                 var $summaryRow = $('<tr/>', {
                     id: headerId,
-                    'class': 'cpb-accordion__summary-row',
+                    'class': 'sd-accordion__summary-row',
                     tabindex: 0,
                     role: 'button',
                     'aria-expanded': 'false',
                     'aria-controls': panelId
                 });
 
-                var $titleCell = $('<td/>', {'class': 'cpb-accordion__cell cpb-accordion__cell--title'});
-                var $titleText = $('<span/>', {'class': 'cpb-accordion__title-text'}).text(formatValue(entity.placeholder_1));
+                var $titleCell = $('<td/>', {'class': 'sd-accordion__cell sd-accordion__cell--title'});
+                var $titleText = $('<span/>', {'class': 'sd-accordion__title-text'}).text(formatValue(entity.placeholder_1));
                 $titleCell.append($titleText);
                 $summaryRow.append($titleCell);
 
@@ -552,19 +552,19 @@ jQuery(document).ready(function($){
                     var label = getPlaceholderLabel(index);
                     var valueKey = 'placeholder_' + index;
                     var value = formatValue(entity[valueKey]);
-                    var $metaCell = $('<td/>', {'class': 'cpb-accordion__cell cpb-accordion__cell--meta'});
-                    var $metaText = $('<span/>', {'class': 'cpb-accordion__meta-text'});
-                    $metaText.append($('<span/>', {'class': 'cpb-accordion__meta-label'}).text(label + ':'));
+                    var $metaCell = $('<td/>', {'class': 'sd-accordion__cell sd-accordion__cell--meta'});
+                    var $metaText = $('<span/>', {'class': 'sd-accordion__meta-text'});
+                    $metaText.append($('<span/>', {'class': 'sd-accordion__meta-label'}).text(label + ':'));
                     $metaText.append(' ');
-                    $metaText.append($('<span/>', {'class': 'cpb-accordion__meta-value'}).text(value));
+                    $metaText.append($('<span/>', {'class': 'sd-accordion__meta-value'}).text(value));
                     $metaCell.append($metaText);
                     $summaryRow.append($metaCell);
                 }
 
-                var $actionsCell = $('<td/>', {'class': 'cpb-accordion__cell cpb-accordion__cell--actions'});
-                var $editText = $('<span/>', {'class': 'cpb-accordion__action-link', 'aria-hidden': 'true'}).text(cpbAdmin.editAction);
-                var $icon = $('<span/>', {'class': 'dashicons dashicons-arrow-down-alt2 cpb-accordion__icon', 'aria-hidden': 'true'});
-                var $srText = $('<span/>', {'class': 'screen-reader-text'}).text(cpbAdmin.toggleDetails);
+                var $actionsCell = $('<td/>', {'class': 'sd-accordion__cell sd-accordion__cell--actions'});
+                var $editText = $('<span/>', {'class': 'sd-accordion__action-link', 'aria-hidden': 'true'}).text(sdAdmin.editAction);
+                var $icon = $('<span/>', {'class': 'dashicons dashicons-arrow-down-alt2 sd-accordion__icon', 'aria-hidden': 'true'});
+                var $srText = $('<span/>', {'class': 'screen-reader-text'}).text(sdAdmin.toggleDetails);
                 $actionsCell.append($editText);
                 $actionsCell.append($icon).append($srText);
                 $summaryRow.append($actionsCell);
@@ -572,14 +572,14 @@ jQuery(document).ready(function($){
 
                 var $panelRow = $('<tr/>', {
                     id: panelId,
-                    'class': 'cpb-accordion__panel-row',
+                    'class': 'sd-accordion__panel-row',
                     role: 'region',
                     'aria-labelledby': headerId,
                     'aria-hidden': 'true'
                 }).hide();
 
                 var $panelCell = $('<td/>').attr('colspan', columnCount);
-                var $panel = $('<div/>', {'class': 'cpb-accordion__panel'}).hide();
+                var $panel = $('<div/>', {'class': 'sd-accordion__panel'}).hide();
                 var $form = buildEntityForm(entity);
 
                 $panel.append($form);
@@ -591,7 +591,7 @@ jQuery(document).ready(function($){
             updatePagination(total, totalPages, currentPage);
 
             if (typeof wp !== 'undefined' && wp.editor && typeof wp.editor.initialize === 'function'){
-                $entityTableBody.find('.cpb-editor-field').each(function(){
+                $entityTableBody.find('.sd-editor-field').each(function(){
                     var editorId = $(this).attr('id');
 
                     if (!editorId){
@@ -606,7 +606,7 @@ jQuery(document).ready(function($){
                         }
                     }
 
-                    var editorSettings = $.extend(true, {}, cpbAdmin.editorSettings || {});
+                    var editorSettings = $.extend(true, {}, sdAdmin.editorSettings || {});
 
                     if (typeof editorSettings.tinymce === 'undefined'){
                         editorSettings.tinymce = true;
@@ -625,9 +625,9 @@ jQuery(document).ready(function($){
             var targetPage = page || 1;
             clearFeedback();
 
-            $.post(cpbAjax.ajaxurl, {
-                action: 'cpb_read_main_entity',
-                _ajax_nonce: cpbAjax.nonce,
+            $.post(sdAjax.ajaxurl, {
+                action: 'sd_read_main_entity',
+                _ajax_nonce: sdAjax.nonce,
                 page: targetPage,
                 per_page: perPage
             })
@@ -639,11 +639,11 @@ jQuery(document).ready(function($){
                             pendingFeedbackMessage = '';
                         }
                     } else {
-                        showFeedback(cpbAdmin.loadError || cpbAdmin.error);
+                        showFeedback(sdAdmin.loadError || sdAdmin.error);
                     }
                 })
                 .fail(function(){
-                    showFeedback(cpbAdmin.loadError || cpbAdmin.error);
+                    showFeedback(sdAdmin.loadError || sdAdmin.error);
                     pendingFeedbackMessage = '';
                 });
         }
@@ -651,7 +651,7 @@ jQuery(document).ready(function($){
         fetchEntities(1);
 
         if ($pagination.length){
-            $pagination.on('click', '.cpb-entity-page', function(e){
+            $pagination.on('click', '.sd-entity-page', function(e){
                 e.preventDefault();
                 var targetPage = parseInt($(this).data('page'), 10);
 
@@ -663,13 +663,13 @@ jQuery(document).ready(function($){
             });
         }
 
-        $entityTableBody.on('submit', '.cpb-entity-edit-form', function(e){
+        $entityTableBody.on('submit', '.sd-entity-edit-form', function(e){
             e.preventDefault();
             e.stopPropagation();
 
             var $form = $(this);
-            var $spinner = $form.find('.cpb-entity-spinner');
-            var $feedback = $form.find('.cpb-entity-feedback');
+            var $spinner = $form.find('.sd-entity-spinner');
+            var $feedback = $form.find('.sd-entity-feedback');
 
             if ($spinner.length){
                 $spinner.addClass('is-active');
@@ -680,15 +680,15 @@ jQuery(document).ready(function($){
             }
 
             var formData = $form.serialize();
-            formData += '&action=cpb_save_main_entity&_ajax_nonce=' + encodeURIComponent(cpbAjax.nonce);
+            formData += '&action=sd_save_main_entity&_ajax_nonce=' + encodeURIComponent(sdAjax.nonce);
 
-            $.post(cpbAjax.ajaxurl, formData)
+            $.post(sdAjax.ajaxurl, formData)
                 .done(function(resp){
                     if (resp && resp.success){
                         pendingFeedbackMessage = resp.data && resp.data.message ? resp.data.message : '';
                         fetchEntities(currentPage);
                     } else {
-                        var message = resp && resp.data && resp.data.message ? resp.data.message : (cpbAdmin.error || '');
+                        var message = resp && resp.data && resp.data.message ? resp.data.message : (sdAdmin.error || '');
 
                         if ($feedback.length && message){
                             $feedback.text(message).addClass('is-visible');
@@ -696,8 +696,8 @@ jQuery(document).ready(function($){
                     }
                 })
                 .fail(function(){
-                    if ($feedback.length && cpbAdmin.error){
-                        $feedback.text(cpbAdmin.error).addClass('is-visible');
+                    if ($feedback.length && sdAdmin.error){
+                        $feedback.text(sdAdmin.error).addClass('is-visible');
                     }
                 })
                 .always(function(){
@@ -709,7 +709,7 @@ jQuery(document).ready(function($){
                 });
         });
 
-        $entityTableBody.on('click', '.cpb-delete', function(e){
+        $entityTableBody.on('click', '.sd-delete', function(e){
             e.preventDefault();
             e.stopPropagation();
             var id = $(this).data('id');
@@ -720,39 +720,39 @@ jQuery(document).ready(function($){
 
             clearFeedback();
 
-            $.post(cpbAjax.ajaxurl, {
-                action: 'cpb_delete_main_entity',
+            $.post(sdAjax.ajaxurl, {
+                action: 'sd_delete_main_entity',
                 id: id,
-                _ajax_nonce: cpbAjax.nonce
+                _ajax_nonce: sdAjax.nonce
             })
                 .done(function(resp){
                     if (resp && resp.success){
                         pendingFeedbackMessage = resp.data && resp.data.message ? resp.data.message : '';
                         fetchEntities(currentPage);
                     } else {
-                        showFeedback(cpbAdmin.error);
+                        showFeedback(sdAdmin.error);
                     }
                 })
                 .fail(function(){
-                    showFeedback(cpbAdmin.error);
+                    showFeedback(sdAdmin.error);
                 });
         });
     }
 
-    $('.cpb-accordion').on('click','.item-header',function(){
+    $('.sd-accordion').on('click','.item-header',function(){
         $(this).next('.item-content').slideToggle();
         $(this).parent().toggleClass('open');
     });
 
     function initAccordionGroups(){
-        $('[data-cpb-accordion-group]').each(function(){
+        $('[data-sd-accordion-group]').each(function(){
             var $group = $(this);
 
-            if ($group.data('cpbAccordionInitialized')) {
+            if ($group.data('sdAccordionInitialized')) {
                 return;
             }
 
-            $group.data('cpbAccordionInitialized', true);
+            $group.data('sdAccordionInitialized', true);
 
             function closeRow($summary, $panelRow){
                 if (!$summary.length || !$panelRow.length) {
@@ -761,7 +761,7 @@ jQuery(document).ready(function($){
 
                 $summary.removeClass('is-open').attr('aria-expanded', 'false');
 
-                var $panel = $panelRow.find('.cpb-accordion__panel');
+                var $panel = $panelRow.find('.sd-accordion__panel');
 
                 $panel.stop(true, true).slideUp(200, function(){
                     $panelRow.hide();
@@ -783,7 +783,7 @@ jQuery(document).ready(function($){
                     return;
                 }
 
-                $group.find('.cpb-accordion__summary-row.is-open').each(function(){
+                $group.find('.sd-accordion__summary-row.is-open').each(function(){
                     var $openSummary = $(this);
                     var openPanelId = $openSummary.attr('aria-controls');
                     var $openPanelRow = $('#' + openPanelId);
@@ -793,10 +793,10 @@ jQuery(document).ready(function($){
 
                 $summary.addClass('is-open').attr('aria-expanded', 'true');
                 $panelRow.show().attr('aria-hidden', 'false');
-                $panelRow.find('.cpb-accordion__panel').stop(true, true).slideDown(200);
+                $panelRow.find('.sd-accordion__panel').stop(true, true).slideDown(200);
             }
 
-            $group.find('.cpb-accordion__summary-row').each(function(){
+            $group.find('.sd-accordion__summary-row').each(function(){
                 var $summary = $(this);
                 var panelId = $summary.attr('aria-controls');
                 var $panelRow = $('#' + panelId);
@@ -807,10 +807,10 @@ jQuery(document).ready(function($){
 
                 $summary.removeClass('is-open').attr('aria-expanded', 'false');
                 $panelRow.hide().attr('aria-hidden', 'true');
-                $panelRow.find('.cpb-accordion__panel').hide();
+                $panelRow.find('.sd-accordion__panel').hide();
             });
 
-            $group.on('click', '.cpb-accordion__summary-row', function(e){
+            $group.on('click', '.sd-accordion__summary-row', function(e){
                 if ($(e.target).closest('a, button, input, textarea, select, label').length) {
                     return;
                 }
@@ -818,7 +818,7 @@ jQuery(document).ready(function($){
                 toggleRow($(this));
             });
 
-            $group.on('keydown', '.cpb-accordion__summary-row', function(e){
+            $group.on('keydown', '.sd-accordion__summary-row', function(e){
                 var key = e.key || e.keyCode;
 
                 if (key === 'Enter' || key === ' ' || key === 13 || key === 32) {
@@ -831,34 +831,34 @@ jQuery(document).ready(function($){
 
     initAccordionGroups();
 
-    $(document).on('click', '.cpb-add-item', function(e){
+    $(document).on('click', '.sd-add-item', function(e){
         e.preventDefault();
         e.stopPropagation();
 
         var $button = $(this);
         var targetSelector = $button.data('target');
-        var $container = targetSelector ? $(targetSelector) : $button.closest('.cpb-field').find('.cpb-items-container').first();
+        var $container = targetSelector ? $(targetSelector) : $button.closest('.sd-field').find('.sd-items-container').first();
 
         if (!$container.length){
             return;
         }
 
         var fieldName = $button.data('field-name') || $container.data('placeholder') || 'placeholder_25';
-        var count = $container.find('.cpb-item-row').length + 1;
-        var placeholderText = cpbAdmin.itemPlaceholder ? formatString(cpbAdmin.itemPlaceholder, count) : '';
+        var count = $container.find('.sd-item-row').length + 1;
+        var placeholderText = sdAdmin.itemPlaceholder ? formatString(sdAdmin.itemPlaceholder, count) : '';
         var $row = $('<div/>', {
-            'class': 'cpb-item-row',
+            'class': 'sd-item-row',
             style: 'margin-bottom:8px; display:flex; align-items:center;'
         });
         var $input = $('<input/>', {
             type: 'text',
             name: fieldName + '[]',
-            'class': 'regular-text cpb-item-field',
+            'class': 'regular-text sd-item-field',
             placeholder: placeholderText
         });
         var $removeButton = $('<button/>', {
             type: 'button',
-            'class': 'cpb-delete-item',
+            'class': 'sd-delete-item',
             'aria-label': 'Remove',
             style: 'background:none;border:none;cursor:pointer;margin-left:8px;'
         }).append($('<span/>', { 'class': 'dashicons dashicons-no-alt' }));
@@ -867,20 +867,20 @@ jQuery(document).ready(function($){
         $container.append($row);
     });
 
-    $(document).on('click', '.cpb-delete-item', function(e){
+    $(document).on('click', '.sd-delete-item', function(e){
         e.preventDefault();
         e.stopPropagation();
 
-        var $row = $(this).closest('.cpb-item-row');
-        var $container = $row.parent('.cpb-items-container');
+        var $row = $(this).closest('.sd-item-row');
+        var $container = $row.parent('.sd-items-container');
         $row.remove();
 
-        if ($container && $container.length && cpbAdmin.itemPlaceholder){
-            $container.find('.cpb-item-row').each(function(index){
-                var $input = $(this).find('.cpb-item-field');
+        if ($container && $container.length && sdAdmin.itemPlaceholder){
+            $container.find('.sd-item-row').each(function(index){
+                var $input = $(this).find('.sd-item-field');
 
                 if ($input.length){
-                    $input.attr('placeholder', formatString(cpbAdmin.itemPlaceholder, index + 1));
+                    $input.attr('placeholder', formatString(sdAdmin.itemPlaceholder, index + 1));
                 }
             });
         }
@@ -903,10 +903,10 @@ jQuery(document).ready(function($){
             return $activeTokenTarget;
         }
 
-        var $editor = $button.closest('.cpb-template-editor');
+        var $editor = $button.closest('.sd-template-editor');
 
         if ($editor.length){
-            var $fallback = $editor.find('.cpb-token-target').first();
+            var $fallback = $editor.find('.sd-token-target').first();
 
             if ($fallback.length){
                 return $fallback;
@@ -960,11 +960,11 @@ jQuery(document).ready(function($){
         }
     }
 
-    $(document).on('focus', '.cpb-token-target', function(){
+    $(document).on('focus', '.sd-token-target', function(){
         $activeTokenTarget = $(this);
     });
 
-    $(document).on('click', '.cpb-token-button', function(e){
+    $(document).on('click', '.sd-token-button', function(e){
         e.preventDefault();
 
         var $button = $(this);
@@ -974,11 +974,11 @@ jQuery(document).ready(function($){
         insertTokenIntoField($target, token);
     });
 
-    var previewEntity = cpbAdmin.previewEntity || {};
-    var previewEmptyMessage = cpbAdmin.previewEmptyMessage || '';
-    var previewUnavailableMessage = cpbAdmin.previewUnavailableMessage || '';
-    var testEmailRequired = cpbAdmin.testEmailRequired || '';
-    var testEmailSuccess = cpbAdmin.testEmailSuccess || '';
+    var previewEntity = sdAdmin.previewEntity || {};
+    var previewEmptyMessage = sdAdmin.previewEmptyMessage || '';
+    var previewUnavailableMessage = sdAdmin.previewUnavailableMessage || '';
+    var testEmailRequired = sdAdmin.testEmailRequired || '';
+    var testEmailSuccess = sdAdmin.testEmailSuccess || '';
     var previewEntityKeys = Object.keys(previewEntity);
     var previewHasEntity = previewEntityKeys.length > 0;
 
@@ -1013,8 +1013,8 @@ jQuery(document).ready(function($){
             return;
         }
 
-        var $notice = $editor.find('.cpb-template-preview__notice');
-        var $content = $editor.find('.cpb-template-preview__content');
+        var $notice = $editor.find('.sd-template-preview__notice');
+        var $content = $editor.find('.sd-template-preview__content');
 
         if (!$content.length || !$notice.length){
             return;
@@ -1061,7 +1061,7 @@ jQuery(document).ready(function($){
         }
     }
 
-    $(document).on('click', '.cpb-template-test-send', function(e){
+    $(document).on('click', '.sd-template-test-send', function(e){
         e.preventDefault();
 
         var $button = $(this);
@@ -1071,7 +1071,7 @@ jQuery(document).ready(function($){
         }
 
         var templateId = $button.data('template');
-        var $editor = $button.closest('.cpb-template-editor');
+        var $editor = $button.closest('.sd-template-editor');
 
         if (!templateId || !$editor.length){
             return;
@@ -1080,9 +1080,9 @@ jQuery(document).ready(function($){
         var spinnerSelector = $button.data('spinner');
         var feedbackSelector = $button.data('feedback');
         var emailInputSelector = $button.data('emailInput') || $button.data('email-input');
-        var $spinner = spinnerSelector ? $(spinnerSelector) : $editor.find('.cpb-template-spinner').first();
-        var $feedback = feedbackSelector ? $(feedbackSelector) : $editor.find('.cpb-template-feedback').first();
-        var $emailInput = emailInputSelector ? $(emailInputSelector) : $editor.find('.cpb-template-test-email').first();
+        var $spinner = spinnerSelector ? $(spinnerSelector) : $editor.find('.sd-template-spinner').first();
+        var $feedback = feedbackSelector ? $(feedbackSelector) : $editor.find('.sd-template-feedback').first();
+        var $emailInput = emailInputSelector ? $(emailInputSelector) : $editor.find('.sd-template-test-email').first();
         var emailValue = $emailInput.length ? $emailInput.val() : '';
 
         emailValue = emailValue ? emailValue.trim() : '';
@@ -1090,8 +1090,8 @@ jQuery(document).ready(function($){
         if (!emailValue){
             if (testEmailRequired){
                 window.alert(testEmailRequired);
-            } else if (typeof cpbAdmin !== 'undefined' && cpbAdmin.error){
-                window.alert(cpbAdmin.error);
+            } else if (typeof sdAdmin !== 'undefined' && sdAdmin.error){
+                window.alert(sdAdmin.error);
             } else {
                 window.alert('Please enter an email address.');
             }
@@ -1114,8 +1114,8 @@ jQuery(document).ready(function($){
         $button.prop('disabled', true);
 
         var payload = {
-            action: 'cpb_send_test_email',
-            _ajax_nonce: cpbAjax.nonce,
+            action: 'sd_send_test_email',
+            _ajax_nonce: sdAjax.nonce,
             template_id: templateId,
             to_email: emailValue,
             from_name: $editor.find('[data-template-field="from_name"]').first().val() || '',
@@ -1124,7 +1124,7 @@ jQuery(document).ready(function($){
             body: $editor.find('[data-token-context="body"]').first().val() || ''
         };
 
-        $.post(cpbAjax.ajaxurl, payload)
+        $.post(sdAjax.ajaxurl, payload)
             .done(function(response){
                 var isSuccess = response && response.success;
                 var message = '';
@@ -1141,8 +1141,8 @@ jQuery(document).ready(function($){
                     message = testEmailSuccess;
                 }
 
-                if (!isSuccess && !message && typeof cpbAdmin !== 'undefined' && cpbAdmin.error){
-                    message = cpbAdmin.error;
+                if (!isSuccess && !message && typeof sdAdmin !== 'undefined' && sdAdmin.error){
+                    message = sdAdmin.error;
                 }
 
                 if ($feedback.length){
@@ -1154,8 +1154,8 @@ jQuery(document).ready(function($){
                 }
             })
             .fail(function(){
-                if ($feedback.length && typeof cpbAdmin !== 'undefined' && cpbAdmin.error){
-                    $feedback.text(cpbAdmin.error).addClass('is-visible');
+                if ($feedback.length && typeof sdAdmin !== 'undefined' && sdAdmin.error){
+                    $feedback.text(sdAdmin.error).addClass('is-visible');
                 }
             })
             .always(function(){
@@ -1169,7 +1169,7 @@ jQuery(document).ready(function($){
             });
     });
 
-    $(document).on('click', '.cpb-template-save', function(e){
+    $(document).on('click', '.sd-template-save', function(e){
         e.preventDefault();
 
         var $button = $(this);
@@ -1179,7 +1179,7 @@ jQuery(document).ready(function($){
         }
 
         var templateId = $button.data('template');
-        var $editor = $button.closest('.cpb-template-editor');
+        var $editor = $button.closest('.sd-template-editor');
 
         if (!templateId || !$editor.length){
             return;
@@ -1187,8 +1187,8 @@ jQuery(document).ready(function($){
 
         var spinnerSelector = $button.data('spinner');
         var feedbackSelector = $button.data('feedback');
-        var $spinner = spinnerSelector ? $(spinnerSelector) : $editor.find('.cpb-template-spinner').first();
-        var $feedback = feedbackSelector ? $(feedbackSelector) : $editor.find('.cpb-template-feedback').first();
+        var $spinner = spinnerSelector ? $(spinnerSelector) : $editor.find('.sd-template-spinner').first();
+        var $feedback = feedbackSelector ? $(feedbackSelector) : $editor.find('.sd-template-feedback').first();
 
         if ($feedback.length){
             $feedback.removeClass('is-visible').text('');
@@ -1201,8 +1201,8 @@ jQuery(document).ready(function($){
         $button.prop('disabled', true);
 
         var payload = {
-            action: 'cpb_save_email_template',
-            _ajax_nonce: cpbAjax.nonce,
+            action: 'sd_save_email_template',
+            _ajax_nonce: sdAjax.nonce,
             template_id: templateId,
             from_name: $editor.find('[data-template-field="from_name"]').first().val() || '',
             from_email: $editor.find('[data-template-field="from_email"]').first().val() || '',
@@ -1211,7 +1211,7 @@ jQuery(document).ready(function($){
             sms: $editor.find('[data-token-context="sms"]').first().val() || ''
         };
 
-        $.post(cpbAjax.ajaxurl, payload)
+        $.post(sdAjax.ajaxurl, payload)
             .done(function(response){
                 var isSuccess = response && response.success;
                 var message = '';
@@ -1224,8 +1224,8 @@ jQuery(document).ready(function($){
                     }
                 }
 
-                if (!isSuccess && !message && typeof cpbAdmin !== 'undefined' && cpbAdmin.error){
-                    message = cpbAdmin.error;
+                if (!isSuccess && !message && typeof sdAdmin !== 'undefined' && sdAdmin.error){
+                    message = sdAdmin.error;
                 }
 
                 if ($feedback.length){
@@ -1241,8 +1241,8 @@ jQuery(document).ready(function($){
                 }
             })
             .fail(function(){
-                if ($feedback.length && typeof cpbAdmin !== 'undefined' && cpbAdmin.error){
-                    $feedback.text(cpbAdmin.error).addClass('is-visible');
+                if ($feedback.length && typeof sdAdmin !== 'undefined' && sdAdmin.error){
+                    $feedback.text(sdAdmin.error).addClass('is-visible');
                 }
             })
             .always(function(){
@@ -1256,7 +1256,7 @@ jQuery(document).ready(function($){
             });
     });
 
-    $(document).on('click', '.cpb-email-log__clear', function(e){
+    $(document).on('click', '.sd-email-log__clear', function(e){
         e.preventDefault();
 
         var $button = $(this);
@@ -1268,27 +1268,27 @@ jQuery(document).ready(function($){
         var spinnerSelector = $button.data('spinner');
         var feedbackSelector = $button.data('feedback');
         var $spinner = spinnerSelector ? $(spinnerSelector) : $button.siblings('.spinner').first();
-        var $feedback = feedbackSelector ? $(feedbackSelector) : $button.siblings('.cpb-email-log__feedback').first();
-        var $list = $('#cpb-email-log-list');
-        var $empty = $('#cpb-email-log-empty');
+        var $feedback = feedbackSelector ? $(feedbackSelector) : $button.siblings('.sd-email-log__feedback').first();
+        var $list = $('#sd-email-log-list');
+        var $empty = $('#sd-email-log-empty');
         var emptyMessage = '';
 
         if ($list.length){
             emptyMessage = $list.data('emptyMessage');
         }
 
-        if (!emptyMessage && typeof cpbAdmin !== 'undefined' && cpbAdmin.emailLogEmpty){
-            emptyMessage = cpbAdmin.emailLogEmpty;
+        if (!emptyMessage && typeof sdAdmin !== 'undefined' && sdAdmin.emailLogEmpty){
+            emptyMessage = sdAdmin.emailLogEmpty;
         }
 
-        var successMessage = (typeof cpbAdmin !== 'undefined' && cpbAdmin.emailLogCleared) ? cpbAdmin.emailLogCleared : '';
+        var successMessage = (typeof sdAdmin !== 'undefined' && sdAdmin.emailLogCleared) ? sdAdmin.emailLogCleared : '';
         var errorMessage = '';
 
-        if (typeof cpbAdmin !== 'undefined'){
-            if (cpbAdmin.emailLogError){
-                errorMessage = cpbAdmin.emailLogError;
-            } else if (cpbAdmin.error){
-                errorMessage = cpbAdmin.error;
+        if (typeof sdAdmin !== 'undefined'){
+            if (sdAdmin.emailLogError){
+                errorMessage = sdAdmin.emailLogError;
+            } else if (sdAdmin.error){
+                errorMessage = sdAdmin.error;
             }
         }
 
@@ -1302,9 +1302,9 @@ jQuery(document).ready(function($){
 
         $button.prop('disabled', true);
 
-        $.post(cpbAjax.ajaxurl, {
-            action: 'cpb_clear_email_log',
-            _ajax_nonce: cpbAjax.nonce
+        $.post(sdAjax.ajaxurl, {
+            action: 'sd_clear_email_log',
+            _ajax_nonce: sdAjax.nonce
         }).done(function(response){
             var isSuccess = response && response.success;
             var message = '';
@@ -1313,7 +1313,7 @@ jQuery(document).ready(function($){
                 message = successMessage;
 
                 if ($list.length){
-                    $list.find('.cpb-email-log__entry').remove();
+                    $list.find('.sd-email-log__entry').remove();
                 }
 
                 if ($empty.length){
@@ -1321,8 +1321,8 @@ jQuery(document).ready(function($){
                     $empty.removeAttr('hidden').addClass('is-visible');
                 } else if ($list.length){
                     $empty = $('<p/>', {
-                        id: 'cpb-email-log-empty',
-                        'class': 'cpb-email-log__empty is-visible',
+                        id: 'sd-email-log-empty',
+                        'class': 'sd-email-log__empty is-visible',
                         text: emptyMessage || ''
                     });
                     $list.prepend($empty);
@@ -1361,12 +1361,12 @@ jQuery(document).ready(function($){
         });
     });
 
-    $(document).on('blur', '.cpb-template-editor [data-token-context="subject"], .cpb-template-editor [data-token-context="body"]', function(){
-        var $editor = $(this).closest('.cpb-template-editor');
+    $(document).on('blur', '.sd-template-editor [data-token-context="subject"], .sd-template-editor [data-token-context="body"]', function(){
+        var $editor = $(this).closest('.sd-template-editor');
         updateTemplatePreview($editor);
     });
 
-    $('.cpb-template-editor').each(function(){
+    $('.sd-template-editor').each(function(){
         updateTemplatePreview($(this));
     });
 });

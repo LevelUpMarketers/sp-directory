@@ -2,14 +2,14 @@
 /**
  * Helper utilities for managing email template defaults and storage.
  *
- * @package Codex_Plugin_Boilerplate
+ * @package SuperDirectory
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-class CPB_Email_Template_Helper {
+class SD_Email_Template_Helper {
 
     /**
      * Registered template labels for reuse across logging and UI output.
@@ -29,7 +29,7 @@ class CPB_Email_Template_Helper {
          *
          * @param string $option_name Default option name.
          */
-        return apply_filters( 'cpb_email_templates_option_name', 'cpb_email_templates' );
+        return apply_filters( 'sd_email_templates_option_name', 'sd_email_templates' );
     }
 
     /**
@@ -129,7 +129,7 @@ class CPB_Email_Template_Helper {
          *
          * @param string $value Sanitized value.
          */
-        return apply_filters( 'cpb_email_template_from_name', $value );
+        return apply_filters( 'sd_email_template_from_name', $value );
     }
 
     /**
@@ -148,7 +148,7 @@ class CPB_Email_Template_Helper {
          *
          * @param string $value Sanitized value.
          */
-        return apply_filters( 'cpb_email_template_from_email', $value );
+        return apply_filters( 'sd_email_template_from_email', $value );
     }
 
     /**
@@ -171,7 +171,7 @@ class CPB_Email_Template_Helper {
          *
          * @param string $site_name Default From name.
          */
-        return apply_filters( 'cpb_default_from_name', $site_name );
+        return apply_filters( 'sd_default_from_name', $site_name );
     }
 
     /**
@@ -198,7 +198,7 @@ class CPB_Email_Template_Helper {
          *
          * @param string $email Default From email address.
          */
-        return apply_filters( 'cpb_default_from_email', $email );
+        return apply_filters( 'sd_default_from_email', $email );
     }
 
     /**
@@ -327,10 +327,10 @@ class CPB_Email_Template_Helper {
             return self::$template_labels[ $template_id ];
         }
 
-        $label = apply_filters( 'cpb_email_template_label', '', $template_id );
+        $label = apply_filters( 'sd_email_template_label', '', $template_id );
 
         if ( '' === $label ) {
-            $label = preg_replace( '/^cpb[-_]/', '', $template_id );
+            $label = preg_replace( '/^sd[-_]/', '', $template_id );
             $label = str_replace( array( '-', '_' ), ' ', $label );
             $label = ucwords( $label );
         }

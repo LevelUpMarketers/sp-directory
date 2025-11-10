@@ -1,18 +1,18 @@
 <?php
 /**
- * Shared helper methods for working with Main Entity data.
+ * Shared helper methods for working with Directory Listing data.
  *
- * @package Codex_Plugin_Boilerplate
+ * @package SuperDirectory
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-class CPB_Main_Entity_Helper {
+class SD_Main_Entity_Helper {
 
     /**
-     * Retrieve the first Main Entity record prepared for template previews.
+     * Retrieve the first Directory Listing record prepared for template previews.
      *
      * @return array
      */
@@ -25,7 +25,7 @@ class CPB_Main_Entity_Helper {
 
         global $wpdb;
 
-        $table_name = $wpdb->prefix . 'cpb_main_entity';
+        $table_name = $wpdb->prefix . 'sd_main_entity';
         $like       = $wpdb->esc_like( $table_name );
         $found      = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $like ) );
 

@@ -2,10 +2,10 @@
 /**
  * Fired during plugin activation
  *
- * @package Codex_Plugin_Boilerplate
+ * @package SuperDirectory
  */
 
-class CPB_Activator {
+class SD_Activator {
 
     public static function activate() {
         global $wpdb;
@@ -13,9 +13,9 @@ class CPB_Activator {
         require_once ABSPATH . 'wp-admin/includes/upgrade.php';
 
         $charset_collate = $wpdb->get_charset_collate();
-        $main_table      = $wpdb->prefix . 'cpb_main_entity';
-        $settings_table  = $wpdb->prefix . 'cpb_settings';
-        $content_log     = $wpdb->prefix . 'cpb_content_log';
+        $main_table      = $wpdb->prefix . 'sd_main_entity';
+        $settings_table  = $wpdb->prefix . 'sd_settings';
+        $content_log     = $wpdb->prefix . 'sd_content_log';
 
         $sql_main = "CREATE TABLE $main_table (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,

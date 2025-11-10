@@ -2,10 +2,10 @@
 /**
  * Fired during plugin deactivation
  *
- * @package Codex_Plugin_Boilerplate
+ * @package SuperDirectory
  */
 
-class CPB_Deactivator {
+class SD_Deactivator {
 
     public static function deactivate() {
         $cron_array = _get_cron_array();
@@ -16,7 +16,7 @@ class CPB_Deactivator {
 
         foreach ( $cron_array as $timestamp => $hooks ) {
             foreach ( $hooks as $hook => $instances ) {
-                if ( 0 !== strpos( $hook, CPB_Cron_Manager::HOOK_PREFIX ) ) {
+                if ( 0 !== strpos( $hook, SD_Cron_Manager::HOOK_PREFIX ) ) {
                     continue;
                 }
 
@@ -27,6 +27,6 @@ class CPB_Deactivator {
             }
         }
 
-        delete_option( 'cpb_demo_cron_last_run' );
+        delete_option( 'sd_demo_cron_last_run' );
     }
 }

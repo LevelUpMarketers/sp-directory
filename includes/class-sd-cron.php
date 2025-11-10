@@ -1,14 +1,14 @@
 <?php
 /**
- * Cron management utilities for Codex Plugin Boilerplate.
+ * Cron management utilities for SuperDirectory.
  *
- * @package Codex_Plugin_Boilerplate
+ * @package SuperDirectory
  */
 
-class CPB_Cron_Manager {
+class SD_Cron_Manager {
 
-    const HOOK_PREFIX = 'cpb_';
-    const DEMO_HOOK   = 'cpb_demo_cron_event';
+    const HOOK_PREFIX = 'sd_';
+    const DEMO_HOOK   = 'sd_demo_cron_event';
 
     /**
      * Bootstraps the cron manager.
@@ -127,7 +127,7 @@ class CPB_Cron_Manager {
      */
     public function handle_demo_event( $args = array() ) {
         update_option(
-            'cpb_demo_cron_last_run',
+            'sd_demo_cron_last_run',
             array(
                 'timestamp' => current_time( 'timestamp' ),
                 'args'      => $args,
@@ -189,8 +189,8 @@ class CPB_Cron_Manager {
     public static function get_known_hooks() {
         return array(
             self::DEMO_HOOK => array(
-                'name'        => __( 'Demo Cron Event', 'codex-plugin-boilerplate' ),
-                'description' => __( 'Demonstrates how Codex Plugin Boilerplate cron jobs appear in the Cron Jobs tab.', 'codex-plugin-boilerplate' ),
+                'name'        => __( 'Demo Cron Event', 'super-directory' ),
+                'description' => __( 'Demonstrates how SuperDirectory cron jobs appear in the Cron Jobs tab.', 'super-directory' ),
             ),
         );
     }
@@ -215,7 +215,7 @@ class CPB_Cron_Manager {
 
         return array(
             'name'        => $readable,
-            'description' => __( 'Cron event scheduled by Codex Plugin Boilerplate.', 'codex-plugin-boilerplate' ),
+            'description' => __( 'Cron event scheduled by SuperDirectory.', 'super-directory' ),
         );
     }
 
@@ -228,7 +228,7 @@ class CPB_Cron_Manager {
      */
     public static function format_timestamp( $timestamp ) {
         if ( empty( $timestamp ) ) {
-            return __( 'Not scheduled', 'codex-plugin-boilerplate' );
+            return __( 'Not scheduled', 'super-directory' );
         }
 
         return wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $timestamp );
@@ -255,7 +255,7 @@ class CPB_Cron_Manager {
      */
     public static function get_schedule_label( $schedule, $interval ) {
         if ( empty( $schedule ) ) {
-            return __( 'One-off event', 'codex-plugin-boilerplate' );
+            return __( 'One-off event', 'super-directory' );
         }
 
         $schedules = wp_get_schedules();
@@ -267,12 +267,12 @@ class CPB_Cron_Manager {
         if ( $interval > 0 ) {
             return sprintf(
                 /* translators: %s: number of seconds */
-                __( 'Custom schedule (%s seconds)', 'codex-plugin-boilerplate' ),
+                __( 'Custom schedule (%s seconds)', 'super-directory' ),
                 number_format_i18n( $interval )
             );
         }
 
-        return __( 'Recurring event', 'codex-plugin-boilerplate' );
+        return __( 'Recurring event', 'super-directory' );
     }
 
     /**
@@ -284,29 +284,29 @@ class CPB_Cron_Manager {
      */
     public static function get_countdown( $timestamp ) {
         if ( empty( $timestamp ) ) {
-            return __( 'Not scheduled', 'codex-plugin-boilerplate' );
+            return __( 'Not scheduled', 'super-directory' );
         }
 
         $now = current_time( 'timestamp' );
         $diff = $timestamp - $now;
 
         if ( 0 === $diff ) {
-            return __( 'Running now', 'codex-plugin-boilerplate' );
+            return __( 'Running now', 'super-directory' );
         }
 
         $direction = $diff > 0 ? 'until' : 'ago';
         $diff      = abs( $diff );
 
         if ( 0 === $diff ) {
-            return __( 'Due now', 'codex-plugin-boilerplate' );
+            return __( 'Due now', 'super-directory' );
         }
 
         $units = array(
-            array( 'label' => _n_noop( '%s week', '%s weeks', 'codex-plugin-boilerplate' ), 'seconds' => WEEK_IN_SECONDS ),
-            array( 'label' => _n_noop( '%s day', '%s days', 'codex-plugin-boilerplate' ), 'seconds' => DAY_IN_SECONDS ),
-            array( 'label' => _n_noop( '%s hour', '%s hours', 'codex-plugin-boilerplate' ), 'seconds' => HOUR_IN_SECONDS ),
-            array( 'label' => _n_noop( '%s minute', '%s minutes', 'codex-plugin-boilerplate' ), 'seconds' => MINUTE_IN_SECONDS ),
-            array( 'label' => _n_noop( '%s second', '%s seconds', 'codex-plugin-boilerplate' ), 'seconds' => 1 ),
+            array( 'label' => _n_noop( '%s week', '%s weeks', 'super-directory' ), 'seconds' => WEEK_IN_SECONDS ),
+            array( 'label' => _n_noop( '%s day', '%s days', 'super-directory' ), 'seconds' => DAY_IN_SECONDS ),
+            array( 'label' => _n_noop( '%s hour', '%s hours', 'super-directory' ), 'seconds' => HOUR_IN_SECONDS ),
+            array( 'label' => _n_noop( '%s minute', '%s minutes', 'super-directory' ), 'seconds' => MINUTE_IN_SECONDS ),
+            array( 'label' => _n_noop( '%s second', '%s seconds', 'super-directory' ), 'seconds' => 1 ),
         );
 
         $parts = array();
@@ -320,7 +320,7 @@ class CPB_Cron_Manager {
             $diff -= $value * $unit['seconds'];
 
             if ( $value > 0 ) {
-                $parts[] = sprintf( translate_nooped_plural( $unit['label'], $value, 'codex-plugin-boilerplate' ), number_format_i18n( $value ) );
+                $parts[] = sprintf( translate_nooped_plural( $unit['label'], $value, 'super-directory' ), number_format_i18n( $value ) );
             }
 
             if ( count( $parts ) >= 3 ) {
@@ -329,23 +329,23 @@ class CPB_Cron_Manager {
         }
 
         if ( empty( $parts ) ) {
-            $parts[] = sprintf( _n( '%s second', '%s seconds', $diff, 'codex-plugin-boilerplate' ), number_format_i18n( max( 1, $diff ) ) );
+            $parts[] = sprintf( _n( '%s second', '%s seconds', $diff, 'super-directory' ), number_format_i18n( max( 1, $diff ) ) );
         }
 
-        $glue      = _x( ', ', 'Countdown delimiter', 'codex-plugin-boilerplate' );
+        $glue      = _x( ', ', 'Countdown delimiter', 'super-directory' );
         $countdown = implode( $glue, $parts );
 
         if ( 'until' === $direction ) {
             return sprintf(
                 /* translators: %s: countdown string */
-                __( 'In %s', 'codex-plugin-boilerplate' ),
+                __( 'In %s', 'super-directory' ),
                 $countdown
             );
         }
 
         return sprintf(
             /* translators: %s: countdown string */
-            __( '%s ago', 'codex-plugin-boilerplate' ),
+            __( '%s ago', 'super-directory' ),
             $countdown
         );
     }

@@ -2,10 +2,10 @@
 /**
  * The core plugin class.
  *
- * @package Codex_Plugin_Boilerplate
+ * @package SuperDirectory
  */
 
-class CPB_Plugin {
+class SD_Plugin {
 
     private $i18n;
     private $admin;
@@ -16,13 +16,13 @@ class CPB_Plugin {
     private $cron_manager;
 
     public function __construct() {
-        $this->i18n     = new CPB_I18n();
-        $this->admin    = new CPB_Admin();
-        $this->ajax     = new CPB_Ajax();
-        $this->shortcode      = new CPB_Shortcode_Main_Entity();
-        $this->block          = new CPB_Block_Main_Entity();
-        $this->content_logger = new CPB_Content_Logger();
-        $this->cron_manager   = new CPB_Cron_Manager();
+        $this->i18n     = new SD_I18n();
+        $this->admin    = new SD_Admin();
+        $this->ajax     = new SD_Ajax();
+        $this->shortcode      = new SD_Shortcode_Main_Entity();
+        $this->block          = new SD_Block_Main_Entity();
+        $this->content_logger = new SD_Content_Logger();
+        $this->cron_manager   = new SD_Cron_Manager();
     }
 
     public function run() {

@@ -1,11 +1,11 @@
 ( function( blocks, element ) {
     var el = element.createElement;
-    blocks.registerBlockType( 'cpb/main-entity', {
-        title: 'Main Entity',
+    blocks.registerBlockType( 'sd/main-entity', {
+        title: 'Directory Listing',
         icon: 'database',
         category: 'widgets',
         edit: function() {
-            return el( 'p', {}, 'Main Entity Output' );
+            return el( 'p', {}, 'Directory Listing Output' );
         },
         save: function() {
             return null;

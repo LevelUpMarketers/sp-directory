@@ -1,12 +1,12 @@
 <?php
 /**
- * Plugin Name:       Codex Plugin Boilerplate
+ * Plugin Name:       SuperDirectory
  * Plugin URI:        https://levelupmarketers.com
- * Description:       A boilerplate plugin demonstrating a modular, performant foundation for future development.
+ * Description:       Administrative toolkit for managing Home Services industry resources and generating a public directory.
  * Version:           0.1.0
- * Author:            Codex
+ * Author:            Level Up Marketers
  * Author URI:        https://levelupmarketers.com
- * Text Domain:       codex-plugin-boilerplate
+ * Text Domain:       super-directory
  * Domain Path:       /languages
  */
 
@@ -15,30 +15,30 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants.
-define( 'CPB_VERSION', '0.1.0' );
-define( 'CPB_MIN_EXECUTION_TIME', 4 );
-define( 'CPB_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
-define( 'CPB_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
+define( 'SD_VERSION', '0.1.0' );
+define( 'SD_MIN_EXECUTION_TIME', 4 );
+define( 'SD_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
+define( 'SD_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 
-require_once CPB_PLUGIN_DIR . 'includes/class-cpb-activator.php';
-require_once CPB_PLUGIN_DIR . 'includes/class-cpb-deactivator.php';
-require_once CPB_PLUGIN_DIR . 'includes/class-cpb-i18n.php';
-require_once CPB_PLUGIN_DIR . 'includes/class-cpb-main-entity-helper.php';
-require_once CPB_PLUGIN_DIR . 'includes/class-cpb-email-template-helper.php';
-require_once CPB_PLUGIN_DIR . 'includes/class-cpb-email-log-helper.php';
-require_once CPB_PLUGIN_DIR . 'includes/class-cpb-ajax.php';
-require_once CPB_PLUGIN_DIR . 'includes/class-cpb-cron.php';
-require_once CPB_PLUGIN_DIR . 'includes/admin/class-cpb-admin.php';
-require_once CPB_PLUGIN_DIR . 'includes/shortcodes/class-cpb-shortcode-main-entity.php';
-require_once CPB_PLUGIN_DIR . 'includes/blocks/class-cpb-block-main-entity.php';
-require_once CPB_PLUGIN_DIR . 'includes/class-cpb-content-logger.php';
-require_once CPB_PLUGIN_DIR . 'includes/class-cpb-plugin.php';
+require_once SD_PLUGIN_DIR . 'includes/class-sd-activator.php';
+require_once SD_PLUGIN_DIR . 'includes/class-sd-deactivator.php';
+require_once SD_PLUGIN_DIR . 'includes/class-sd-i18n.php';
+require_once SD_PLUGIN_DIR . 'includes/class-sd-main-entity-helper.php';
+require_once SD_PLUGIN_DIR . 'includes/class-sd-email-template-helper.php';
+require_once SD_PLUGIN_DIR . 'includes/class-sd-email-log-helper.php';
+require_once SD_PLUGIN_DIR . 'includes/class-sd-ajax.php';
+require_once SD_PLUGIN_DIR . 'includes/class-sd-cron.php';
+require_once SD_PLUGIN_DIR . 'includes/admin/class-sd-admin.php';
+require_once SD_PLUGIN_DIR . 'includes/shortcodes/class-sd-shortcode-main-entity.php';
+require_once SD_PLUGIN_DIR . 'includes/blocks/class-sd-block-main-entity.php';
+require_once SD_PLUGIN_DIR . 'includes/class-sd-content-logger.php';
+require_once SD_PLUGIN_DIR . 'includes/class-sd-plugin.php';
 
-register_activation_hook( __FILE__, array( 'CPB_Activator', 'activate' ) );
-register_deactivation_hook( __FILE__, array( 'CPB_Deactivator', 'deactivate' ) );
+register_activation_hook( __FILE__, array( 'SD_Activator', 'activate' ) );
+register_deactivation_hook( __FILE__, array( 'SD_Deactivator', 'deactivate' ) );
 
-function run_cpb_plugin() {
-    $plugin = new CPB_Plugin();
+function run_sd_plugin() {
+    $plugin = new SD_Plugin();
     $plugin->run();
 }
-run_cpb_plugin();
+run_sd_plugin();

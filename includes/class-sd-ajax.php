@@ -21,7 +21,11 @@ class SD_Ajax {
         $elapsed = microtime( true ) - $start;
 
         if ( $elapsed < $minimum_time ) {
-            usleep( ( $minimum_time - $elapsed ) * 1000000 );
+            $remaining = ( $minimum_time - $elapsed ) * 1000000;
+
+            if ( $remaining > 0 ) {
+                usleep( (int) round( $remaining ) );
+            }
         }
     }
 

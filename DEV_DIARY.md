@@ -44,3 +44,4 @@
 42. 2025-11-06: Replaced placeholder-driven schema with SuperDirectory field groups, updated admin UI/JS for the new workflow, and refreshed AJAX/database handling to match the production data model.
 43. 2025-11-06: Realigned directory fields to the resource spreadsheet, adding address, industry, and social URL support across the admin forms, AJAX, and schema.
 44. 2025-11-06: Synced TinyMCE fields before saving, standardized spinner/message styling, and improved create/edit AJAX responses with inline success and error feedback.
+45. 2025-11-06: Cast the AJAX delay timer to integers so save responses stay well-formed even when other plugins monitor PHP warnings.

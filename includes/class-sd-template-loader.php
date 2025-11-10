@@ -26,13 +26,18 @@ class SD_Template_Loader {
      * @return array
      */
     public function register_template( $page_templates, $wp_theme, $post, $post_type ) {
-        unset( $wp_theme, $post, $post_type );
+        unset( $post, $post_type );
 
         if ( ! is_array( $page_templates ) ) {
             $page_templates = array();
         }
 
         $page_templates[ SD_DIRECTORY_TEMPLATE_SLUG ] = __( 'SuperDirectory Listing Page', 'super-directory' );
+
+        if ( class_exists( 'WP_Theme' ) && $wp_theme instanceof WP_Theme ) {
+            $cache_hash = md5( $wp_theme->get_stylesheet() . $wp_theme->get_template() );
+            wp_cache_delete( 'page_templates-' . $cache_hash, 'themes' );
+        }
 
         return $page_templates;
     }
@@ -51,7 +56,22 @@ class SD_Template_Loader {
             return $template;
         }
 
-        $assigned_template = get_page_template_slug( $post );
+        $assigned_template  = get_page_template_slug( $post );
+        $has_directory_meta = metadata_exists( 'post', $post->ID, '_sd_main_entity_id' );
+
+        if ( ! $has_directory_meta ) {
+            return $template;
+        }
+
+        if ( defined( 'SD_DIRECTORY_TEMPLATE_LEGACY_SLUG' ) && SD_DIRECTORY_TEMPLATE_LEGACY_SLUG === $assigned_template ) {
+            update_post_meta( $post->ID, '_wp_page_template', SD_DIRECTORY_TEMPLATE_SLUG );
+            $assigned_template = SD_DIRECTORY_TEMPLATE_SLUG;
+        }
+
+        if ( SD_DIRECTORY_TEMPLATE_SLUG !== $assigned_template ) {
+            update_post_meta( $post->ID, '_wp_page_template', SD_DIRECTORY_TEMPLATE_SLUG );
+            $assigned_template = SD_DIRECTORY_TEMPLATE_SLUG;
+        }
 
         if ( SD_DIRECTORY_TEMPLATE_SLUG !== $assigned_template ) {
             return $template;
@@ -59,7 +79,7 @@ class SD_Template_Loader {
 
         add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_directory_assets' ) );
 
-        $plugin_template = trailingslashit( SD_PLUGIN_DIR . 'templates' ) . SD_DIRECTORY_TEMPLATE_SLUG;
+        $plugin_template = trailingslashit( SD_PLUGIN_DIR ) . SD_DIRECTORY_TEMPLATE_SLUG;
 
         if ( file_exists( $plugin_template ) ) {
             return $plugin_template;

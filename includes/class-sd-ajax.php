@@ -268,6 +268,8 @@ class SD_Ajax {
             return 0;
         }
 
+        $this->sync_directory_page_meta( $page_id, $entity_id );
+
         do_action( 'sd_log_generated_content', $page_id, $entity_id );
 
         return (int) $page_id;

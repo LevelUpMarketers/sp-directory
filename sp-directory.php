@@ -19,7 +19,8 @@ define( 'SD_VERSION', '0.1.0' );
 define( 'SD_MIN_EXECUTION_TIME', 4 );
 define( 'SD_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SD_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
-define( 'SD_DIRECTORY_TEMPLATE_SLUG', 'sd-directory-entry.php' );
+define( 'SD_DIRECTORY_TEMPLATE_SLUG', 'templates/sd-directory-entry.php' );
+define( 'SD_DIRECTORY_TEMPLATE_LEGACY_SLUG', 'sd-directory-entry.php' );
 
 require_once SD_PLUGIN_DIR . 'includes/class-sd-activator.php';
 require_once SD_PLUGIN_DIR . 'includes/class-sd-deactivator.php';

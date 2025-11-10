@@ -47,12 +47,6 @@ msgstr ""
 msgid "SuperDirectory Settings"
 msgstr ""
 
-#: includes/admin/class-sd-admin.php:37
-#: includes/admin/class-sd-admin.php:38
-#: includes/admin/class-sd-admin.php:67
-msgid "SuperDirectory Communications"
-msgstr ""
-
 #: includes/admin/class-sd-admin.php:45
 #: includes/admin/class-sd-admin.php:46
 #: includes/admin/class-sd-admin.php:1702
@@ -282,115 +276,6 @@ msgstr ""
 msgid "Wyoming"
 msgstr ""
 
-#: includes/admin/class-sd-admin.php:127
-msgid "Enter a name for the entity."
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:128
-msgid "Enter text."
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:129
-msgid "Select a date."
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:130
-#: includes/admin/class-sd-admin.php:133
-msgid "Choose yes or no."
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:131
-msgid "Select start time."
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:132
-msgid "Select end time."
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:134
-msgid "Enter address."
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:135
-msgid "Enter address line 2."
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:136
-msgid "Enter city."
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:137
-msgid "Select state."
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:138
-msgid "Enter ZIP."
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:139
-msgid "Enter venue name."
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:140
-msgid "Enter venue URL."
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:141
-msgid "Select event type."
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:142
-msgid "Base cost."
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:143
-msgid "Basic member cost."
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:144
-msgid "Premium member cost."
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:145
-msgid "Waitlist available?"
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:146
-msgid "Refunds available?"
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:147
-msgid "Select image."
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:148
-msgid "Enter extended description."
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:149
-msgid "Select an option."
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:150
-msgid "Check if applicable."
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:151
-msgid "Pick a color."
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:153
-msgid "Watch tutorial"
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:154
-msgid "Premium support available."
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:161
-msgid "Upgrade for more features"
-msgstr ""
-
 #: includes/admin/class-sd-admin.php:169
 msgid "Create a Directory Listing"
 msgstr ""
@@ -407,10 +292,6 @@ msgstr ""
 msgid "Placeholder 2"
 msgstr ""
 
-#: includes/admin/class-sd-admin.php:207
-msgid "Placeholder 3"
-msgstr ""
-
 #: includes/admin/class-sd-admin.php:209
 #: includes/admin/class-sd-admin.php:228
 #: includes/admin/class-sd-admin.php:310
@@ -423,46 +304,6 @@ msgstr ""
 #: includes/admin/class-sd-admin.php:310
 #: includes/admin/class-sd-admin.php:317
 msgid "Yes"
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:214
-msgid "Placeholder 4"
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:220
-msgid "Placeholder 5"
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:226
-msgid "Placeholder 6"
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:233
-msgid "Placeholder 7"
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:239
-msgid "Placeholder 8"
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:245
-msgid "Placeholder 9"
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:251
-msgid "Placeholder 10"
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:257
-msgid "Placeholder 11"
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:263
-msgid "Placeholder 12"
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:269
-msgid "Placeholder 13"
 msgstr ""
 
 #: includes/admin/class-sd-admin.php:275
@@ -489,26 +330,6 @@ msgstr ""
 msgid "Option 4"
 msgstr ""
 
-#: includes/admin/class-sd-admin.php:287
-msgid "Placeholder 15"
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:294
-msgid "Placeholder 16"
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:301
-msgid "Placeholder 17"
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:308
-msgid "Placeholder 18"
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:315
-msgid "Placeholder 19"
-msgstr ""
-
 #: includes/admin/class-sd-admin.php:322
 msgid "Placeholder 20"
 msgstr ""
@@ -525,16 +346,8 @@ msgstr ""
 msgid "Placeholder 23"
 msgstr ""
 
-#: includes/admin/class-sd-admin.php:350
-msgid "Placeholder 24"
-msgstr ""
-
 #: includes/admin/class-sd-admin.php:372
 msgid "Placeholder 25"
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:378
-msgid "Placeholder 26"
 msgstr ""
 
 #: includes/admin/class-sd-admin.php:384
@@ -562,11 +375,6 @@ msgstr ""
 msgid "Upgrade Now"
 msgstr ""
 
-#: includes/admin/class-sd-admin.php:158
-#, php-format
-msgid "A Level Up Plugin. Need marketing or custom software development help? Email %1$s or call %2$s now!"
-msgstr ""
-
 #: includes/admin/class-sd-admin.php:367
 msgid "Save"
 msgstr ""
@@ -575,29 +383,13 @@ msgstr ""
 msgid "General Settings"
 msgstr ""
 
-#: includes/admin/class-sd-admin.php:382
-msgid "Style Settings"
-msgstr ""
-
 #: includes/admin/class-sd-admin.php:398
 msgid "Option"
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:398
-msgid "General option."
 msgstr ""
 
 #: includes/admin/class-sd-admin.php:400
 #: includes/admin/class-sd-admin.php:409
 msgid "Save Settings"
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:407
-msgid "Custom CSS"
-msgstr ""
-
-#: includes/admin/class-sd-admin.php:407
-msgid "CSS for styling shortcodes/blocks."
 msgstr ""
 
 #: includes/admin/class-sd-admin.php:418

@@ -5,8 +5,7 @@ SuperDirectory is a WordPress plugin that streamlines the process of collecting 
 ## Features
 - Guided admin experience with tabbed navigation for adding and editing directory listings.
 - Placeholder-driven data model that demonstrates how to capture addresses, contact information, marketing preferences, and service details.
-- Communications workspace prepared for email and SMS templates with live previews and token insertion helpers.
-- Log management tools that surface generated content history, scheduled events, and outbound communication archives.
+- Log management tools that surface generated content history for quick auditing and cleanup.
 - Gutenberg block and shortcode for rendering directory listings on the front end.
 
 ## Installation
@@ -22,7 +21,6 @@ SuperDirectory is a WordPress plugin that streamlines the process of collecting 
 ## Roadmap
 - Automate WordPress page generation for each directory listing.
 - Deliver a searchable and filterable front-end directory archive.
-- Expand communications tooling to include production-ready email and SMS workflows.
 - Replace placeholder form fields with production-ready Home Services data requirements.
 
 ## License

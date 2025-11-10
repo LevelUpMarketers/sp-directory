@@ -13,7 +13,6 @@ class SD_Plugin {
     private $shortcode;
     private $block;
     private $content_logger;
-    private $cron_manager;
 
     public function __construct() {
         $this->i18n     = new SD_I18n();
@@ -22,7 +21,6 @@ class SD_Plugin {
         $this->shortcode      = new SD_Shortcode_Main_Entity();
         $this->block          = new SD_Block_Main_Entity();
         $this->content_logger = new SD_Content_Logger();
-        $this->cron_manager   = new SD_Cron_Manager();
     }
 
     public function run() {
@@ -32,6 +30,5 @@ class SD_Plugin {
         $this->shortcode->register();
         $this->block->register();
         $this->content_logger->register();
-        $this->cron_manager->register();
     }
 }

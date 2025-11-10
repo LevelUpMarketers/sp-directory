@@ -39,6 +39,7 @@ class SD_Activator {
             youtube_url varchar(255) DEFAULT '',
             linkedin_url varchar(255) DEFAULT '',
             google_business_url varchar(255) DEFAULT '',
+            directory_page_id bigint(20) unsigned NOT NULL DEFAULT 0,
             created_at datetime NOT NULL,
             updated_at datetime NOT NULL,
             PRIMARY KEY  (id)
@@ -56,9 +57,11 @@ class SD_Activator {
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
             post_id bigint(20) unsigned NOT NULL,
             post_type varchar(20) NOT NULL,
+            entity_id bigint(20) unsigned NOT NULL DEFAULT 0,
             created_at datetime NOT NULL,
             PRIMARY KEY  (id),
-            KEY post_id (post_id)
+            KEY post_id (post_id),
+            KEY entity_id (entity_id)
         ) $charset_collate;";
 
         dbDelta( $sql_main );

@@ -13,6 +13,7 @@ class SD_Plugin {
     private $shortcode;
     private $block;
     private $content_logger;
+    private $template_loader;
 
     public function __construct() {
         $this->i18n     = new SD_I18n();
@@ -21,6 +22,7 @@ class SD_Plugin {
         $this->shortcode      = new SD_Shortcode_Main_Entity();
         $this->block          = new SD_Block_Main_Entity();
         $this->content_logger = new SD_Content_Logger();
+        $this->template_loader = new SD_Template_Loader();
     }
 
     public function run() {
@@ -30,5 +32,6 @@ class SD_Plugin {
         $this->shortcode->register();
         $this->block->register();
         $this->content_logger->register();
+        $this->template_loader->register();
     }
 }

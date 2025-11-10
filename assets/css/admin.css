@@ -400,6 +400,17 @@
     line-height: 1.6;
 }
 
+.sd-generated-content-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+}
+
+.sd-generated-content-actions .button-link-delete {
+    color: #b32d2e;
+}
+
 @media (min-width: 960px) {
     }
 

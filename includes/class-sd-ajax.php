@@ -80,7 +80,8 @@ class SD_Ajax {
         $formats = array_fill( 0, count( $data ), '%s' );
 
         if ( $id > 0 ) {
-            $result  = $wpdb->update( $table, $data, array( 'id' => $id ), $formats, array( '%d' ) );
+            $existing = $wpdb->get_row( $wpdb->prepare( "SELECT name, directory_page_id FROM $table WHERE id = %d", $id ), ARRAY_A );
+            $result   = $wpdb->update( $table, $data, array( 'id' => $id ), $formats, array( '%d' ) );
             $message = __( 'Changes saved.', 'super-directory' );
 
             if ( false === $result && $wpdb->last_error ) {
@@ -90,6 +91,21 @@ class SD_Ajax {
                         'message' => __( 'Unable to save changes. Please try again.', 'super-directory' ),
                     )
                 );
+            }
+
+            if ( false !== $result ) {
+                $existing_page_id = isset( $existing['directory_page_id'] ) ? (int) $existing['directory_page_id'] : 0;
+                $page_id          = $this->update_directory_page( $id, $name, $existing_page_id );
+
+                if ( $page_id && $page_id !== $existing_page_id ) {
+                    $wpdb->update(
+                        $table,
+                        array( 'directory_page_id' => $page_id ),
+                        array( 'id' => $id ),
+                        array( '%d' ),
+                        array( '%d' )
+                    );
+                }
             }
         } else {
             $data['created_at'] = $now;
@@ -105,6 +121,21 @@ class SD_Ajax {
                     )
                 );
             }
+
+            if ( false !== $result ) {
+                $entity_id = (int) $wpdb->insert_id;
+                $page_id   = $this->create_directory_page( $entity_id, $name );
+
+                if ( $page_id ) {
+                    $wpdb->update(
+                        $table,
+                        array( 'directory_page_id' => $page_id ),
+                        array( 'id' => $entity_id ),
+                        array( '%d' ),
+                        array( '%d' )
+                    );
+                }
+            }
         }
 
         $this->maybe_delay( $start );
@@ -116,8 +147,15 @@ class SD_Ajax {
         check_ajax_referer( 'sd_ajax_nonce' );
         $id = isset( $_POST['id'] ) ? intval( $_POST['id'] ) : 0;
         global $wpdb;
-        $table = $wpdb->prefix . 'sd_main_entity';
+        $table  = $wpdb->prefix . 'sd_main_entity';
+        $record = $wpdb->get_row( $wpdb->prepare( "SELECT directory_page_id FROM $table WHERE id = %d", $id ), ARRAY_A );
+
         $wpdb->delete( $table, array( 'id' => $id ), array( '%d' ) );
+
+        if ( $record && ! empty( $record['directory_page_id'] ) ) {
+            wp_delete_post( (int) $record['directory_page_id'], true );
+        }
+
         $this->maybe_delay( $start );
         wp_send_json_success( array( 'message' => __( 'Deleted', 'super-directory' ) ) );
     }
@@ -203,6 +241,117 @@ class SD_Ajax {
         }
 
         return wp_unslash( $value );
+    }
+
+    private function create_directory_page( $entity_id, $name ) {
+        $parent_id = $this->ensure_resources_parent_page();
+        $slug      = $this->prepare_directory_slug( $name );
+        $unique    = wp_unique_post_slug( $slug, 0, 'publish', 'page', $parent_id );
+        $content   = sprintf( '[sd-main-entity id="%d"]', absint( $entity_id ) );
+
+        $page_id = wp_insert_post(
+            array(
+                'post_title'   => $name,
+                'post_name'    => $unique,
+                'post_type'    => 'page',
+                'post_status'  => 'publish',
+                'post_parent'  => $parent_id,
+                'post_content' => $content,
+                'meta_input'   => array(
+                    '_wp_page_template'  => SD_DIRECTORY_TEMPLATE_SLUG,
+                    '_sd_main_entity_id' => absint( $entity_id ),
+                ),
+            ),
+            true
+        );
+
+        if ( is_wp_error( $page_id ) ) {
+            return 0;
+        }
+
+        do_action( 'sd_log_generated_content', $page_id, $entity_id );
+
+        return (int) $page_id;
+    }
+
+    private function update_directory_page( $entity_id, $name, $page_id ) {
+        $page_id = absint( $page_id );
+
+        if ( $page_id ) {
+            $page = get_post( $page_id );
+
+            if ( $page && 'page' === $page->post_type ) {
+                $parent_id = $this->ensure_resources_parent_page();
+                $slug      = $this->prepare_directory_slug( $name );
+                $unique    = wp_unique_post_slug( $slug, $page_id, 'publish', 'page', $parent_id );
+
+                $update = wp_update_post(
+                    array(
+                        'ID'         => $page_id,
+                        'post_title' => $name,
+                        'post_name'  => $unique,
+                        'post_parent'=> $parent_id,
+                    ),
+                    true
+                );
+
+                if ( ! is_wp_error( $update ) ) {
+                    $this->sync_directory_page_meta( $page_id, $entity_id );
+
+                    return $page_id;
+                }
+            }
+        }
+
+        return $this->create_directory_page( $entity_id, $name );
+    }
+
+    private function sync_directory_page_meta( $page_id, $entity_id ) {
+        update_post_meta( $page_id, '_wp_page_template', SD_DIRECTORY_TEMPLATE_SLUG );
+        update_post_meta( $page_id, '_sd_main_entity_id', absint( $entity_id ) );
+    }
+
+    private function ensure_resources_parent_page() {
+        $existing = get_page_by_path( 'resources' );
+
+        if ( $existing && 'page' === $existing->post_type ) {
+            if ( 'publish' !== $existing->post_status ) {
+                wp_update_post(
+                    array(
+                        'ID'          => $existing->ID,
+                        'post_status' => 'publish',
+                    )
+                );
+            }
+
+            return (int) $existing->ID;
+        }
+
+        $page_id = wp_insert_post(
+            array(
+                'post_title'  => __( 'Resources', 'super-directory' ),
+                'post_name'   => 'resources',
+                'post_type'   => 'page',
+                'post_status' => 'publish',
+            ),
+            true
+        );
+
+        if ( is_wp_error( $page_id ) ) {
+            return 0;
+        }
+
+        return (int) $page_id;
+    }
+
+    private function prepare_directory_slug( $name ) {
+        $base = sanitize_title( $name );
+
+        if ( '' === $base ) {
+            $base = 'listing';
+        }
+
+        return sanitize_title( $base . '-directory' );
     }
 
     private function sanitize_text_value( $key ) {

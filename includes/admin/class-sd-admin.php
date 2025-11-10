@@ -787,34 +787,122 @@ class SD_Admin {
     }
 
     private function render_generated_content_log() {
-        $logger  = new SD_Content_Logger();
-        $entries = $logger->get_logged_content();
-        echo '<table class="widefat"><thead><tr>';
-        echo '<th>' . esc_html__( 'Title', 'super-directory' ) . '</th>';
-        echo '<th>' . esc_html__( 'Type', 'super-directory' ) . '</th>';
-        echo '<th>' . esc_html__( 'Actions', 'super-directory' ) . '</th>';
+        $logger       = new SD_Content_Logger();
+        $entries      = $logger->get_logged_content();
+        $columns      = array(
+            array(
+                'key'   => 'title',
+                'label' => __( 'Content Title', 'super-directory' ),
+                'type'  => 'title',
+            ),
+            array(
+                'key'   => 'type',
+                'label' => __( 'Type', 'super-directory' ),
+                'type'  => 'meta',
+            ),
+            array(
+                'key'   => 'created',
+                'label' => __( 'Generated On', 'super-directory' ),
+                'type'  => 'meta',
+            ),
+            array(
+                'key'   => 'actions',
+                'label' => __( 'Actions', 'super-directory' ),
+                'type'  => 'actions',
+            ),
+        );
+        $column_count = count( $columns );
+
+        echo '<div class="sd-directory-table sd-directory-table--generated-content">';
+        echo '<div class="sd-accordion-group sd-accordion-group--table" data-sd-accordion-group="generated-content">';
+        echo '<table class="wp-list-table widefat striped sd-accordion-table">';
+        echo '<thead><tr>';
+
+        foreach ( $columns as $column ) {
+            $heading_class = 'sd-accordion__heading sd-accordion__heading--' . sanitize_html_class( $column['key'] );
+            $label         = isset( $column['label'] ) ? $column['label'] : '';
+
+            echo '<th scope="col" class="' . esc_attr( $heading_class ) . '">' . esc_html( $label ) . '</th>';
+        }
+
         echo '</tr></thead><tbody>';
-        if ( $entries ) {
+
+        if ( empty( $entries ) ) {
+            echo '<tr class="no-items"><td colspan="' . esc_attr( $column_count ) . '">' . esc_html__( 'No generated content found.', 'super-directory' ) . '</td></tr>';
+        } else {
+            $has_rows = false;
+
             foreach ( $entries as $entry ) {
                 $post = get_post( $entry->post_id );
+
                 if ( ! $post ) {
                     continue;
                 }
-                $view   = get_permalink( $post );
-                $edit   = get_edit_post_link( $post->ID );
-                $delete = wp_nonce_url( admin_url( 'admin-post.php?action=sd_delete_generated_content&post_id=' . $post->ID ), 'sd_delete_generated_content_' . $post->ID );
-                echo '<tr>';
-                echo '<td><a href="' . esc_url( $view ) . '" target="_blank">' . esc_html( get_the_title( $post ) ) . '</a></td>';
-                echo '<td>' . esc_html( ucfirst( $entry->post_type ) ) . '</td>';
-                echo '<td><a href="' . esc_url( $edit ) . '">' . esc_html__( 'Edit', 'super-directory' ) . '</a> | ';
+
+                $has_rows = true;
+
+                $post_id        = $post->ID;
+                $header_id      = 'sd-generated-' . $post_id . '-header';
+                $panel_id       = 'sd-generated-' . $post_id . '-panel';
+                $title          = get_the_title( $post );
+                $type_object    = get_post_type_object( $post->post_type );
+                $type_label     = $type_object ? $type_object->labels->singular_name : ucfirst( $post->post_type );
+                $created_at     = ! empty( $entry->created_at ) ? mysql2date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $entry->created_at ) : get_the_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $post );
+                $view_link      = get_permalink( $post );
+                $edit_link      = get_edit_post_link( $post_id );
+                $delete_link    = wp_nonce_url( admin_url( 'admin-post.php?action=sd_delete_generated_content&post_id=' . $post_id ), 'sd_delete_generated_content_' . $post_id );
+                $entity_name    = ! empty( $entry->entity_name ) ? $entry->entity_name : '';
+                $summary_action = __( 'Details', 'super-directory' );
+
+                echo '<tr id="' . esc_attr( $header_id ) . '" class="sd-accordion__summary-row" tabindex="0" role="button" aria-expanded="false" aria-controls="' . esc_attr( $panel_id ) . '">';
+                echo '<td class="sd-accordion__cell sd-accordion__cell--title"><span class="sd-accordion__title-text">' . esc_html( $title ) . '</span></td>';
+                echo '<td class="sd-accordion__cell sd-accordion__cell--meta"><span class="sd-accordion__meta-text"><span class="sd-accordion__meta-label">' . esc_html__( 'Type', 'super-directory' ) . ':</span> <span class="sd-accordion__meta-value">' . esc_html( $type_label ) . '</span></span></td>';
+                echo '<td class="sd-accordion__cell sd-accordion__cell--meta"><span class="sd-accordion__meta-text"><span class="sd-accordion__meta-label">' . esc_html__( 'Generated On', 'super-directory' ) . ':</span> <span class="sd-accordion__meta-value">' . esc_html( $created_at ) . '</span></span></td>';
+                echo '<td class="sd-accordion__cell sd-accordion__cell--actions"><span class="sd-accordion__action-link" aria-hidden="true">' . esc_html( $summary_action ) . '</span><span class="dashicons dashicons-arrow-down-alt2 sd-accordion__icon" aria-hidden="true"></span><span class="screen-reader-text">' . esc_html__( 'Toggle generated content details', 'super-directory' ) . '</span></td>';
+                echo '</tr>';
+
+                echo '<tr id="' . esc_attr( $panel_id ) . '" class="sd-accordion__panel-row" role="region" aria-labelledby="' . esc_attr( $header_id ) . '" aria-hidden="true">';
+                echo '<td colspan="' . esc_attr( $column_count ) . '">';
+                echo '<div class="sd-accordion__panel">';
+
+                echo '<p><strong>' . esc_html__( 'Associated Listing', 'super-directory' ) . ':</strong> ';
+                if ( $entity_name ) {
+                    echo esc_html( $entity_name );
+                } else {
+                    echo esc_html__( 'No directory listing is linked to this page.', 'super-directory' );
+                }
+                echo '</p>';
+
+                if ( $view_link ) {
+                    echo '<p><strong>' . esc_html__( 'Permalink', 'super-directory' ) . ':</strong> <a href="' . esc_url( $view_link ) . '" target="_blank" rel="noopener noreferrer">' . esc_html( $view_link ) . '</a></p>';
+                }
+
+                echo '<p class="sd-generated-content-actions">';
+                if ( $view_link ) {
+                    echo '<a class="button button-secondary" href="' . esc_url( $view_link ) . '" target="_blank" rel="noopener noreferrer">' . esc_html__( 'View Page', 'super-directory' ) . '</a> ';
+                }
+
+                if ( $edit_link ) {
+                    echo '<a class="button" href="' . esc_url( $edit_link ) . '">' . esc_html__( 'Edit Page', 'super-directory' ) . '</a> ';
+                }
+
                 $confirm = esc_js( __( 'Are you sure you want to delete this item?', 'super-directory' ) );
-                echo '<a href="' . esc_url( $delete ) . '" onclick="return confirm(\'' . $confirm . '\');">' . esc_html__( 'Delete', 'super-directory' ) . '</a></td>';
+                echo '<a class="button button-link-delete" href="' . esc_url( $delete_link ) . '" onclick="return confirm(\'' . $confirm . '\');">' . esc_html__( 'Delete Page', 'super-directory' ) . '</a>';
+                echo '</p>';
+
+                echo '</div>';
+                echo '</td>';
                 echo '</tr>';
             }
-        } else {
-            echo '<tr><td colspan="3">' . esc_html__( 'No generated content found.', 'super-directory' ) . '</td></tr>';
+
+            if ( ! $has_rows ) {
+                echo '<tr class="no-items"><td colspan="' . esc_attr( $column_count ) . '">' . esc_html__( 'No generated content found.', 'super-directory' ) . '</td></tr>';
+            }
         }
+
         echo '</tbody></table>';
+        echo '</div>';
+        echo '</div>';
     }
 
     public function handle_delete_generated_content() {
@@ -822,6 +910,9 @@ class SD_Admin {
             wp_die( esc_html__( 'Insufficient permissions.', 'super-directory' ) );
         }
         $post_id = isset( $_GET['post_id'] ) ? intval( $_GET['post_id'] ) : 0;
+        if ( $post_id <= 0 ) {
+            wp_die( esc_html__( 'Invalid generated content reference.', 'super-directory' ) );
+        }
         check_admin_referer( 'sd_delete_generated_content_' . $post_id );
         wp_delete_post( $post_id, true );
         wp_redirect( admin_url( 'admin.php?page=sd-logs&tab=generated_content' ) );

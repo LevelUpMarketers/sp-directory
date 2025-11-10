@@ -11,7 +11,7 @@ class SD_Content_Logger {
      * Register hooks.
      */
     public function register() {
-        add_action( 'sd_log_generated_content', array( $this, 'log_content' ) );
+        add_action( 'sd_log_generated_content', array( $this, 'log_content' ), 10, 2 );
         add_action( 'before_delete_post', array( $this, 'remove_content' ) );
         add_action( 'post_updated', array( $this, 'maybe_update_type' ), 10, 3 );
     }
@@ -19,9 +19,17 @@ class SD_Content_Logger {
     /**
      * Insert a record for a generated post or page.
      *
-     * @param int $post_id Post ID.
+     * @param int $post_id  Post ID.
+     * @param int $entity_id Related entity ID.
      */
-    public function log_content( $post_id ) {
+    public function log_content( $post_id, $entity_id = 0 ) {
+        $post_id   = absint( $post_id );
+        $entity_id = absint( $entity_id );
+
+        if ( ! $post_id ) {
+            return;
+        }
+
         $post = get_post( $post_id );
         if ( ! $post ) {
             return;
@@ -29,14 +37,32 @@ class SD_Content_Logger {
 
         global $wpdb;
         $table = $wpdb->prefix . 'sd_content_log';
+
+        $existing_id = $wpdb->get_var( $wpdb->prepare( "SELECT id FROM $table WHERE post_id = %d", $post_id ) );
+
+        if ( $existing_id ) {
+            $wpdb->update(
+                $table,
+                array(
+                    'post_type' => $post->post_type,
+                    'entity_id' => $entity_id,
+                ),
+                array( 'id' => $existing_id ),
+                array( '%s', '%d' ),
+                array( '%d' )
+            );
+            return;
+        }
+
         $wpdb->insert(
             $table,
             array(
-                'post_id'   => $post_id,
-                'post_type' => $post->post_type,
-                'created_at'=> current_time( 'mysql' ),
+                'post_id'    => $post_id,
+                'post_type'  => $post->post_type,
+                'entity_id'  => $entity_id,
+                'created_at' => current_time( 'mysql' ),
             ),
-            array( '%d', '%s', '%s' )
+            array( '%d', '%s', '%d', '%s' )
         );
     }
 
@@ -48,6 +74,12 @@ class SD_Content_Logger {
     public function remove_content( $post_id ) {
         global $wpdb;
         $table = $wpdb->prefix . 'sd_content_log';
+        $entry = $wpdb->get_row( $wpdb->prepare( "SELECT entity_id FROM $table WHERE post_id = %d", $post_id ) );
+
+        if ( $entry && isset( $entry->entity_id ) && $entry->entity_id ) {
+            $this->clear_entity_page_association( (int) $entry->entity_id, $post_id );
+        }
+
         $wpdb->delete( $table, array( 'post_id' => $post_id ), array( '%d' ) );
     }
 
@@ -81,6 +113,46 @@ class SD_Content_Logger {
     public function get_logged_content() {
         global $wpdb;
         $table = $wpdb->prefix . 'sd_content_log';
-        return $wpdb->get_results( "SELECT post_id, post_type FROM $table ORDER BY id DESC" );
+        $main_table = $wpdb->prefix . 'sd_main_entity';
+
+        return $wpdb->get_results(
+            "SELECT log.post_id, log.post_type, log.entity_id, log.created_at, entity.name AS entity_name, entity.directory_page_id
+            FROM $table AS log
+            LEFT JOIN $main_table AS entity ON entity.id = log.entity_id
+            ORDER BY log.id DESC"
+        );
+    }
+
+    /**
+     * Look up the log entry for a specific post.
+     *
+     * @param int $post_id Post ID.
+     *
+     * @return object|null
+     */
+    public function get_entry_for_post( $post_id ) {
+        global $wpdb;
+        $table = $wpdb->prefix . 'sd_content_log';
+
+        return $wpdb->get_row( $wpdb->prepare( "SELECT * FROM $table WHERE post_id = %d", $post_id ) );
+    }
+
+    /**
+     * Remove the stored page reference from an entity.
+     *
+     * @param int $entity_id Entity ID.
+     * @param int $post_id   Post ID being cleared.
+     */
+    private function clear_entity_page_association( $entity_id, $post_id ) {
+        global $wpdb;
+        $entity_table = $wpdb->prefix . 'sd_main_entity';
+
+        $wpdb->update(
+            $entity_table,
+            array( 'directory_page_id' => 0 ),
+            array( 'id' => $entity_id, 'directory_page_id' => $post_id ),
+            array( '%d' ),
+            array( '%d', '%d' )
+        );
     }
 }

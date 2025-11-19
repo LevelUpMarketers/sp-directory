@@ -52,3 +52,4 @@
 50. 2025-11-19: Displayed saved listing logos beneath the entry heading with supporting template styles for consistent sizing.
 51. 2025-11-19: Backfilled a helper to refetch stored logo IDs when cached entities lag schema updates so templates reliably render imagery.
 52. 2025-11-19: Synced the directory entry template with the requested front-end layout so hero banners, logo placement, and supporting styles match production.
+53. 2025-11-19: Added gallery helper refetch logic plus a conditional gallery/lightbox section on the directory template so uploaded images display in a responsive grid with modal previews.

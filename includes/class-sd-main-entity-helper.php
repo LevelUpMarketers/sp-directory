@@ -121,6 +121,42 @@ class SD_Main_Entity_Helper {
     }
 
     /**
+     * Retrieve the stored gallery attachment identifiers for an entity.
+     *
+     * Provides a lightweight way for templates to refetch the gallery data
+     * in case cached entity payloads have not yet been refreshed with the
+     * latest schema changes.
+     *
+     * @param int $entity_id Directory Listing identifier.
+     *
+     * @return array<int>
+     */
+    public static function get_gallery_image_ids( $entity_id ) {
+        $entity_id = absint( $entity_id );
+
+        if ( ! $entity_id ) {
+            return array();
+        }
+
+        $table_name = self::get_main_table_name();
+
+        if ( ! self::table_exists( $table_name ) ) {
+            return array();
+        }
+
+        global $wpdb;
+
+        $value = $wpdb->get_var(
+            $wpdb->prepare(
+                "SELECT gallery_image_ids FROM $table_name WHERE id = %d",
+                $entity_id
+            )
+        );
+
+        return self::parse_gallery_ids( $value );
+    }
+
+    /**
      * Normalize a stored value so it can be injected into a template token.
      *
      * @param string $key   Database column key.

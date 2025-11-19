@@ -55,3 +55,4 @@
 53. 2025-11-19: Added gallery helper refetch logic plus a conditional gallery/lightbox section on the directory template so uploaded images display in a responsive grid with modal previews.
 54. 2025-11-19: Reflowed the directory entry grid so the gallery sits beneath the descriptive section at full width with consistent spacing.
 55. 2025-11-19: Removed the gallery lightbox caption from the directory entry template to keep the modal uncluttered.
+56. 2025-11-19: Added a parent directory template with AJAX-powered search, responsive resource cards, and shared styling/assets for browsing listings.

@@ -11,6 +11,8 @@ class SD_Ajax {
         add_action( 'wp_ajax_sd_save_main_entity', array( $this, 'save_main_entity' ) );
         add_action( 'wp_ajax_sd_delete_main_entity', array( $this, 'delete_main_entity' ) );
         add_action( 'wp_ajax_sd_read_main_entity', array( $this, 'read_main_entity' ) );
+        add_action( 'wp_ajax_sd_search_directory', array( $this, 'search_directory' ) );
+        add_action( 'wp_ajax_nopriv_sd_search_directory', array( $this, 'search_directory' ) );
     }
 
     private function maybe_delay( $start, $minimum_time = SD_MIN_EXECUTION_TIME ) {
@@ -233,6 +235,40 @@ class SD_Ajax {
                 'total_pages' => $total_pages,
             )
         );
+    }
+
+    /**
+     * Search public directory listings for the parent template.
+     */
+    public function search_directory() {
+        $start = microtime( true );
+        check_ajax_referer( 'sd_directory_search', 'nonce' );
+
+        $search   = sanitize_text_field( (string) $this->get_post_value( 'search' ) );
+        $category = sanitize_key( (string) $this->get_post_value( 'category' ) );
+        $industry = sanitize_key( (string) $this->get_post_value( 'industry' ) );
+        $state    = sanitize_text_field( (string) $this->get_post_value( 'state' ) );
+        $page     = max( 1, absint( $this->get_post_value( 'page' ) ) );
+        $per_page = absint( $this->get_post_value( 'per_page' ) );
+
+        if ( $per_page <= 0 ) {
+            $per_page = 12;
+        }
+
+        $results = SD_Main_Entity_Helper::search_directory_entries(
+            array(
+                'search'   => $search,
+                'category' => $category,
+                'industry' => $industry,
+                'state'    => $state,
+                'page'     => $page,
+                'per_page' => $per_page,
+            )
+        );
+
+        $this->maybe_delay( $start, 0 );
+
+        wp_send_json_success( $results );
     }
 
     private function get_post_value( $key ) {

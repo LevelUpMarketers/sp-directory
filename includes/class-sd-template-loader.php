@@ -32,7 +32,8 @@ class SD_Template_Loader {
             $page_templates = array();
         }
 
-        $page_templates[ SD_DIRECTORY_TEMPLATE_SLUG ] = __( 'SuperDirectory Listing Page', 'super-directory' );
+        $page_templates[ SD_DIRECTORY_TEMPLATE_SLUG ]        = __( 'SuperDirectory Listing Page', 'super-directory' );
+        $page_templates[ SD_DIRECTORY_PARENT_TEMPLATE_SLUG ] = __( 'SuperDirectory Directory Page', 'super-directory' );
 
         if ( class_exists( 'WP_Theme' ) && $wp_theme instanceof WP_Theme ) {
             $cache_hash = md5( $wp_theme->get_stylesheet() . $wp_theme->get_template() );
@@ -58,6 +59,18 @@ class SD_Template_Loader {
 
         $assigned_template  = get_page_template_slug( $post );
         $has_directory_meta = metadata_exists( 'post', $post->ID, '_sd_main_entity_id' );
+
+        if ( SD_DIRECTORY_PARENT_TEMPLATE_SLUG === $assigned_template ) {
+            add_action( 'wp_enqueue_scripts', array( $this, 'enqueue_directory_parent_assets' ) );
+
+            $parent_template = trailingslashit( SD_PLUGIN_DIR ) . SD_DIRECTORY_PARENT_TEMPLATE_SLUG;
+
+            if ( file_exists( $parent_template ) ) {
+                return $parent_template;
+            }
+
+            return $template;
+        }
 
         if ( ! $has_directory_meta ) {
             return $template;
@@ -97,6 +110,26 @@ class SD_Template_Loader {
             SD_PLUGIN_URL . 'assets/css/templates/directory-entry.css',
             array(),
             SD_VERSION
+        );
+    }
+
+    /**
+     * Enqueue front-end assets for the parent directory template.
+     */
+    public function enqueue_directory_parent_assets() {
+        wp_enqueue_style(
+            'sd-directory-parent',
+            SD_PLUGIN_URL . 'assets/css/templates/directory-parent.css',
+            array(),
+            SD_VERSION
+        );
+
+        wp_enqueue_script(
+            'sd-directory-parent',
+            SD_PLUGIN_URL . 'assets/js/templates/directory-parent.js',
+            array(),
+            SD_VERSION,
+            true
         );
     }
 }

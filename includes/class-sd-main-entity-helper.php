@@ -12,6 +12,309 @@ if ( ! defined( 'ABSPATH' ) ) {
 class SD_Main_Entity_Helper {
 
     /**
+     * Retrieve the directory category labels.
+     *
+     * @return array
+     */
+    public static function get_category_labels() {
+        $options = array(
+            'crm'                  => __( 'CRM', 'super-directory' ),
+            'chatbots'             => __( 'Chatbots', 'super-directory' ),
+            'hiring_platform'      => __( 'Hiring Platform', 'super-directory' ),
+            'lead_generation'      => __( 'Lead Generation', 'super-directory' ),
+            'answering_service'    => __( 'Answering Service', 'super-directory' ),
+            'csr_training'         => __( 'CSR Training', 'super-directory' ),
+            'business_development' => __( 'Business Development', 'super-directory' ),
+            'onboarding_companies' => __( 'Onboarding Companies', 'super-directory' ),
+        );
+
+        $options = apply_filters( 'sd_directory_categories', $options );
+
+        $labels = array();
+
+        foreach ( $options as $value => $label ) {
+            $labels[ sanitize_key( $value ) ] = wp_strip_all_tags( (string) $label );
+        }
+
+        return $labels;
+    }
+
+    /**
+     * Retrieve the directory industry labels.
+     *
+     * @return array
+     */
+    public static function get_industry_labels() {
+        $options = array(
+            'all'                        => __( 'All Industries', 'super-directory' ),
+            'multiple'                   => __( 'Multiple', 'super-directory' ),
+            'appliance_repair'           => __( 'Appliance Repair', 'super-directory' ),
+            'carpet_cleaning'            => __( 'Carpet Cleaning', 'super-directory' ),
+            'concrete_masonry'           => __( 'Concrete & Masonry', 'super-directory' ),
+            'deck_patio'                 => __( 'Deck & Patio', 'super-directory' ),
+            'electrical'                 => __( 'Electrical', 'super-directory' ),
+            'fencing'                    => __( 'Fencing', 'super-directory' ),
+            'flooring'                   => __( 'Flooring', 'super-directory' ),
+            'garage_door'                => __( 'Garage Door', 'super-directory' ),
+            'general_contractor_remodel' => __( 'General Contractor & Remodeling', 'super-directory' ),
+            'gutter_services'            => __( 'Gutter Services', 'super-directory' ),
+            'handyman'                   => __( 'Handyman', 'super-directory' ),
+            'hardscaping'                => __( 'Hardscaping', 'super-directory' ),
+            'house_cleaning_maid'        => __( 'House Cleaning & Maid', 'super-directory' ),
+            'hvac'                       => __( 'HVAC', 'super-directory' ),
+            'insulation'                 => __( 'Insulation', 'super-directory' ),
+            'irrigation_sprinklers'      => __( 'Irrigation & Sprinklers', 'super-directory' ),
+            'junk_removal'               => __( 'Junk Removal', 'super-directory' ),
+            'landscaping'                => __( 'Landscaping', 'super-directory' ),
+            'moving_storage'             => __( 'Moving & Storage', 'super-directory' ),
+            'painting'                   => __( 'Painting', 'super-directory' ),
+            'pest_control'               => __( 'Pest Control', 'super-directory' ),
+            'plumbing'                   => __( 'Plumbing', 'super-directory' ),
+            'pool_spa_services'          => __( 'Pool & Spa Services', 'super-directory' ),
+            'pressure_washing'           => __( 'Pressure Washing', 'super-directory' ),
+            'roofing'                    => __( 'Roofing', 'super-directory' ),
+            'security_smart_home'        => __( 'Security & Smart Home', 'super-directory' ),
+            'siding'                     => __( 'Siding', 'super-directory' ),
+            'solar_energy'               => __( 'Solar Energy', 'super-directory' ),
+            'tree_services'              => __( 'Tree Services', 'super-directory' ),
+            'water_mold_restoration'     => __( 'Water & Mold Damage Restoration', 'super-directory' ),
+        );
+
+        $options = apply_filters( 'sd_directory_industries', $options );
+
+        $labels = array();
+
+        foreach ( $options as $value => $label ) {
+            $labels[ sanitize_key( $value ) ] = wp_strip_all_tags( (string) $label );
+        }
+
+        return $labels;
+    }
+
+    /**
+     * Convert a slug to a human-readable label.
+     *
+     * @param string $value Raw slug.
+     *
+     * @return string
+     */
+    public static function humanize_value( $value ) {
+        $value = sanitize_text_field( (string) $value );
+        $value = str_replace( array( '-', '_' ), ' ', $value );
+
+        return ucwords( $value );
+    }
+
+    /**
+     * Get a friendly label for a stored category.
+     *
+     * @param string $value Stored value.
+     *
+     * @return string
+     */
+    public static function get_category_label( $value ) {
+        $labels = self::get_category_labels();
+        $key    = sanitize_key( $value );
+
+        if ( isset( $labels[ $key ] ) ) {
+            return $labels[ $key ];
+        }
+
+        return self::humanize_value( $value );
+    }
+
+    /**
+     * Get a friendly label for a stored industry vertical.
+     *
+     * @param string $value Stored value.
+     *
+     * @return string
+     */
+    public static function get_industry_label( $value ) {
+        $labels = self::get_industry_labels();
+        $key    = sanitize_key( $value );
+
+        if ( isset( $labels[ $key ] ) ) {
+            return $labels[ $key ];
+        }
+
+        return self::humanize_value( $value );
+    }
+
+    /**
+     * Get distinct stored values for a given column.
+     *
+     * @param string $column Column key.
+     *
+     * @return array
+     */
+    public static function get_distinct_values( $column ) {
+        $allowed = array( 'category', 'industry_vertical', 'state' );
+        $column  = sanitize_key( $column );
+
+        if ( ! in_array( $column, $allowed, true ) ) {
+            return array();
+        }
+
+        $table_name = self::get_main_table_name();
+
+        if ( ! self::table_exists( $table_name ) ) {
+            return array();
+        }
+
+        global $wpdb;
+
+        // phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+        $values = $wpdb->get_col( $wpdb->prepare( "SELECT DISTINCT $column FROM $table_name WHERE $column != %s", '' ) );
+
+        $values = array_filter( array_map( 'sanitize_text_field', (array) $values ) );
+
+        sort( $values );
+
+        return array_values( array_unique( $values ) );
+    }
+
+    /**
+     * Search and paginate directory entities.
+     *
+     * @param array $args Search arguments.
+     *
+     * @return array
+     */
+    public static function search_directory_entries( array $args ) {
+        global $wpdb;
+
+        $table_name = self::get_main_table_name();
+
+        if ( ! self::table_exists( $table_name ) ) {
+            return array(
+                'items'       => array(),
+                'total'       => 0,
+                'total_pages' => 0,
+                'page'        => 1,
+                'per_page'    => 0,
+            );
+        }
+
+        $defaults = array(
+            'search'   => '',
+            'category' => '',
+            'industry' => '',
+            'state'    => '',
+            'page'     => 1,
+            'per_page' => 12,
+        );
+
+        $args = wp_parse_args( $args, $defaults );
+
+        $page     = max( 1, absint( $args['page'] ) );
+        $per_page = absint( $args['per_page'] );
+
+        if ( $per_page <= 0 ) {
+            $per_page = 12;
+        }
+
+        $per_page = min( $per_page, 50 );
+
+        $search   = sanitize_text_field( $args['search'] );
+        $category = sanitize_key( $args['category'] );
+        $industry = sanitize_key( $args['industry'] );
+        $state    = sanitize_text_field( (string) $args['state'] );
+
+        $conditions = array(
+            "p.ID IS NOT NULL",
+        );
+        $params     = array();
+
+        if ( '' !== $search ) {
+            $conditions[] = 'e.name LIKE %s';
+            $params[]     = '%' . $wpdb->esc_like( $search ) . '%';
+        }
+
+        if ( '' !== $category ) {
+            $conditions[] = 'e.category = %s';
+            $params[]     = $category;
+        }
+
+        if ( '' !== $industry ) {
+            $conditions[] = 'e.industry_vertical = %s';
+            $params[]     = $industry;
+        }
+
+        if ( '' !== $state ) {
+            $conditions[] = 'e.state = %s';
+            $params[]     = $state;
+        }
+
+        $where_sql = '';
+
+        if ( ! empty( $conditions ) ) {
+            $where_sql = ' AND ' . implode( ' AND ', $conditions );
+        }
+
+        $join  = "FROM $table_name e INNER JOIN {$wpdb->posts} p ON p.ID = e.directory_page_id AND p.post_status = 'publish' AND p.post_type = 'page'";
+        $count = "SELECT COUNT(*) $join WHERE 1=1 $where_sql";
+
+        $total = (int) $wpdb->get_var( $wpdb->prepare( $count, $params ) );
+
+        $total_pages = $per_page > 0 ? (int) ceil( $total / $per_page ) : 0;
+
+        if ( $total_pages < 1 ) {
+            $total_pages = $total > 0 ? 1 : 0;
+        }
+
+        if ( $page > $total_pages && $total_pages > 0 ) {
+            $page = $total_pages;
+        }
+
+        $offset = ( $page - 1 ) * $per_page;
+
+        if ( $offset < 0 ) {
+            $offset = 0;
+        }
+
+        $items = array();
+
+        if ( $total > 0 ) {
+            $select = "SELECT e.*, p.ID as page_id $join WHERE 1=1 $where_sql ORDER BY e.created_at DESC, e.id DESC LIMIT %d OFFSET %d";
+            $query  = $wpdb->prepare( $select, array_merge( $params, array( $per_page, $offset ) ) );
+
+            // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared,WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+            $results = $wpdb->get_results( $query, ARRAY_A );
+
+            foreach ( (array) $results as $row ) {
+                $entity    = self::prepare_template_entity( $row );
+                $permalink = isset( $entity['directory_page_id'] ) && $entity['directory_page_id'] ? get_permalink( (int) $entity['directory_page_id'] ) : '';
+                $logo_url  = '';
+
+                if ( ! empty( $entity['logo_attachment_id'] ) ) {
+                    $logo_url = wp_get_attachment_image_url( $entity['logo_attachment_id'], 'medium' );
+                }
+
+                $items[] = array(
+                    'id'               => $entity['id'],
+                    'name'             => isset( $entity['name'] ) ? $entity['name'] : '',
+                    'category'         => isset( $entity['category'] ) ? $entity['category'] : '',
+                    'category_label'   => isset( $entity['category'] ) ? self::get_category_label( $entity['category'] ) : '',
+                    'industry'         => isset( $entity['industry_vertical'] ) ? $entity['industry_vertical'] : '',
+                    'industry_label'   => isset( $entity['industry_vertical'] ) ? self::get_industry_label( $entity['industry_vertical'] ) : '',
+                    'state'            => isset( $entity['state'] ) ? $entity['state'] : '',
+                    'logo'             => $logo_url,
+                    'permalink'        => $permalink,
+                );
+            }
+        }
+
+        return array(
+            'items'       => $items,
+            'total'       => $total,
+            'total_pages' => $total_pages,
+            'page'        => $page,
+            'per_page'    => $per_page,
+        );
+    }
+
+    /**
      * Retrieve the first Directory Listing record prepared for template previews.
      *
      * @return array

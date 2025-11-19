@@ -48,7 +48,7 @@ get_header();
         $states           = SD_Main_Entity_Helper::get_distinct_values( 'state' );
         $initial_results  = SD_Main_Entity_Helper::search_directory_entries( array( 'page' => 1, 'per_page' => 12 ) );
         $initial_items    = isset( $initial_results['items'] ) ? $initial_results['items'] : array();
-        $card_button_text = __( 'View Resource', 'super-directory' );
+        $card_button_text = __( 'Learn More', 'super-directory' );
         ?>
 
         <article id="post-<?php the_ID(); ?>" <?php post_class( 'sd-directory-parent__article' ); ?>>
@@ -119,18 +119,24 @@ get_header();
                 </div>
                 <div class="sd-directory-results">
                     <?php foreach ( $initial_items as $item ) : ?>
-                        <article class="sd-directory-card">
-                            <div class="sd-directory-card__logo">
-                                <?php if ( ! empty( $item['logo'] ) ) : ?>
-                                    <img src="<?php echo esc_url( $item['logo'] ); ?>" alt="<?php echo esc_attr( $item['name'] ? sprintf( __( '%s logo', 'super-directory' ), $item['name'] ) : '' ); ?>" />
-                                <?php endif; ?>
-                            </div>
-                            <h3 class="sd-directory-card__title"><?php echo esc_html( $item['name'] ); ?></h3>
-                            <p class="sd-directory-card__meta"><?php echo esc_html( implode( ' • ', array_filter( array( isset( $item['category_label'] ) ? $item['category_label'] : '', isset( $item['industry_label'] ) ? $item['industry_label'] : '' ) ) ) ); ?></p>
-                            <?php if ( ! empty( $item['permalink'] ) ) : ?>
-                                <a class="sd-directory-card__link" href="<?php echo esc_url( $item['permalink'] ); ?>"><?php echo esc_html( $card_button_text ); ?></a>
-                            <?php endif; ?>
-                        </article>
+                        <?php if ( ! empty( $item['permalink'] ) ) : ?>
+                            <a class="sd-directory-card" href="<?php echo esc_url( $item['permalink'] ); ?>">
+                        <?php else : ?>
+                            <article class="sd-directory-card">
+                        <?php endif; ?>
+                                <div class="sd-directory-card__logo">
+                                    <?php if ( ! empty( $item['logo'] ) ) : ?>
+                                        <img src="<?php echo esc_url( $item['logo'] ); ?>" alt="<?php echo esc_attr( $item['name'] ? sprintf( __( '%s logo', 'super-directory' ), $item['name'] ) : '' ); ?>" />
+                                    <?php endif; ?>
+                                </div>
+                                <h3 class="sd-directory-card__title"><?php echo esc_html( $item['name'] ); ?></h3>
+                                <p class="sd-directory-card__meta"><?php echo esc_html( implode( ' • ', array_filter( array( isset( $item['category_label'] ) ? $item['category_label'] : '', isset( $item['industry_label'] ) ? $item['industry_label'] : '' ) ) ) ); ?></p>
+                                <span class="sd-directory-card__cta"><?php echo esc_html( $card_button_text ); ?></span>
+                        <?php if ( ! empty( $item['permalink'] ) ) : ?>
+                            </a>
+                        <?php else : ?>
+                            </article>
+                        <?php endif; ?>
                     <?php endforeach; ?>
                 </div>
                 <div class="sd-directory-pagination"></div>

@@ -217,12 +217,6 @@ article{
     background:#000;
     display:block;
 }
-.sd-gallery-lightbox__caption{
-    margin-top:12px;
-    color:#fff;
-    text-align:center;
-    font-size:16px;
-}
 .sd-gallery-lightbox__close{
     position:absolute;
     top:-16px;
@@ -620,7 +614,7 @@ article{
                                         </h2>
                                         <div class="sd-gallery__grid">
                                             <?php foreach ( $gallery_images as $gallery_image ) : ?>
-                                                <button type="button" class="sd-gallery__item" data-full-image="<?php echo esc_url( $gallery_image['full_url'] ); ?>" data-alt="<?php echo esc_attr( $gallery_image['alt'] ); ?>" data-caption="<?php echo esc_attr( $gallery_image['caption'] ); ?>">
+                                                <button type="button" class="sd-gallery__item" data-full-image="<?php echo esc_url( $gallery_image['full_url'] ); ?>" data-alt="<?php echo esc_attr( $gallery_image['alt'] ); ?>">
                                                     <?php echo wp_kses_post( $gallery_image['html'] ); ?>
                                                 </button>
                                             <?php endforeach; ?>
@@ -631,7 +625,6 @@ article{
                                     <div class="sd-gallery-lightbox__dialog">
                                         <button type="button" class="sd-gallery-lightbox__close" aria-label="<?php esc_attr_e( 'Close gallery', 'super-directory' ); ?>">&times;</button>
                                         <img src="" alt="" class="sd-gallery-lightbox__image" />
-                                        <p class="sd-gallery-lightbox__caption" aria-live="polite"></p>
                                     </div>
                                 </div>
                             <?php endif; ?>
@@ -655,7 +648,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     var lightboxImage = lightbox.querySelector('.sd-gallery-lightbox__image');
-    var lightboxCaption = lightbox.querySelector('.sd-gallery-lightbox__caption');
     var closeButton = lightbox.querySelector('.sd-gallery-lightbox__close');
 
     var closeLightbox = function () {
@@ -667,7 +659,6 @@ document.addEventListener('DOMContentLoaded', function () {
         lightbox.classList.remove('is-visible');
         lightboxImage.removeAttribute('src');
         lightboxImage.removeAttribute('alt');
-        lightboxCaption.textContent = '';
     };
 
     galleryButtons.forEach(function (button) {
@@ -679,11 +670,8 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             var altText = button.getAttribute('data-alt') || '';
-            var captionText = button.getAttribute('data-caption') || '';
-
             lightboxImage.setAttribute('src', fullImage);
             lightboxImage.setAttribute('alt', altText);
-            lightboxCaption.textContent = captionText;
 
             lightbox.removeAttribute('hidden');
             lightbox.classList.add('is-visible');

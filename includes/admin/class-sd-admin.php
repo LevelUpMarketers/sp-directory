@@ -123,6 +123,58 @@ class SD_Admin {
         return array( '' => __( 'Make a Selection...', 'super-directory' ) ) + $normalized;
     }
 
+    private function get_industry_options() {
+        $options = array(
+            'all'                           => __( 'All Industries', 'super-directory' ),
+            'multiple'                      => __( 'Multiple', 'super-directory' ),
+            'appliance_repair'              => __( 'Appliance Repair', 'super-directory' ),
+            'carpet_cleaning'               => __( 'Carpet Cleaning', 'super-directory' ),
+            'concrete_masonry'              => __( 'Concrete & Masonry', 'super-directory' ),
+            'deck_patio'                    => __( 'Deck & Patio', 'super-directory' ),
+            'electrical'                    => __( 'Electrical', 'super-directory' ),
+            'fencing'                       => __( 'Fencing', 'super-directory' ),
+            'flooring'                      => __( 'Flooring', 'super-directory' ),
+            'garage_door'                   => __( 'Garage Door', 'super-directory' ),
+            'general_contractor_remodel'    => __( 'General Contractor & Remodeling', 'super-directory' ),
+            'gutter_services'               => __( 'Gutter Services', 'super-directory' ),
+            'handyman'                      => __( 'Handyman', 'super-directory' ),
+            'hardscaping'                   => __( 'Hardscaping', 'super-directory' ),
+            'house_cleaning_maid'           => __( 'House Cleaning & Maid', 'super-directory' ),
+            'hvac'                          => __( 'HVAC', 'super-directory' ),
+            'insulation'                    => __( 'Insulation', 'super-directory' ),
+            'irrigation_sprinklers'         => __( 'Irrigation & Sprinklers', 'super-directory' ),
+            'junk_removal'                  => __( 'Junk Removal', 'super-directory' ),
+            'landscaping'                   => __( 'Landscaping', 'super-directory' ),
+            'moving_storage'                => __( 'Moving & Storage', 'super-directory' ),
+            'painting'                      => __( 'Painting', 'super-directory' ),
+            'pest_control'                  => __( 'Pest Control', 'super-directory' ),
+            'plumbing'                      => __( 'Plumbing', 'super-directory' ),
+            'pool_spa_services'             => __( 'Pool & Spa Services', 'super-directory' ),
+            'pressure_washing'              => __( 'Pressure Washing', 'super-directory' ),
+            'roofing'                       => __( 'Roofing', 'super-directory' ),
+            'security_smart_home'           => __( 'Security & Smart Home', 'super-directory' ),
+            'siding'                        => __( 'Siding', 'super-directory' ),
+            'solar_energy'                  => __( 'Solar Energy', 'super-directory' ),
+            'tree_services'                 => __( 'Tree Services', 'super-directory' ),
+            'water_mold_restoration'        => __( 'Water & Mold Damage Restoration', 'super-directory' ),
+        );
+
+
+        $options = apply_filters( 'sd_directory_industries', $options );
+
+        $normalized = array();
+
+        foreach ( $options as $value => $label ) {
+            $key              = sanitize_key( $value );
+            $normalized[ $key ] = wp_strip_all_tags( (string) $label );
+        }
+
+        return array( '' => __( 'Make a Selection...', 'super-directory' ) ) + $normalized;
+    }
+
+
+
+
     private function get_service_model_options() {
         $options = array(
             'local'  => __( 'Local Customers Only', 'super-directory' ),
@@ -213,6 +265,7 @@ class SD_Admin {
 
     private function get_main_entity_field_groups() {
         $category_options      = $this->get_category_options();
+        $industry_options      = $this->get_industry_options();
         $service_model_options = $this->get_service_model_options();
 
         return array(
@@ -222,7 +275,7 @@ class SD_Admin {
                 'fields'      => array(
                     array(
                         'name'      => 'name',
-                        'label'     => __( 'Resource / Company / Vendor Name', 'super-directory' ),
+                        'label'     => __( 'Resource Name', 'super-directory' ),
                         'type'      => 'text',
                         'tooltip'   => __( 'This name is shown on cards, generated pages, and search results.', 'super-directory' ),
                     ),
@@ -235,13 +288,14 @@ class SD_Admin {
                     ),
                     array(
                         'name'      => 'industry_vertical',
-                        'label'     => __( 'Related Industry / Vertical', 'super-directory' ),
-                        'type'      => 'text',
-                        'tooltip'   => __( 'Note the primary industry focus that best describes this listing.', 'super-directory' ),
+                        'label'     => __( 'Industry', 'super-directory' ),
+                        'type'      => 'select',
+                        'options'   => $industry_options,
+                        'tooltip'   => __( 'Choose the closest category from the curated SuperDirectory list.', 'super-directory' ),
                     ),
                     array(
                         'name'      => 'service_model',
-                        'label'     => __( 'Serving Only Local Customers, Virtual/National, or Both?', 'super-directory' ),
+                        'label'     => __( 'Local, National, Both?', 'super-directory' ),
                         'type'      => 'select',
                         'options'   => $service_model_options,
                         'tooltip'   => __( 'Clarify the service footprint so prospects know where support is available.', 'super-directory' ),
@@ -281,7 +335,6 @@ class SD_Admin {
                         'label'      => __( 'Street Address', 'super-directory' ),
                         'type'       => 'text',
                         'tooltip'    => __( 'Headquarters or primary service location street address.', 'super-directory' ),
-                        'full_width' => true,
                     ),
                     array(
                         'name'    => 'city',
@@ -307,33 +360,6 @@ class SD_Admin {
                         'label'   => __( 'Country', 'super-directory' ),
                         'type'    => 'text',
                         'tooltip' => __( 'Country where the business is based or primarily serves.', 'super-directory' ),
-                    ),
-                ),
-            ),
-            'descriptions' => array(
-                'label'       => __( 'Descriptions & Messaging', 'super-directory' ),
-                'description' => __( 'Tell the story with short and long-form content.', 'super-directory' ),
-                'fields'      => array(
-                    array(
-                        'name'       => 'short_description',
-                        'label'      => __( 'Short Description', 'super-directory' ),
-                        'type'       => 'textarea',
-                        'tooltip'    => __( 'A brief overview used on condensed directory layouts.', 'super-directory' ),
-                        'full_width' => true,
-                    ),
-                    array(
-                        'name'       => 'long_description_primary',
-                        'label'      => __( 'Long Description 1', 'super-directory' ),
-                        'type'       => 'editor',
-                        'tooltip'    => __( 'Primary body content for the generated detail page.', 'super-directory' ),
-                        'full_width' => true,
-                    ),
-                    array(
-                        'name'       => 'long_description_secondary',
-                        'label'      => __( 'Long Description 2', 'super-directory' ),
-                        'type'       => 'editor',
-                        'tooltip'    => __( 'Secondary narrative space for testimonials, processes, or offers.', 'super-directory' ),
-                        'full_width' => true,
                     ),
                 ),
             ),
@@ -367,9 +393,36 @@ class SD_Admin {
                     ),
                     array(
                         'name'    => 'google_business_url',
-                        'label'   => __( 'Google Business Listing URL', 'super-directory' ),
+                        'label'   => __( 'GBP URL', 'super-directory' ),
                         'type'    => 'url',
                         'tooltip' => __( 'Direct link to the Google Business Profile listing.', 'super-directory' ),
+                    ),
+                ),
+            ),
+            'descriptions' => array(
+                'label'       => __( 'Descriptions & Messaging', 'super-directory' ),
+                'description' => __( 'Tell the story with short and long-form content.', 'super-directory' ),
+                'fields'      => array(
+                    array(
+                        'name'       => 'short_description',
+                        'label'      => __( 'Short Description', 'super-directory' ),
+                        'type'       => 'textarea',
+                        'tooltip'    => __( 'A brief overview used on condensed directory layouts.', 'super-directory' ),
+                        'full_width' => true,
+                    ),
+                    array(
+                        'name'       => 'long_description_primary',
+                        'label'      => __( 'Long Description 1', 'super-directory' ),
+                        'type'       => 'editor',
+                        'tooltip'    => __( 'Primary body content for the generated detail page.', 'super-directory' ),
+                        'full_width' => true,
+                    ),
+                    array(
+                        'name'       => 'long_description_secondary',
+                        'label'      => __( 'Long Description 2', 'super-directory' ),
+                        'type'       => 'editor',
+                        'tooltip'    => __( 'Secondary narrative space for testimonials, processes, or offers.', 'super-directory' ),
+                        'full_width' => true,
                     ),
                 ),
             ),
@@ -413,7 +466,7 @@ class SD_Admin {
             ),
             array(
                 'key'   => 'industry_vertical',
-                'label' => __( 'Industry / Vertical', 'super-directory' ),
+                'label' => __( 'Industry', 'super-directory' ),
                 'type'  => 'meta',
             ),
             array(
@@ -502,6 +555,7 @@ class SD_Admin {
         echo '<form id="sd-create-form"><div class="sd-flex-form">';
 
         foreach ( $groups as $group_key => $group ) {
+            echo '<div class="sd-section-grouping">';
             $group_label       = isset( $group['label'] ) ? $group['label'] : '';
             $group_description = isset( $group['description'] ) ? $group['description'] : '';
 
@@ -587,6 +641,8 @@ class SD_Admin {
 
                 echo '</div>';
             }
+
+            echo '</div>';
         }
 
         echo '</div>';

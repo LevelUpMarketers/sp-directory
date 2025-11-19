@@ -43,7 +43,7 @@ class SD_Ajax {
             $this->maybe_delay( $start );
             wp_send_json_error(
                 array(
-                    'message' => __( 'Please provide a Resource / Company / Vendor Name.', 'super-directory' ),
+                    'message' => __( 'Please provide a Resource Name.', 'super-directory' ),
                 )
             );
         }
@@ -51,12 +51,13 @@ class SD_Ajax {
         $state_options          = $this->get_us_states();
         $extended_state_options = $this->get_us_states_and_territories();
         $category_keys          = $this->get_directory_category_keys();
+        $industry_keys          = $this->get_directory_industry_keys();
         $service_model_keys     = $this->get_service_model_keys();
 
         $data = array(
             'name'                     => $name,
             'category'                 => $this->sanitize_select_value( 'category', $category_keys ),
-            'industry_vertical'        => $this->sanitize_text_value( 'industry_vertical' ),
+            'industry_vertical'        => $this->sanitize_select_value( 'industry_vertical', $industry_keys ),
             'service_model'            => $this->sanitize_select_value( 'service_model', $service_model_keys ),
             'website_url'              => $this->sanitize_url_value( 'website_url' ),
             'phone_number'             => $this->sanitize_text_value( 'phone_number' ),
@@ -538,6 +539,53 @@ class SD_Ajax {
         );
 
         $options = apply_filters( 'sd_directory_categories', $options );
+
+        $keys = array();
+
+        foreach ( $options as $value => $label ) {
+            $keys[] = sanitize_key( $value );
+        }
+
+        return array_values( array_unique( $keys ) );
+    }
+
+    private function get_directory_industry_keys() {
+        $options = array(
+            'all'                           => __( 'All Industries', 'super-directory' ),
+            'multiple'                      => __( 'Multiple', 'super-directory' ),
+            'appliance_repair'              => __( 'Appliance Repair', 'super-directory' ),
+            'carpet_cleaning'               => __( 'Carpet Cleaning', 'super-directory' ),
+            'concrete_masonry'              => __( 'Concrete & Masonry', 'super-directory' ),
+            'deck_patio'                    => __( 'Deck & Patio', 'super-directory' ),
+            'electrical'                    => __( 'Electrical', 'super-directory' ),
+            'fencing'                       => __( 'Fencing', 'super-directory' ),
+            'flooring'                      => __( 'Flooring', 'super-directory' ),
+            'garage_door'                   => __( 'Garage Door', 'super-directory' ),
+            'general_contractor_remodel'    => __( 'General Contractor & Remodeling', 'super-directory' ),
+            'gutter_services'               => __( 'Gutter Services', 'super-directory' ),
+            'handyman'                      => __( 'Handyman', 'super-directory' ),
+            'hardscaping'                   => __( 'Hardscaping', 'super-directory' ),
+            'house_cleaning_maid'           => __( 'House Cleaning & Maid', 'super-directory' ),
+            'hvac'                          => __( 'HVAC', 'super-directory' ),
+            'insulation'                    => __( 'Insulation', 'super-directory' ),
+            'irrigation_sprinklers'         => __( 'Irrigation & Sprinklers', 'super-directory' ),
+            'junk_removal'                  => __( 'Junk Removal', 'super-directory' ),
+            'landscaping'                   => __( 'Landscaping', 'super-directory' ),
+            'moving_storage'                => __( 'Moving & Storage', 'super-directory' ),
+            'painting'                      => __( 'Painting', 'super-directory' ),
+            'pest_control'                  => __( 'Pest Control', 'super-directory' ),
+            'plumbing'                      => __( 'Plumbing', 'super-directory' ),
+            'pool_spa_services'             => __( 'Pool & Spa Services', 'super-directory' ),
+            'pressure_washing'              => __( 'Pressure Washing', 'super-directory' ),
+            'roofing'                       => __( 'Roofing', 'super-directory' ),
+            'security_smart_home'           => __( 'Security & Smart Home', 'super-directory' ),
+            'siding'                        => __( 'Siding', 'super-directory' ),
+            'solar_energy'                  => __( 'Solar Energy', 'super-directory' ),
+            'tree_services'                 => __( 'Tree Services', 'super-directory' ),
+            'water_mold_restoration'        => __( 'Water & Mold Damage Restoration', 'super-directory' ),
+        );
+
+        $options = apply_filters( 'sd_directory_industries', $options );
 
         $keys = array();
 

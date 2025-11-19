@@ -369,7 +369,7 @@ jQuery(document).ready(function($){
             tableColumns = [
                 { key: 'name', type: 'title', label: getFieldLabel('name') || 'Listing Name' },
                 { key: 'category', type: 'meta', label: getFieldLabel('category') || 'Category' },
-                { key: 'industry_vertical', type: 'meta', label: getFieldLabel('industry_vertical') || 'Industry / Vertical' },
+                { key: 'industry_vertical', type: 'meta', label: getFieldLabel('industry_vertical') || 'Industry' },
                 { key: 'service_model', type: 'meta', label: getFieldLabel('service_model') || 'Service Model' },
                 { key: 'website_url', type: 'meta', label: getFieldLabel('website_url') || 'Website' },
                 { key: 'actions', type: 'actions', label: sdAdmin.editAction || 'Edit' }
@@ -393,6 +393,7 @@ jQuery(document).ready(function($){
         }
 
         function getFieldValue(entity, key){
+
             if (!entity || typeof entity !== 'object'){
                 return '';
             }
@@ -678,6 +679,7 @@ jQuery(document).ready(function($){
             $form.append($('<input/>', { type: 'hidden', name: 'id', value: entityId }));
 
             entityFields.forEach(function(field){
+
                 if (!field || !field.name){
                     return;
                 }

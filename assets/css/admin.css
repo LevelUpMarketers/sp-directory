@@ -6,7 +6,7 @@
 }
 
 .sd-top-message {
-    display: flex;
+    display: none;
     flex-direction: column;
     gap: 20px;
     padding: 0px;
@@ -127,6 +127,7 @@
 }
 
 .sd-bottom-message-digital-marketing-section{
+    display:none;
     padding:0px;
 }
 
@@ -422,6 +423,9 @@
 
 .sd-field {
     width: 178px;
+    display: inline-block;
+    margin: 10px;
+    vertical-align: bottom;
 }
 
 .sd-field input:not([type="radio"]):not([type="checkbox"]):not([type="color"]),
@@ -508,5 +512,15 @@
     margin-bottom: 10px;
 }
 
+.sd-section-grouping{
+    display: block;
+    width: 100%;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 20px;
+    border: solid 1px #d9d9d9;
+}
 
-
+input[name="street_address"]{
+    width:initial;
+}

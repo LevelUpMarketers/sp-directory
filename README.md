@@ -25,10 +25,10 @@ SuperDirectory is a WordPress plugin that streamlines the process of collecting 
 SuperDirectory groups the directory authoring experience into clear sections so administrators can capture consistent, high-value information for each listing:
 
 ### Listing basics
-- Resource / Company / Vendor Name
+- Resource Name
 - Category
-- Related Industry / Vertical
-- Serving Only Local Customers, Virtual/National, or Both?
+- Industry
+- Local, National, Both?
 
 ### Contact & web presence
 - Website URL
@@ -52,7 +52,7 @@ SuperDirectory groups the directory authoring experience into clear sections so 
 - Instagram URL
 - YouTube URL
 - LinkedIn URL
-- Google Business Listing URL
+- GBP URL
 
 ## Front-end output
 

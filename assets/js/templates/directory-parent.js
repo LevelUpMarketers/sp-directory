@@ -19,9 +19,11 @@
         if (isLoading) {
             form.classList.add('is-loading');
             submitButton.disabled = true;
+            resultsContainer.classList.add('is-loading');
         } else {
             form.classList.remove('is-loading');
             submitButton.disabled = false;
+            resultsContainer.classList.remove('is-loading');
         }
     };
 
@@ -40,8 +42,12 @@
         renderStatus('');
 
         items.forEach((item) => {
-            const card = document.createElement('article');
+            const elementTag = item.permalink ? 'a' : 'article';
+            const card = document.createElement(elementTag);
             card.className = 'sd-directory-card';
+            if (item.permalink) {
+                card.href = item.permalink;
+            }
 
             const logo = document.createElement('div');
             logo.className = 'sd-directory-card__logo';
@@ -61,9 +67,8 @@
             meta.className = 'sd-directory-card__meta';
             meta.textContent = [item.category_label, item.industry_label].filter(Boolean).join(' • ');
 
-            const link = document.createElement('a');
-            link.className = 'sd-directory-card__link';
-            link.href = item.permalink || '#';
+            const link = document.createElement('span');
+            link.className = 'sd-directory-card__cta';
             link.textContent = strings.viewResource || '';
 
             card.appendChild(logo);
@@ -144,6 +149,10 @@
             .finally(() => setLoading(false));
     };
 
+    const scrollToResults = () => {
+        resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+
     const resetForm = () => {
         form.reset();
         currentPage = 1;
@@ -152,6 +161,7 @@
 
     form.addEventListener('submit', (event) => {
         event.preventDefault();
+        scrollToResults();
         fetchResults(1);
     });
 

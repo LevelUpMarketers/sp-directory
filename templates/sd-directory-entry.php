@@ -266,6 +266,10 @@ article{
                     $service_model       = isset( $entity['service_model'] ) ? (string) $entity['service_model'] : '';
                     $industry_vertical   = isset( $entity['industry_vertical'] ) ? (string) $entity['industry_vertical'] : '';
                     $logo_attachment_id  = isset( $entity['logo_attachment_id'] ) ? absint( $entity['logo_attachment_id'] ) : 0;
+
+                    if ( ! $logo_attachment_id && $entity_id ) {
+                        $logo_attachment_id = SD_Main_Entity_Helper::get_logo_attachment_id( $entity_id );
+                    }
                     $logo_markup         = '';
 
                     if ( $logo_attachment_id ) {

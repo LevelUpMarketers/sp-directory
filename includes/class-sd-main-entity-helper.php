@@ -85,6 +85,42 @@ class SD_Main_Entity_Helper {
     }
 
     /**
+     * Retrieve the stored logo attachment identifier for an entity.
+     *
+     * Provides a lightweight way for templates to refetch the attachment ID
+     * in case cached entity payloads have not yet been refreshed with the
+     * latest schema changes.
+     *
+     * @param int $entity_id Directory Listing identifier.
+     *
+     * @return int
+     */
+    public static function get_logo_attachment_id( $entity_id ) {
+        $entity_id = absint( $entity_id );
+
+        if ( ! $entity_id ) {
+            return 0;
+        }
+
+        $table_name = self::get_main_table_name();
+
+        if ( ! self::table_exists( $table_name ) ) {
+            return 0;
+        }
+
+        global $wpdb;
+
+        $value = $wpdb->get_var(
+            $wpdb->prepare(
+                "SELECT logo_attachment_id FROM $table_name WHERE id = %d",
+                $entity_id
+            )
+        );
+
+        return $value ? absint( $value ) : 0;
+    }
+
+    /**
      * Normalize a stored value so it can be injected into a template token.
      *
      * @param string $key   Database column key.

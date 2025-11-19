@@ -33,6 +33,7 @@ article{
 .sd-entry__logo-image{width:100%;height:auto;display:block;margin:0 auto;object-fit:contain;}
 
 .sd-entry__grid{display:grid;grid-template-columns:300px 1fr;gap:28px;align-items:start}
+.sd-entry__main{display:flex;flex-direction:column;gap:30px}
 @media (max-width:980px){.sd-entry__grid{grid-template-columns:1fr;gap:18px}}
 
 .sd-card{
@@ -152,7 +153,7 @@ article{
     color: #6485ff;
 }
 
-.sd-gallery{margin-top:30px;}
+.sd-gallery{margin-top:0;}
 .sd-gallery__grid{
     display:grid;
     grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));
@@ -581,58 +582,60 @@ article{
                         </aside>
 
                         <!-- RIGHT: Main content -->
-                        <div class="sd-section-background">
-                            <?php if ( ! empty( $entity['long_description_primary'] ) ) : ?>
-                                <section class="sd-section">
-                                    <h2><?php printf( esc_html__( 'What %s Does', 'super-directory' ), esc_html( $company_name ) ); ?></h2>
-                                    <div class="sd-section__body"><?php echo wp_kses_post( wpautop( $entity['long_description_primary'] ) ); ?></div>
-                                </section>
-                            <?php endif; ?>
+                        <div class="sd-entry__main">
+                            <div class="sd-section-background">
+                                <?php if ( ! empty( $entity['long_description_primary'] ) ) : ?>
+                                    <section class="sd-section">
+                                        <h2><?php printf( esc_html__( 'What %s Does', 'super-directory' ), esc_html( $company_name ) ); ?></h2>
+                                        <div class="sd-section__body"><?php echo wp_kses_post( wpautop( $entity['long_description_primary'] ) ); ?></div>
+                                    </section>
+                                <?php endif; ?>
 
-                            <?php if ( ! empty( $entity['long_description_secondary'] ) ) : ?>
-                                <section class="sd-section">
-                                    <h2><?php printf( esc_html__( 'Why We Recommend %s', 'super-directory' ), esc_html( $company_name ) ); ?></h2>
-                                    <div class="sd-section__body"><?php echo wp_kses_post( wpautop( $entity['long_description_secondary'] ) ); ?></div>
-                                </section>
-                            <?php endif; ?>
+                                <?php if ( ! empty( $entity['long_description_secondary'] ) ) : ?>
+                                    <section class="sd-section">
+                                        <h2><?php printf( esc_html__( 'Why We Recommend %s', 'super-directory' ), esc_html( $company_name ) ); ?></h2>
+                                        <div class="sd-section__body"><?php echo wp_kses_post( wpautop( $entity['long_description_secondary'] ) ); ?></div>
+                                    </section>
+                                <?php endif; ?>
 
-                            <?php
-                            if ( $has_content ) :
-                                ?>
-                                <div class="sd-directory-entry__custom-content">
-                                    <?php the_content(); ?>
+                                <?php
+                                if ( $has_content ) :
+                                    ?>
+                                    <div class="sd-directory-entry__custom-content">
+                                        <?php the_content(); ?>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                            <?php if ( ! empty( $gallery_images ) ) : ?>
+                                <div class="sd-gallery sd-section-background" aria-label="<?php esc_attr_e( 'Resource gallery', 'super-directory' ); ?>">
+                                    <section class="sd-section">
+                                        <h2>
+                                            <?php
+                                            if ( $company_name ) {
+                                                printf( esc_html__( '%s Gallery', 'super-directory' ), esc_html( $company_name ) );
+                                            } else {
+                                                esc_html_e( 'Gallery', 'super-directory' );
+                                            }
+                                            ?>
+                                        </h2>
+                                        <div class="sd-gallery__grid">
+                                            <?php foreach ( $gallery_images as $gallery_image ) : ?>
+                                                <button type="button" class="sd-gallery__item" data-full-image="<?php echo esc_url( $gallery_image['full_url'] ); ?>" data-alt="<?php echo esc_attr( $gallery_image['alt'] ); ?>" data-caption="<?php echo esc_attr( $gallery_image['caption'] ); ?>">
+                                                    <?php echo wp_kses_post( $gallery_image['html'] ); ?>
+                                                </button>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    </section>
+                                </div>
+                                <div class="sd-gallery-lightbox" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e( 'Gallery viewer', 'super-directory' ); ?>" hidden tabindex="-1">
+                                    <div class="sd-gallery-lightbox__dialog">
+                                        <button type="button" class="sd-gallery-lightbox__close" aria-label="<?php esc_attr_e( 'Close gallery', 'super-directory' ); ?>">&times;</button>
+                                        <img src="" alt="" class="sd-gallery-lightbox__image" />
+                                        <p class="sd-gallery-lightbox__caption" aria-live="polite"></p>
+                                    </div>
                                 </div>
                             <?php endif; ?>
                         </div>
-                        <?php if ( ! empty( $gallery_images ) ) : ?>
-                            <div class="sd-gallery sd-section-background" aria-label="<?php esc_attr_e( 'Resource gallery', 'super-directory' ); ?>">
-                                <section class="sd-section">
-                                    <h2>
-                                        <?php
-                                        if ( $company_name ) {
-                                            printf( esc_html__( '%s Gallery', 'super-directory' ), esc_html( $company_name ) );
-                                        } else {
-                                            esc_html_e( 'Gallery', 'super-directory' );
-                                        }
-                                        ?>
-                                    </h2>
-                                    <div class="sd-gallery__grid">
-                                        <?php foreach ( $gallery_images as $gallery_image ) : ?>
-                                            <button type="button" class="sd-gallery__item" data-full-image="<?php echo esc_url( $gallery_image['full_url'] ); ?>" data-alt="<?php echo esc_attr( $gallery_image['alt'] ); ?>" data-caption="<?php echo esc_attr( $gallery_image['caption'] ); ?>">
-                                                <?php echo wp_kses_post( $gallery_image['html'] ); ?>
-                                            </button>
-                                        <?php endforeach; ?>
-                                    </div>
-                                </section>
-                            </div>
-                            <div class="sd-gallery-lightbox" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e( 'Gallery viewer', 'super-directory' ); ?>" hidden tabindex="-1">
-                                <div class="sd-gallery-lightbox__dialog">
-                                    <button type="button" class="sd-gallery-lightbox__close" aria-label="<?php esc_attr_e( 'Close gallery', 'super-directory' ); ?>">&times;</button>
-                                    <img src="" alt="" class="sd-gallery-lightbox__image" />
-                                    <p class="sd-gallery-lightbox__caption" aria-live="polite"></p>
-                                </div>
-                            </div>
-                        <?php endif; ?>
                     </div>
                 <?php endif; ?>
             </div>

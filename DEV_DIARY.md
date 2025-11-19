@@ -53,3 +53,4 @@
 51. 2025-11-19: Backfilled a helper to refetch stored logo IDs when cached entities lag schema updates so templates reliably render imagery.
 52. 2025-11-19: Synced the directory entry template with the requested front-end layout so hero banners, logo placement, and supporting styles match production.
 53. 2025-11-19: Added gallery helper refetch logic plus a conditional gallery/lightbox section on the directory template so uploaded images display in a responsive grid with modal previews.
+54. 2025-11-19: Reflowed the directory entry grid so the gallery sits beneath the descriptive section at full width with consistent spacing.

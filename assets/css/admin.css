@@ -746,6 +746,128 @@
     width: 178px;
 }
 
+.cpb-media-section {
+    margin-top: 32px;
+    padding: 24px;
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    background: #fff;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.cpb-media-section__header {
+    margin-bottom: 20px;
+}
+
+.cpb-media-section__title {
+    margin: 0 0 8px;
+    font-size: 20px;
+}
+
+.cpb-media-section__description {
+    margin: 0;
+    color: #50575e;
+}
+
+.cpb-media-section__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+}
+
+.cpb-media-card {
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    padding: 20px;
+    background: #fdfdfd;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cpb-media-card__label {
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+}
+
+.cpb-media-card__description {
+    margin: 0;
+    color: #6d6d6d;
+}
+
+.cpb-media-card__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.cpb-media-card__button {
+    min-width: 140px;
+}
+
+.cpb-media-preview {
+    min-height: 120px;
+    border: 1px dashed #c3c4c7;
+    border-radius: 4px;
+    background: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px;
+    text-align: center;
+}
+
+.cpb-media-preview:empty::before,
+.cpb-gallery-preview:empty::before {
+    content: attr(data-empty-text);
+    color: #787c82;
+    font-style: italic;
+}
+
+.cpb-media-preview img {
+    max-width: 160px;
+    height: auto;
+}
+
+.cpb-gallery-preview {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    gap: 12px;
+}
+
+.cpb-gallery-preview__item {
+    border: 1px solid #dcdcde;
+    border-radius: 4px;
+    background: #fff;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+}
+
+.cpb-gallery-preview__figure {
+    width: 100%;
+    text-align: center;
+}
+
+.cpb-gallery-preview__figure img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.cpb-gallery-preview__actions {
+    text-align: center;
+}
+
 .cpb-field input:not([type="radio"]):not([type="checkbox"]):not([type="color"]),
 .cpb-field select,
 .cpb-field textarea,

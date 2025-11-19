@@ -715,6 +715,8 @@ class CPB_Admin {
             'none'         => __( 'No entries found.', 'codex-plugin-boilerplate' ),
             'mediaTitle'   => __( 'Select Image', 'codex-plugin-boilerplate' ),
             'mediaButton'  => __( 'Use this image', 'codex-plugin-boilerplate' ),
+            'galleryTitle' => __( 'Select Images', 'codex-plugin-boilerplate' ),
+            'galleryButton' => __( 'Use these images', 'codex-plugin-boilerplate' ),
             'itemPlaceholder' => __( 'Item #%d', 'codex-plugin-boilerplate' ),
             'addAnotherItem' => __( '+ Add Another Item', 'codex-plugin-boilerplate' ),
             'makeSelection' => __( 'Make a Selection...', 'codex-plugin-boilerplate' ),
@@ -740,6 +742,11 @@ class CPB_Admin {
             'emailLogCleared'   => __( 'Email log cleared.', 'codex-plugin-boilerplate' ),
             'emailLogError'     => __( 'Unable to clear the email log. Please try again.', 'codex-plugin-boilerplate' ),
             'emailLogEmpty'     => __( 'No email activity has been recorded yet.', 'codex-plugin-boilerplate' ),
+            'mediaFields'       => $this->prepare_media_fields_for_js(),
+            'mediaSectionTitle' => __( 'Resource Imagery', 'codex-plugin-boilerplate' ),
+            'mediaSectionDescription' => __( 'Upload a logo and supporting gallery images to showcase each resource on the front-end.', 'codex-plugin-boilerplate' ),
+            'removeImage'      => __( 'Remove image', 'codex-plugin-boilerplate' ),
+            'clearGallery'     => __( 'Clear gallery', 'codex-plugin-boilerplate' ),
         ) );
     }
 
@@ -1199,6 +1206,31 @@ class CPB_Admin {
         return $fields;
     }
 
+    private function get_media_fields() {
+        return array(
+            array(
+                'name'         => 'resource_logo_id',
+                'label'        => __( 'Resource Logo', 'codex-plugin-boilerplate' ),
+                'tooltip'      => __( 'Upload the primary logo that should appear beside the resource name.', 'codex-plugin-boilerplate' ),
+                'button_label' => __( 'Select Logo', 'codex-plugin-boilerplate' ),
+                'clear_label'  => __( 'Remove Logo', 'codex-plugin-boilerplate' ),
+                'empty_text'   => __( 'No logo selected yet.', 'codex-plugin-boilerplate' ),
+                'description'  => __( 'This image is used wherever the resource list references a single representative mark.', 'codex-plugin-boilerplate' ),
+                'type'         => 'logo',
+            ),
+            array(
+                'name'         => 'resource_gallery_ids',
+                'label'        => __( 'Gallery Images', 'codex-plugin-boilerplate' ),
+                'tooltip'      => __( 'Select any supporting images that should rotate inside the front-end gallery.', 'codex-plugin-boilerplate' ),
+                'button_label' => __( 'Select Images', 'codex-plugin-boilerplate' ),
+                'clear_label'  => __( 'Clear Gallery', 'codex-plugin-boilerplate' ),
+                'empty_text'   => __( 'No gallery images have been selected yet.', 'codex-plugin-boilerplate' ),
+                'description'  => __( 'Choose as many visuals as you need—the gallery will automatically display every saved selection.', 'codex-plugin-boilerplate' ),
+                'type'         => 'gallery',
+            ),
+        );
+    }
+
     private function prepare_main_entity_fields_for_js() {
         $fields    = $this->get_main_entity_fields();
         $prepared  = array();
@@ -1226,6 +1258,26 @@ class CPB_Admin {
         return $prepared;
     }
 
+    private function prepare_media_fields_for_js() {
+        $fields   = $this->get_media_fields();
+        $prepared = array();
+
+        foreach ( $fields as $field ) {
+            $prepared[] = array(
+                'name'        => $field['name'],
+                'type'        => $field['type'],
+                'label'       => $field['label'],
+                'tooltip'     => $field['tooltip'],
+                'buttonLabel' => $field['button_label'],
+                'clearLabel'  => $field['clear_label'],
+                'emptyText'   => $field['empty_text'],
+                'description' => isset( $field['description'] ) ? $field['description'] : '',
+            );
+        }
+
+        return $prepared;
+    }
+
     private function get_inline_editor_settings() {
         $default_settings = array(
             'tinymce'   => array(
@@ -1246,7 +1298,8 @@ class CPB_Admin {
     }
 
     private function render_create_tab() {
-        $fields = $this->get_main_entity_fields();
+        $fields       = $this->get_main_entity_fields();
+        $media_fields = $this->get_media_fields();
 
         echo '<form id="cpb-create-form"><div class="cpb-flex-form">';
         foreach ( $fields as $field ) {
@@ -1346,11 +1399,86 @@ class CPB_Admin {
             echo '</div>';
         }
         echo '</div>';
+
+        $this->render_media_section( $media_fields );
+
         $submit_button = get_submit_button( __( 'Save', 'codex-plugin-boilerplate' ), 'primary', 'submit', false );
         echo '<p class="submit">' . $submit_button;
         echo '<span class="cpb-feedback-area cpb-feedback-area--inline"><span id="cpb-spinner" class="spinner" aria-hidden="true"></span><span id="cpb-feedback" role="status" aria-live="polite"></span></span>';
         echo '</p>';
         echo '</form>';
+    }
+
+    private function render_media_section( $fields ) {
+        if ( empty( $fields ) ) {
+            return;
+        }
+
+        echo '<div class="cpb-media-section">';
+        echo '<div class="cpb-media-section__header">';
+        echo '<h3 class="cpb-media-section__title">' . esc_html__( 'Resource Imagery', 'codex-plugin-boilerplate' ) . '</h3>';
+        echo '<p class="cpb-media-section__description">' . esc_html__( 'Upload a logo and supporting gallery images to showcase the resource on the front-end.', 'codex-plugin-boilerplate' ) . '</p>';
+        echo '</div>';
+        echo '<div class="cpb-media-section__grid">';
+
+        foreach ( $fields as $field ) {
+            if ( 'gallery' === $field['type'] ) {
+                $this->render_gallery_uploader( $field );
+            } else {
+                $this->render_logo_uploader( $field );
+            }
+        }
+
+        echo '</div>';
+        echo '</div>';
+    }
+
+    private function render_logo_uploader( $field ) {
+        $input_id   = $field['name'];
+        $button     = isset( $field['button_label'] ) ? $field['button_label'] : __( 'Select Image', 'codex-plugin-boilerplate' );
+        $clear      = isset( $field['clear_label'] ) ? $field['clear_label'] : __( 'Remove', 'codex-plugin-boilerplate' );
+        $empty_text = isset( $field['empty_text'] ) ? $field['empty_text'] : ''; 
+        $description = isset( $field['description'] ) ? $field['description'] : '';
+
+        echo '<div class="cpb-media-card cpb-media-card--logo">';
+        echo '<label class="cpb-media-card__label"><span class="cpb-tooltip-icon dashicons dashicons-editor-help" data-tooltip="' . esc_attr( $field['tooltip'] ) . '"></span>' . esc_html( $field['label'] ) . '</label>';
+
+        if ( $description ) {
+            echo '<p class="cpb-media-card__description">' . esc_html( $description ) . '</p>';
+        }
+
+        echo '<div class="cpb-media-card__actions">';
+        echo '<input type="hidden" name="' . esc_attr( $field['name'] ) . '" id="' . esc_attr( $input_id ) . '" value="" />';
+        echo '<button type="button" class="button cpb-upload cpb-media-card__button" data-target="#' . esc_attr( $input_id ) . '">' . esc_html( $button ) . '</button>';
+        echo '<button type="button" class="button-link cpb-media-clear" data-target="#' . esc_attr( $input_id ) . '">' . esc_html( $clear ) . '</button>';
+        echo '</div>';
+
+        echo '<div id="' . esc_attr( $input_id ) . '-preview" class="cpb-media-preview cpb-media-preview--single" data-empty-text="' . esc_attr( $empty_text ) . '" data-input="#' . esc_attr( $input_id ) . '"></div>';
+        echo '</div>';
+    }
+
+    private function render_gallery_uploader( $field ) {
+        $input_id    = $field['name'];
+        $button      = isset( $field['button_label'] ) ? $field['button_label'] : __( 'Select Images', 'codex-plugin-boilerplate' );
+        $clear       = isset( $field['clear_label'] ) ? $field['clear_label'] : __( 'Clear', 'codex-plugin-boilerplate' );
+        $empty_text  = isset( $field['empty_text'] ) ? $field['empty_text'] : '';
+        $description = isset( $field['description'] ) ? $field['description'] : '';
+
+        echo '<div class="cpb-media-card cpb-media-card--gallery">';
+        echo '<label class="cpb-media-card__label"><span class="cpb-tooltip-icon dashicons dashicons-editor-help" data-tooltip="' . esc_attr( $field['tooltip'] ) . '"></span>' . esc_html( $field['label'] ) . '</label>';
+
+        if ( $description ) {
+            echo '<p class="cpb-media-card__description">' . esc_html( $description ) . '</p>';
+        }
+
+        echo '<div class="cpb-media-card__actions">';
+        echo '<input type="hidden" name="' . esc_attr( $field['name'] ) . '" id="' . esc_attr( $input_id ) . '" value="[]" />';
+        echo '<button type="button" class="button cpb-media-card__button cpb-gallery-upload" data-target="#' . esc_attr( $input_id ) . '">' . esc_html( $button ) . '</button>';
+        echo '<button type="button" class="button-link cpb-gallery-clear" data-target="#' . esc_attr( $input_id ) . '">' . esc_html( $clear ) . '</button>';
+        echo '</div>';
+
+        echo '<ul id="' . esc_attr( $input_id ) . '-preview" class="cpb-gallery-preview" data-empty-text="' . esc_attr( $empty_text ) . '" data-input="#' . esc_attr( $input_id ) . '"></ul>';
+        echo '</div>';
     }
 
     private function render_edit_tab() {

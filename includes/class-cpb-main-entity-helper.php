@@ -126,6 +126,36 @@ class CPB_Main_Entity_Helper {
             return wp_kses_post( (string) $value );
         }
 
+        if ( 'resource_logo_id' === $key ) {
+            $attachment_id = absint( $value );
+            $url           = $attachment_id ? wp_get_attachment_url( $attachment_id ) : '';
+
+            return $url ? esc_url_raw( $url ) : '';
+        }
+
+        if ( 'resource_gallery_ids' === $key ) {
+            if ( is_array( $value ) ) {
+                $ids = $value;
+            } else {
+                $decoded = json_decode( (string) $value, true );
+                $ids     = is_array( $decoded ) ? $decoded : array();
+            }
+
+            $ids  = array_map( 'absint', $ids );
+            $ids  = array_filter( $ids );
+            $urls = array();
+
+            foreach ( $ids as $id ) {
+                $url = wp_get_attachment_url( $id );
+
+                if ( $url ) {
+                    $urls[] = esc_url_raw( $url );
+                }
+            }
+
+            return implode( ', ', $urls );
+        }
+
         if ( is_scalar( $value ) ) {
             $string_value = (string) $value;
 

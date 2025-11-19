@@ -48,6 +48,8 @@ class CPB_Activator {
             placeholder_26 varchar(20) DEFAULT '',
             placeholder_27 bigint(20) unsigned DEFAULT 0,
             placeholder_28 longtext,
+            resource_logo_id bigint(20) unsigned DEFAULT 0,
+            resource_gallery_ids longtext,
             opt_in_marketing_email tinyint(1) DEFAULT 0,
             opt_in_marketing_sms tinyint(1) DEFAULT 0,
             opt_in_event_update_email tinyint(1) DEFAULT 0,

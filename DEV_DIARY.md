@@ -63,4 +63,5 @@
 61. 2025-11-05: Scoped email template header cells to remove flex alignment and enforce a 50px row height without affecting other accordion tabs.
 62. 2025-11-05: Cleared the email template action cell width constraints so the tab inherits the default table alignment.
 63. 2025-11-05: Built the Email Logs tab with file-backed delivery history, styled entry cards, and clear/download controls wired to AJAX and admin-post handlers.
+64. 2025-11-05: Added a resource imagery section with logo and gallery uploads tied to the media library, persisted their attachment IDs, and exposed the assets across the create/edit flows.
 

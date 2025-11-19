@@ -81,6 +81,8 @@ class CPB_Ajax {
             'placeholder_26'              => $this->sanitize_color_value( 'placeholder_26' ),
             'placeholder_27'              => $this->sanitize_image_value( 'placeholder_27' ),
             'placeholder_28'              => $this->sanitize_editor_value( 'placeholder_28' ),
+            'resource_logo_id'            => $this->sanitize_image_value( 'resource_logo_id' ),
+            'resource_gallery_ids'        => $this->sanitize_gallery_value( 'resource_gallery_ids' ),
             'opt_in_marketing_email'      => $this->sanitize_checkbox_value( 'opt_in_marketing_email' ),
             'opt_in_marketing_sms'        => $this->sanitize_checkbox_value( 'opt_in_marketing_sms' ),
             'opt_in_event_update_email'   => $this->sanitize_checkbox_value( 'opt_in_event_update_email' ),
@@ -196,6 +198,12 @@ class CPB_Ajax {
                 $entity['placeholder_27'] = (string) absint( $entity['placeholder_27'] );
                 $entity['placeholder_27_url'] = $this->get_attachment_url( $entity['placeholder_27'] );
                 $entity['placeholder_28'] = $this->format_editor_content_for_response( $entity['placeholder_28'] );
+                $logo_id = isset( $entity['resource_logo_id'] ) ? $entity['resource_logo_id'] : 0;
+                $entity['resource_logo_id'] = (string) absint( $logo_id );
+                $entity['resource_logo_id_url'] = $this->get_attachment_url( $entity['resource_logo_id'] );
+                $gallery_ids = $this->normalize_gallery_ids_value( isset( $entity['resource_gallery_ids'] ) ? $entity['resource_gallery_ids'] : '' );
+                $entity['resource_gallery_ids'] = wp_json_encode( $gallery_ids );
+                $entity['resource_gallery_ids_items'] = $this->get_gallery_items_for_response( $gallery_ids );
 
                 foreach ( array( 'placeholder_4', 'placeholder_7', 'placeholder_19', 'placeholder_20', 'opt_in_marketing_email', 'opt_in_marketing_sms', 'opt_in_event_update_email', 'opt_in_event_update_sms' ) as $bool_key ) {
                     if ( isset( $entity[ $bool_key ] ) ) {
@@ -746,6 +754,13 @@ class CPB_Ajax {
         return (string) absint( $value );
     }
 
+    private function sanitize_gallery_value( $key ) {
+        $value = $this->get_post_value( $key );
+        $ids   = $this->normalize_gallery_ids_value( $value );
+
+        return wp_json_encode( $ids );
+    }
+
     private function sanitize_editor_value( $key ) {
         $value = $this->get_post_value( $key );
 
@@ -758,6 +773,38 @@ class CPB_Ajax {
         }
 
         return wp_kses_post( $value );
+    }
+
+    private function normalize_gallery_ids_value( $value ) {
+        if ( null === $value ) {
+            return array();
+        }
+
+        $ids = array();
+
+        if ( is_array( $value ) ) {
+            $ids = $value;
+        } else {
+            $string_value = trim( (string) $value );
+
+            if ( '' === $string_value ) {
+                return array();
+            }
+
+            $decoded = json_decode( $string_value, true );
+
+            if ( is_array( $decoded ) ) {
+                $ids = $decoded;
+            } else {
+                $ids = explode( ',', $string_value );
+            }
+        }
+
+        $ids = array_map( 'absint', $ids );
+        $ids = array_filter( $ids );
+        $ids = array_values( array_unique( $ids ) );
+
+        return $ids;
     }
 
     private function format_date_for_response( $value ) {
@@ -828,6 +875,33 @@ class CPB_Ajax {
         }
 
         return wp_kses_post( $value );
+    }
+
+    private function get_gallery_items_for_response( $ids ) {
+        if ( ! is_array( $ids ) ) {
+            $ids = $this->normalize_gallery_ids_value( $ids );
+        }
+
+        if ( empty( $ids ) ) {
+            return array();
+        }
+
+        $items = array();
+
+        foreach ( $ids as $id ) {
+            $url = $this->get_attachment_url( $id );
+
+            if ( ! $url ) {
+                continue;
+            }
+
+            $items[] = array(
+                'id'  => (string) absint( $id ),
+                'url' => $url,
+            );
+        }
+
+        return $items;
     }
 
     private function get_attachment_url( $attachment_id ) {

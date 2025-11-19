@@ -78,9 +78,181 @@ jQuery(document).ready(function($){
         frame.on('select',function(){
             var attachment=frame.state().get('selection').first().toJSON();
             $(target).val(attachment.id);
-            $(target+'-preview').html('<img src="'+attachment.url+'" style="max-width:100px;height:auto;" />');
+            var $preview=$(target+'-preview');
+            if($preview.length){
+                var $img=$('<img/>',{src:attachment.url,alt:attachment.alt||attachment.title||'',style:'max-width:100px;height:auto;','data-media-item':'1'});
+                $preview.empty().append($img);
+            }
         });
         frame.open();
+    });
+
+    function parseGalleryValue(value){
+        if(Array.isArray(value)){
+            return value.map(function(item){
+                return String(item);
+            }).filter(function(item){
+                return item && item !== 'NaN';
+            });
+        }
+
+        if(!value){
+            return [];
+        }
+
+        if(typeof value==='string'){
+            var trimmed=value.trim();
+
+            if(!trimmed){
+                return [];
+            }
+
+            try {
+                var parsed=JSON.parse(trimmed);
+
+                if(Array.isArray(parsed)){
+                    return parsed.map(function(item){
+                        return String(item);
+                    }).filter(function(item){
+                        return item && item !== 'NaN';
+                    });
+                }
+            } catch(err) {
+                // Ignore JSON parse errors and fall back to comma separation.
+            }
+
+            return trimmed.split(',').map(function(item){
+                return String(parseInt(item,10));
+            }).filter(function(item){
+                return item && item !== 'NaN';
+            });
+        }
+
+        return [];
+    }
+
+    function stringifyGalleryValue(ids){
+        if(!Array.isArray(ids) || !ids.length){
+            return '[]';
+        }
+
+        var cleaned=ids.map(function(id){
+            return String(parseInt(id,10));
+        }).filter(function(id){
+            return id && id !== 'NaN';
+        });
+
+        return cleaned.length ? JSON.stringify(cleaned) : '[]';
+    }
+
+    function createGalleryItemElement(id,url,label){
+        var $item=$('<li/>',{'class':'cpb-gallery-preview__item','data-attachment-id':id});
+        var $figure=$('<div/>',{'class':'cpb-gallery-preview__figure'});
+        $figure.append($('<img/>',{src:url,alt:label||''}));
+        var $actions=$('<div/>',{'class':'cpb-gallery-preview__actions'});
+        var removeLabel=cpbAdmin.removeImage||'Remove';
+        var $remove=$('<button/>',{type:'button','class':'button-link-delete cpb-gallery-remove','data-attachment-id':id});
+        $remove.text(removeLabel);
+        $actions.append($remove);
+        $item.append($figure).append($actions);
+        return $item;
+    }
+
+    $(document).on('click','.cpb-gallery-upload',function(e){
+        e.preventDefault();
+        var target=$(this).data('target');
+        var $input=$(target);
+
+        if(!$input.length){
+            return;
+        }
+
+        var ids=parseGalleryValue($input.val());
+        var $preview=$(target+'-preview');
+        var title=$(this).data('mediaTitle')||cpbAdmin.galleryTitle||cpbAdmin.mediaTitle;
+        var buttonText=$(this).data('mediaButton')||cpbAdmin.galleryButton||cpbAdmin.mediaButton;
+        var frame=wp.media({title:title,button:{text:buttonText},multiple:true});
+
+        frame.on('select',function(){
+            var selection=frame.state().get('selection');
+
+            if(!$preview.length){
+                return;
+            }
+
+            selection.each(function(attachment){
+                var data=attachment.toJSON();
+                var id=String(data.id);
+
+                if(ids.indexOf(id)!==-1){
+                    return;
+                }
+
+                ids.push(id);
+                var url=data.sizes && data.sizes.thumbnail ? data.sizes.thumbnail.url : data.url;
+                var label=data.alt || data.title || '';
+                $preview.append(createGalleryItemElement(id,url,label));
+            });
+
+            $input.val(stringifyGalleryValue(ids));
+        });
+
+        frame.open();
+    });
+
+    $(document).on('click','.cpb-gallery-remove',function(e){
+        e.preventDefault();
+        var $item=$(this).closest('.cpb-gallery-preview__item');
+        var $preview=$item.closest('.cpb-gallery-preview');
+        var inputSelector=$preview.data('input');
+        var $input=$(inputSelector);
+        var id=String($(this).data('attachment-id'));
+
+        if(!$input.length){
+            $item.remove();
+            return;
+        }
+
+        var ids=parseGalleryValue($input.val());
+        ids=ids.filter(function(current){
+            return String(current)!==id;
+        });
+        $input.val(stringifyGalleryValue(ids));
+        $item.remove();
+    });
+
+    $(document).on('click','.cpb-media-clear',function(e){
+        e.preventDefault();
+        var target=$(this).data('target');
+        var $input=$(target);
+
+        if(!$input.length){
+            return;
+        }
+
+        $input.val('');
+        var $preview=$(target+'-preview');
+
+        if($preview.length){
+            $preview.empty();
+        }
+    });
+
+    $(document).on('click','.cpb-gallery-clear',function(e){
+        e.preventDefault();
+        var target=$(this).data('target');
+        var $input=$(target);
+
+        if(!$input.length){
+            return;
+        }
+
+        $input.val('[]');
+        var $preview=$(target+'-preview');
+
+        if($preview.length){
+            $preview.empty();
+        }
     });
 
     if($('#cpb-entity-list').length){
@@ -93,6 +265,7 @@ jQuery(document).ready(function($){
         var placeholderMap = cpbAdmin.placeholderMap || {};
         var placeholderList = Array.isArray(cpbAdmin.placeholders) ? cpbAdmin.placeholders : [];
         var entityFields = Array.isArray(cpbAdmin.entityFields) ? cpbAdmin.entityFields : [];
+        var mediaFields = Array.isArray(cpbAdmin.mediaFields) ? cpbAdmin.mediaFields : [];
         var pendingFeedbackMessage = '';
         var currentPage = 1;
         var emptyValue = '—';
@@ -402,6 +575,95 @@ jQuery(document).ready(function($){
             }
         }
 
+        function buildMediaSection(mediaFieldsData, entity, entityId){
+            if(!mediaFieldsData.length){
+                return null;
+            }
+
+            var $section=$('<div/>',{'class':'cpb-media-section'});
+            var $header=$('<div/>',{'class':'cpb-media-section__header'});
+
+            if(cpbAdmin.mediaSectionTitle){
+                $header.append($('<h3/>',{'class':'cpb-media-section__title'}).text(cpbAdmin.mediaSectionTitle));
+            }
+
+            if(cpbAdmin.mediaSectionDescription){
+                $header.append($('<p/>',{'class':'cpb-media-section__description'}).text(cpbAdmin.mediaSectionDescription));
+            }
+
+            $section.append($header);
+
+            var $grid=$('<div/>',{'class':'cpb-media-section__grid'});
+
+            mediaFieldsData.forEach(function(field){
+                var type=field.type || 'logo';
+                var baseId=field.name + '-' + entityId;
+                var $card=$('<div/>',{'class':'cpb-media-card cpb-media-card--' + type});
+                var $label=$('<label/>',{'class':'cpb-media-card__label'});
+                $label.append($('<span/>',{'class':'cpb-tooltip-icon dashicons dashicons-editor-help','data-tooltip':field.tooltip || ''}));
+                $label.append(document.createTextNode(field.label || ''));
+                $card.append($label);
+
+                if(field.description){
+                    $card.append($('<p/>',{'class':'cpb-media-card__description'}).text(field.description));
+                }
+
+                if(type === 'gallery'){
+                    var galleryInputId=baseId;
+                    var storedValue=entity && entity[field.name] ? entity[field.name] : '';
+                    var galleryValue=stringifyGalleryValue(parseGalleryValue(storedValue));
+                    var $hiddenGallery=$('<input/>',{type:'hidden',name:field.name,id:galleryInputId,value:galleryValue});
+                    var buttonLabel=field.buttonLabel || cpbAdmin.galleryTitle || 'Select Images';
+                    var clearLabel=field.clearLabel || cpbAdmin.clearGallery || 'Clear';
+                    var $actions=$('<div/>',{'class':'cpb-media-card__actions'});
+                    var $selectBtn=$('<button/>',{type:'button','class':'button cpb-media-card__button cpb-gallery-upload','data-target':'#' + galleryInputId});
+                    $selectBtn.text(buttonLabel);
+                    var $clearBtn=$('<button/>',{type:'button','class':'button-link cpb-gallery-clear','data-target':'#' + galleryInputId});
+                    $clearBtn.text(clearLabel);
+                    $actions.append($selectBtn).append($clearBtn);
+                    $card.append($hiddenGallery).append($actions);
+                    var previewId=galleryInputId + '-preview';
+                    var $galleryPreview=$('<ul/>',{id:previewId,'class':'cpb-gallery-preview','data-empty-text':field.emptyText || '','data-input':'#' + galleryInputId});
+                    var galleryItems=Array.isArray(entity && entity[field.name + '_items']) ? entity[field.name + '_items'] : [];
+                    galleryItems.forEach(function(item){
+                        if(!item || !item.id || !item.url){
+                            return;
+                        }
+                        $galleryPreview.append(createGalleryItemElement(item.id,item.url,field.label || ''));
+                    });
+                    $card.append($galleryPreview);
+                } else {
+                    var logoInputId=baseId;
+                    var logoValue=entity && entity[field.name] ? String(entity[field.name]) : '';
+                    var $hiddenLogo=$('<input/>',{type:'hidden',name:field.name,id:logoInputId,value:logoValue});
+                    var logoButtonLabel=field.buttonLabel || cpbAdmin.mediaTitle || 'Select Image';
+                    var logoClearLabel=field.clearLabel || cpbAdmin.removeImage || 'Remove';
+                    var $logoActions=$('<div/>',{'class':'cpb-media-card__actions'});
+                    var $logoButton=$('<button/>',{type:'button','class':'button cpb-upload cpb-media-card__button','data-target':'#' + logoInputId});
+                    $logoButton.text(logoButtonLabel);
+                    var $logoClear=$('<button/>',{type:'button','class':'button-link cpb-media-clear','data-target':'#' + logoInputId});
+                    $logoClear.text(logoClearLabel);
+                    $logoActions.append($logoButton).append($logoClear);
+                    $card.append($hiddenLogo).append($logoActions);
+                    var logoPreviewId=logoInputId + '-preview';
+                    var $logoPreview=$('<div/>',{id:logoPreviewId,'class':'cpb-media-preview cpb-media-preview--single','data-empty-text':field.emptyText || '','data-input':'#' + logoInputId});
+                    var logoUrl=entity && entity[field.name + '_url'] ? entity[field.name + '_url'] : '';
+
+                    if(logoUrl){
+                        $logoPreview.append($('<img/>',{src:logoUrl,alt:field.label || '',style:'max-width:100px;height:auto;','data-media-item':'1'}));
+                    }
+
+                    $card.append($logoPreview);
+                }
+
+                $grid.append($card);
+            });
+
+            $section.append($grid);
+
+            return $section;
+        }
+
         function buildEntityForm(entity){
             var entityId = entity && entity.id ? entity.id : 0;
             var $form = $('<form/>', {
@@ -439,6 +701,12 @@ jQuery(document).ready(function($){
             });
 
             $form.append($flex);
+
+            var $mediaSection = buildMediaSection(mediaFields, entity, entityId);
+
+            if ($mediaSection){
+                $form.append($mediaSection);
+            }
 
             var $actions = $('<p/>', { 'class': 'cpb-entity__actions submit' });
             var $saveButton = $('<button/>', {

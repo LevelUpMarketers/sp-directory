@@ -11,6 +11,8 @@ class SD_Ajax {
         add_action( 'wp_ajax_sd_save_main_entity', array( $this, 'save_main_entity' ) );
         add_action( 'wp_ajax_sd_delete_main_entity', array( $this, 'delete_main_entity' ) );
         add_action( 'wp_ajax_sd_read_main_entity', array( $this, 'read_main_entity' ) );
+        add_action( 'wp_ajax_sd_search_directory', array( $this, 'search_directory' ) );
+        add_action( 'wp_ajax_nopriv_sd_search_directory', array( $this, 'search_directory' ) );
     }
 
     private function maybe_delay( $start, $minimum_time = SD_MIN_EXECUTION_TIME ) {
@@ -75,6 +77,8 @@ class SD_Ajax {
             'youtube_url'              => $this->sanitize_url_value( 'youtube_url' ),
             'linkedin_url'             => $this->sanitize_url_value( 'linkedin_url' ),
             'google_business_url'      => $this->sanitize_url_value( 'google_business_url' ),
+            'logo_attachment_id'       => $this->sanitize_attachment_id_value( 'logo_attachment_id' ),
+            'gallery_image_ids'        => $this->sanitize_gallery_ids_value( 'gallery_image_ids' ),
             'updated_at'               => $now,
         );
 
@@ -214,6 +218,9 @@ class SD_Ajax {
                         $entity[ $text_key ] = '';
                     }
                 }
+
+                $entity['logo_attachment_id'] = isset( $entity['logo_attachment_id'] ) ? absint( $entity['logo_attachment_id'] ) : 0;
+                $entity['gallery_image_ids']  = isset( $entity['gallery_image_ids'] ) ? $this->normalize_gallery_ids_value( $entity['gallery_image_ids'] ) : '';
             }
             unset( $entity );
         }
@@ -228,6 +235,40 @@ class SD_Ajax {
                 'total_pages' => $total_pages,
             )
         );
+    }
+
+    /**
+     * Search public directory listings for the parent template.
+     */
+    public function search_directory() {
+        $start = microtime( true );
+        check_ajax_referer( 'sd_directory_search', 'nonce' );
+
+        $search   = sanitize_text_field( (string) $this->get_post_value( 'search' ) );
+        $category = sanitize_key( (string) $this->get_post_value( 'category' ) );
+        $industry = sanitize_key( (string) $this->get_post_value( 'industry' ) );
+        $state    = sanitize_text_field( (string) $this->get_post_value( 'state' ) );
+        $page     = max( 1, absint( $this->get_post_value( 'page' ) ) );
+        $per_page = absint( $this->get_post_value( 'per_page' ) );
+
+        if ( $per_page <= 0 ) {
+            $per_page = 12;
+        }
+
+        $results = SD_Main_Entity_Helper::search_directory_entries(
+            array(
+                'search'   => $search,
+                'category' => $category,
+                'industry' => $industry,
+                'state'    => $state,
+                'page'     => $page,
+                'per_page' => $per_page,
+            )
+        );
+
+        $this->maybe_delay( $start, 0 );
+
+        wp_send_json_success( $results );
     }
 
     private function get_post_value( $key ) {
@@ -516,6 +557,52 @@ class SD_Ajax {
         }
 
         return wp_kses_post( $value );
+    }
+
+    private function sanitize_attachment_id_value( $key ) {
+        $value = $this->get_post_value( $key );
+
+        if ( null === $value ) {
+            return 0;
+        }
+
+        if ( is_array( $value ) ) {
+            $value = reset( $value );
+        }
+
+        return absint( $value );
+    }
+
+    private function sanitize_gallery_ids_value( $key ) {
+        $value = $this->get_post_value( $key );
+
+        if ( null === $value ) {
+            return '';
+        }
+
+        if ( is_array( $value ) ) {
+            $value = implode( ',', $value );
+        }
+
+        return $this->normalize_gallery_ids_value( $value );
+    }
+
+    private function normalize_gallery_ids_value( $value ) {
+        if ( null === $value || '' === $value ) {
+            return '';
+        }
+
+        $ids = is_array( $value ) ? $value : explode( ',', (string) $value );
+
+        $ids = array_map( 'absint', $ids );
+        $ids = array_filter( $ids );
+        $ids = array_values( array_unique( $ids ) );
+
+        if ( empty( $ids ) ) {
+            return '';
+        }
+
+        return implode( ',', $ids );
     }
 
     private function format_editor_content_for_response( $value ) {

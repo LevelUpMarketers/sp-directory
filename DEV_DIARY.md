@@ -48,3 +48,11 @@
 46. 2025-11-06: Auto-generated directory pages on save, applied the SuperDirectory template, and revamped the generated content log with accordion listings.
 47. 2025-11-06: Populated the directory entry template with listing data, added public-facing styles, and removed legacy shortcode content from generated pages.
 48. 2025-11-06: Forced generated pages to persist the SuperDirectory template, backfilled legacy slugs, and refreshed template registration so editors can see the custom option.
+49. 2025-11-06: Added logo and gallery media fields to the Directory Listing workflow, wiring up schema support, AJAX sanitization, and live previews powered by the WordPress media picker.
+50. 2025-11-19: Displayed saved listing logos beneath the entry heading with supporting template styles for consistent sizing.
+51. 2025-11-19: Backfilled a helper to refetch stored logo IDs when cached entities lag schema updates so templates reliably render imagery.
+52. 2025-11-19: Synced the directory entry template with the requested front-end layout so hero banners, logo placement, and supporting styles match production.
+53. 2025-11-19: Added gallery helper refetch logic plus a conditional gallery/lightbox section on the directory template so uploaded images display in a responsive grid with modal previews.
+54. 2025-11-19: Reflowed the directory entry grid so the gallery sits beneath the descriptive section at full width with consistent spacing.
+55. 2025-11-19: Removed the gallery lightbox caption from the directory entry template to keep the modal uncluttered.
+56. 2025-11-19: Added a parent directory template with AJAX-powered search, responsive resource cards, and shared styling/assets for browsing listings.

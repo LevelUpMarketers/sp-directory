@@ -29,8 +29,11 @@ article{
 .sd-entry__path p{font-size:15px;color:#c73e1d; font-weight:600;}
 .sd-entry__title{color:#0f172a;margin:0 0 10px}
 .sd-entry__intro{color:#334155;margin:0 0 35px;width: 800px;margin-right: auto;margin-left: auto;}
+.sd-entry__logo{margin:0 auto 35px;max-width:240px;text-align:center;}
+.sd-entry__logo-image{width:100%;height:auto;display:block;margin:0 auto;object-fit:contain;}
 
 .sd-entry__grid{display:grid;grid-template-columns:300px 1fr;gap:28px;align-items:start}
+.sd-entry__main{display:flex;flex-direction:column;gap:30px}
 @media (max-width:980px){.sd-entry__grid{grid-template-columns:1fr;gap:18px}}
 
 .sd-card{
@@ -150,6 +153,88 @@ article{
     color: #6485ff;
 }
 
+.sd-gallery{margin-top:0;}
+.sd-gallery__grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(160px, 1fr));
+    gap:18px;
+}
+.sd-gallery__item{
+    border:1px solid rgba(255, 255, 255, 0.2);
+    border-radius:20px;
+    overflow:hidden;
+    padding:0;
+    background:rgba(15, 23, 42, 0.6);
+    cursor:pointer;
+    transition:transform 0.2s ease, box-shadow 0.2s ease;
+}
+.sd-gallery__item:hover,
+.sd-gallery__item:focus-visible{
+    transform:translateY(-2px);
+    box-shadow:0 15px 25px rgba(0, 0, 0, 0.35);
+}
+.sd-gallery__item:focus-visible{
+    outline:2px solid #c73e1d;
+    outline-offset:2px;
+}
+.sd-gallery__image{
+    display:block;
+    width:100%;
+    height:100%;
+    object-fit:cover;
+}
+.sd-gallery-lightbox[hidden]{
+    display:none;
+}
+.sd-gallery-lightbox{
+    position:fixed;
+    inset:0;
+    background:rgba(0, 15, 58, 0.92);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:30px;
+    z-index:9999;
+    opacity:0;
+    visibility:hidden;
+    transition:opacity 0.2s ease;
+}
+.sd-gallery-lightbox.is-visible{
+    opacity:1;
+    visibility:visible;
+}
+.sd-gallery-lightbox__dialog{
+    width:100%;
+    max-width:min(1100px, 90vw);
+    max-height:90vh;
+    position:relative;
+}
+.sd-gallery-lightbox__image{
+    width:100%;
+    max-height:80vh;
+    object-fit:contain;
+    border-radius:18px;
+    background:#000;
+    display:block;
+}
+.sd-gallery-lightbox__close{
+    position:absolute;
+    top:-16px;
+    right:-16px;
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    border:none;
+    background:#c73e1d;
+    color:#fff;
+    font-size:22px;
+    cursor:pointer;
+}
+.sd-gallery-lightbox__close:focus-visible{
+    outline:2px solid #fff;
+    outline-offset:2px;
+}
+
 /* (Any additional existing styles for this template would still be here) */
 </style>
 
@@ -260,17 +345,98 @@ article{
                     </p>
                 <?php else : ?>
                     <?php
-                    $company_name  = get_the_title();
-                    $service_model = isset( $entity['service_model'] ) ? (string) $entity['service_model'] : '';
-                    $industry_vertical = isset( $entity['industry_vertical'] ) ? (string) $entity['industry_vertical'] : '';
+                    $company_name        = get_the_title();
+                    $service_model       = isset( $entity['service_model'] ) ? (string) $entity['service_model'] : '';
+                    $industry_vertical   = isset( $entity['industry_vertical'] ) ? (string) $entity['industry_vertical'] : '';
+                    $logo_attachment_id  = isset( $entity['logo_attachment_id'] ) ? absint( $entity['logo_attachment_id'] ) : 0;
+                    $gallery_image_ids   = isset( $entity['gallery_image_ids'] ) && is_array( $entity['gallery_image_ids'] ) ? $entity['gallery_image_ids'] : array();
+
+                    if ( ! $logo_attachment_id && $entity_id ) {
+                        $logo_attachment_id = SD_Main_Entity_Helper::get_logo_attachment_id( $entity_id );
+                    }
+                    $logo_markup         = '';
+
+                    if ( empty( $gallery_image_ids ) && $entity_id ) {
+                        $gallery_image_ids = SD_Main_Entity_Helper::get_gallery_image_ids( $entity_id );
+                    }
+                    $gallery_images = array();
+
+                    if ( $logo_attachment_id ) {
+                        $logo_alt_text = '';
+
+                        if ( $company_name ) {
+                            /* translators: %s: company name. */
+                            $logo_alt_text = sprintf( esc_attr__( '%s logo', 'super-directory' ), $company_name );
+                        }
+
+                        $logo_markup = wp_get_attachment_image(
+                            $logo_attachment_id,
+                            'medium',
+                            false,
+                            array(
+                                'class' => 'sd-entry__logo-image',
+                                'alt'   => $logo_alt_text,
+                            )
+                        );
+                    }
+
+                    if ( ! empty( $gallery_image_ids ) ) {
+                        foreach ( $gallery_image_ids as $gallery_id ) {
+                            $gallery_id = absint( $gallery_id );
+
+                            if ( ! $gallery_id ) {
+                                continue;
+                            }
+
+                            $thumbnail = wp_get_attachment_image(
+                                $gallery_id,
+                                'large',
+                                false,
+                                array(
+                                    'class'   => 'sd-gallery__image',
+                                    'loading' => 'lazy',
+                                )
+                            );
+
+                            $full_url = wp_get_attachment_image_url( $gallery_id, 'full' );
+
+                            if ( ! $thumbnail || ! $full_url ) {
+                                continue;
+                            }
+
+                            $image_alt = trim( get_post_meta( $gallery_id, '_wp_attachment_image_alt', true ) );
+
+                            if ( ! $image_alt && $company_name ) {
+                                /* translators: %s: company name. */
+                                $image_alt = sprintf( __( '%s gallery image', 'super-directory' ), $company_name );
+                            }
+
+                            $caption = wp_strip_all_tags( wp_get_attachment_caption( $gallery_id ) );
+
+                            if ( ! $caption && $image_alt ) {
+                                $caption = $image_alt;
+                            }
+
+                            $gallery_images[] = array(
+                                'html'     => $thumbnail,
+                                'full_url' => $full_url,
+                                'alt'      => $image_alt,
+                                'caption'  => $caption,
+                            );
+                        }
+                    }
                     ?>
                     <div class="sd-entry__path_header_holder">
                         <div class="sd-entry__path"><p>/ <?php echo esc_html( $category_label ? $category_label : __( 'Category', 'super-directory' ) ); ?> <?php esc_html_e( 'Resources', 'super-directory' ); ?> /</p></div>
 
                         <header class="entry-header">
-                            <h1 class="sd-entry__title"><?php echo esc_html( $company_name ); ?></h1>
                             <?php if ( ! empty( $entity['short_description'] ) ) : ?>
                                 <p class="sd-entry__intro"><?php echo wp_kses_post( $entity['short_description'] ); ?></p>
+                            <?php endif; ?>
+                            <?php if ( $logo_markup ) : ?>
+                                <div class="sd-entry__logo">
+                                    <?php echo wp_kses_post( $logo_markup ); ?>
+                                </div>
                             <?php endif; ?>
                         </header>
                     </div>
@@ -410,26 +576,56 @@ article{
                         </aside>
 
                         <!-- RIGHT: Main content -->
-                        <div class="sd-section-background">
-                            <?php if ( ! empty( $entity['long_description_primary'] ) ) : ?>
-                                <section class="sd-section">
-                                    <h2><?php printf( esc_html__( 'What %s Does', 'super-directory' ), esc_html( $company_name ) ); ?></h2>
-                                    <div class="sd-section__body"><?php echo wp_kses_post( wpautop( $entity['long_description_primary'] ) ); ?></div>
-                                </section>
-                            <?php endif; ?>
+                        <div class="sd-entry__main">
+                            <div class="sd-section-background">
+                                <?php if ( ! empty( $entity['long_description_primary'] ) ) : ?>
+                                    <section class="sd-section">
+                                        <h2><?php printf( esc_html__( 'What %s Does', 'super-directory' ), esc_html( $company_name ) ); ?></h2>
+                                        <div class="sd-section__body"><?php echo wp_kses_post( wpautop( $entity['long_description_primary'] ) ); ?></div>
+                                    </section>
+                                <?php endif; ?>
 
-                            <?php if ( ! empty( $entity['long_description_secondary'] ) ) : ?>
-                                <section class="sd-section">
-                                    <h2><?php printf( esc_html__( 'Why We Recommend %s', 'super-directory' ), esc_html( $company_name ) ); ?></h2>
-                                    <div class="sd-section__body"><?php echo wp_kses_post( wpautop( $entity['long_description_secondary'] ) ); ?></div>
-                                </section>
-                            <?php endif; ?>
+                                <?php if ( ! empty( $entity['long_description_secondary'] ) ) : ?>
+                                    <section class="sd-section">
+                                        <h2><?php printf( esc_html__( 'Why We Recommend %s', 'super-directory' ), esc_html( $company_name ) ); ?></h2>
+                                        <div class="sd-section__body"><?php echo wp_kses_post( wpautop( $entity['long_description_secondary'] ) ); ?></div>
+                                    </section>
+                                <?php endif; ?>
 
-                            <?php
-                            if ( $has_content ) :
-                                ?>
-                                <div class="sd-directory-entry__custom-content">
-                                    <?php the_content(); ?>
+                                <?php
+                                if ( $has_content ) :
+                                    ?>
+                                    <div class="sd-directory-entry__custom-content">
+                                        <?php the_content(); ?>
+                                    </div>
+                                <?php endif; ?>
+                            </div>
+                            <?php if ( ! empty( $gallery_images ) ) : ?>
+                                <div class="sd-gallery sd-section-background" aria-label="<?php esc_attr_e( 'Resource gallery', 'super-directory' ); ?>">
+                                    <section class="sd-section">
+                                        <h2>
+                                            <?php
+                                            if ( $company_name ) {
+                                                printf( esc_html__( '%s Gallery', 'super-directory' ), esc_html( $company_name ) );
+                                            } else {
+                                                esc_html_e( 'Gallery', 'super-directory' );
+                                            }
+                                            ?>
+                                        </h2>
+                                        <div class="sd-gallery__grid">
+                                            <?php foreach ( $gallery_images as $gallery_image ) : ?>
+                                                <button type="button" class="sd-gallery__item" data-full-image="<?php echo esc_url( $gallery_image['full_url'] ); ?>" data-alt="<?php echo esc_attr( $gallery_image['alt'] ); ?>">
+                                                    <?php echo wp_kses_post( $gallery_image['html'] ); ?>
+                                                </button>
+                                            <?php endforeach; ?>
+                                        </div>
+                                    </section>
+                                </div>
+                                <div class="sd-gallery-lightbox" role="dialog" aria-modal="true" aria-label="<?php esc_attr_e( 'Gallery viewer', 'super-directory' ); ?>" hidden tabindex="-1">
+                                    <div class="sd-gallery-lightbox__dialog">
+                                        <button type="button" class="sd-gallery-lightbox__close" aria-label="<?php esc_attr_e( 'Close gallery', 'super-directory' ); ?>">&times;</button>
+                                        <img src="" alt="" class="sd-gallery-lightbox__image" />
+                                    </div>
                                 </div>
                             <?php endif; ?>
                         </div>
@@ -441,6 +637,65 @@ article{
 
     <?php endwhile; ?>
 </main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var galleryButtons = document.querySelectorAll('.sd-gallery__item');
+    var lightbox = document.querySelector('.sd-gallery-lightbox');
+
+    if (!galleryButtons.length || !lightbox) {
+        return;
+    }
+
+    var lightboxImage = lightbox.querySelector('.sd-gallery-lightbox__image');
+    var closeButton = lightbox.querySelector('.sd-gallery-lightbox__close');
+
+    var closeLightbox = function () {
+        if (lightbox.hasAttribute('hidden')) {
+            return;
+        }
+
+        lightbox.setAttribute('hidden', 'hidden');
+        lightbox.classList.remove('is-visible');
+        lightboxImage.removeAttribute('src');
+        lightboxImage.removeAttribute('alt');
+    };
+
+    galleryButtons.forEach(function (button) {
+        button.addEventListener('click', function () {
+            var fullImage = button.getAttribute('data-full-image');
+
+            if (!fullImage) {
+                return;
+            }
+
+            var altText = button.getAttribute('data-alt') || '';
+            lightboxImage.setAttribute('src', fullImage);
+            lightboxImage.setAttribute('alt', altText);
+
+            lightbox.removeAttribute('hidden');
+            lightbox.classList.add('is-visible');
+            lightbox.focus();
+        });
+    });
+
+    if (closeButton) {
+        closeButton.addEventListener('click', closeLightbox);
+    }
+
+    lightbox.addEventListener('click', function (event) {
+        if (event.target === lightbox) {
+            closeLightbox();
+        }
+    });
+
+    document.addEventListener('keydown', function (event) {
+        if ('Escape' === event.key) {
+            closeLightbox();
+        }
+    });
+});
+</script>
 
 <?php
 

@@ -29,6 +29,8 @@ article{
 .sd-entry__path p{font-size:15px;color:#c73e1d; font-weight:600;}
 .sd-entry__title{color:#0f172a;margin:0 0 10px}
 .sd-entry__intro{color:#334155;margin:0 0 35px;width: 800px;margin-right: auto;margin-left: auto;}
+.sd-entry__logo{margin:0 auto 35px;max-width:240px;text-align:center;}
+.sd-entry__logo-image{width:100%;height:auto;display:block;margin:0 auto;object-fit:contain;}
 
 .sd-entry__grid{display:grid;grid-template-columns:300px 1fr;gap:28px;align-items:start}
 @media (max-width:980px){.sd-entry__grid{grid-template-columns:1fr;gap:18px}}
@@ -260,9 +262,30 @@ article{
                     </p>
                 <?php else : ?>
                     <?php
-                    $company_name  = get_the_title();
-                    $service_model = isset( $entity['service_model'] ) ? (string) $entity['service_model'] : '';
-                    $industry_vertical = isset( $entity['industry_vertical'] ) ? (string) $entity['industry_vertical'] : '';
+                    $company_name        = get_the_title();
+                    $service_model       = isset( $entity['service_model'] ) ? (string) $entity['service_model'] : '';
+                    $industry_vertical   = isset( $entity['industry_vertical'] ) ? (string) $entity['industry_vertical'] : '';
+                    $logo_attachment_id  = isset( $entity['logo_attachment_id'] ) ? absint( $entity['logo_attachment_id'] ) : 0;
+                    $logo_markup         = '';
+
+                    if ( $logo_attachment_id ) {
+                        $logo_alt_text = '';
+
+                        if ( $company_name ) {
+                            /* translators: %s: company name. */
+                            $logo_alt_text = sprintf( esc_attr__( '%s logo', 'super-directory' ), $company_name );
+                        }
+
+                        $logo_markup = wp_get_attachment_image(
+                            $logo_attachment_id,
+                            'medium',
+                            false,
+                            array(
+                                'class' => 'sd-entry__logo-image',
+                                'alt'   => $logo_alt_text,
+                            )
+                        );
+                    }
                     ?>
                     <div class="sd-entry__path_header_holder">
                         <div class="sd-entry__path"><p>/ <?php echo esc_html( $category_label ? $category_label : __( 'Category', 'super-directory' ) ); ?> <?php esc_html_e( 'Resources', 'super-directory' ); ?> /</p></div>
@@ -271,6 +294,11 @@ article{
                             <h1 class="sd-entry__title"><?php echo esc_html( $company_name ); ?></h1>
                             <?php if ( ! empty( $entity['short_description'] ) ) : ?>
                                 <p class="sd-entry__intro"><?php echo wp_kses_post( $entity['short_description'] ); ?></p>
+                            <?php endif; ?>
+                            <?php if ( $logo_markup ) : ?>
+                                <div class="sd-entry__logo">
+                                    <?php echo wp_kses_post( $logo_markup ); ?>
+                                </div>
                             <?php endif; ?>
                         </header>
                     </div>

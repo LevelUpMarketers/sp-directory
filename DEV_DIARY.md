@@ -49,3 +49,4 @@
 47. 2025-11-06: Populated the directory entry template with listing data, added public-facing styles, and removed legacy shortcode content from generated pages.
 48. 2025-11-06: Forced generated pages to persist the SuperDirectory template, backfilled legacy slugs, and refreshed template registration so editors can see the custom option.
 49. 2025-11-06: Added logo and gallery media fields to the Directory Listing workflow, wiring up schema support, AJAX sanitization, and live previews powered by the WordPress media picker.
+50. 2025-11-19: Displayed saved listing logos beneath the entry heading with supporting template styles for consistent sizing.

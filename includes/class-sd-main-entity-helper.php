@@ -149,6 +149,9 @@ class SD_Main_Entity_Helper {
         $prepared['long_description_primary'] = isset( $row['long_description_primary'] ) ? wp_kses_post( (string) $row['long_description_primary'] ) : '';
         $prepared['long_description_secondary'] = isset( $row['long_description_secondary'] ) ? wp_kses_post( (string) $row['long_description_secondary'] ) : '';
 
+        $prepared['logo_attachment_id'] = isset( $row['logo_attachment_id'] ) ? absint( $row['logo_attachment_id'] ) : 0;
+        $prepared['gallery_image_ids']  = isset( $row['gallery_image_ids'] ) ? self::parse_gallery_ids( $row['gallery_image_ids'] ) : array();
+
         $prepared['id']                = isset( $row['id'] ) ? absint( $row['id'] ) : 0;
         $prepared['directory_page_id'] = isset( $row['directory_page_id'] ) ? absint( $row['directory_page_id'] ) : 0;
 
@@ -180,5 +183,18 @@ class SD_Main_Entity_Helper {
         $found = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $like ) );
 
         return ( $found === $table_name );
+    }
+
+    private static function parse_gallery_ids( $value ) {
+        if ( empty( $value ) ) {
+            return array();
+        }
+
+        $ids = is_array( $value ) ? $value : explode( ',', (string) $value );
+
+        $ids = array_map( 'absint', $ids );
+        $ids = array_filter( $ids );
+
+        return array_values( array_unique( $ids ) );
     }
 }

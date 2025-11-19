@@ -463,6 +463,33 @@
     font-weight: 600;
 }
 
+.sd-media-preview {
+    margin-top: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.sd-media-preview__item {
+    border: 1px solid #dcdcde;
+    border-radius: 6px;
+    padding: 6px;
+    background: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.sd-media-preview__item img {
+    display: block;
+    max-width: 120px;
+    height: auto;
+}
+
+.sd-media-preview--gallery .sd-media-preview__item img {
+    max-width: 160px;
+}
+
 .sd-tooltip-icon {
     font-family: dashicons;
     margin-right: 4px;

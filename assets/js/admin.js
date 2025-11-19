@@ -1,4 +1,204 @@
 jQuery(document).ready(function($){
+    function parseAttachmentId(value){
+        var id = parseInt(value, 10);
+
+        return isNaN(id) ? 0 : id;
+    }
+
+    function parseGalleryIds(value){
+        if (Array.isArray(value)) {
+            value = value.join(',');
+        }
+
+        if (typeof value !== 'string') {
+            value = typeof value === 'number' ? String(value) : '';
+        }
+
+        if (!value) {
+            return [];
+        }
+
+        return value.split(',').map(function(part){
+            var id = parseInt(part, 10);
+
+            return isNaN(id) ? 0 : id;
+        }).filter(function(id){
+            return id > 0;
+        });
+    }
+
+    function getPreviewMarkup(url){
+        if (!url) {
+            return '';
+        }
+
+        var $wrapper = $('<div/>', { 'class': 'sd-media-preview__item' });
+        $('<img/>', { src: url, alt: '' }).appendTo($wrapper);
+
+        return $('<div/>').append($wrapper).html();
+    }
+
+    function renderSingleImagePreview($preview, attachmentId, providedUrl){
+        if (!$preview || !$preview.length) {
+            return;
+        }
+
+        var id = parseAttachmentId(attachmentId);
+
+        if (!id) {
+            $preview.empty();
+            return;
+        }
+
+        if (providedUrl) {
+            $preview.html(getPreviewMarkup(providedUrl));
+            return;
+        }
+
+        if (typeof wp === 'undefined' || !wp.media || !wp.media.attachment) {
+            $preview.empty();
+            return;
+        }
+
+        wp.media.attachment(id).fetch().done(function(model){
+            var url = '';
+
+            if (model && typeof model.get === 'function') {
+                url = model.get('url') || '';
+            } else if (model && model.url) {
+                url = model.url;
+            }
+
+            if (url) {
+                $preview.html(getPreviewMarkup(url));
+            } else {
+                $preview.empty();
+            }
+        }).fail(function(){
+            $preview.empty();
+        });
+    }
+
+    function renderGalleryPreview($preview, ids, attachments){
+        if (!$preview || !$preview.length) {
+            return;
+        }
+
+        if (!Array.isArray(ids) || !ids.length) {
+            $preview.empty();
+            return;
+        }
+
+        var attachmentMap = {};
+
+        if (Array.isArray(attachments)) {
+            attachments.forEach(function(attachment){
+                if (attachment && typeof attachment.id !== 'undefined') {
+                    var numericId = parseAttachmentId(attachment.id);
+
+                    if (numericId) {
+                        attachmentMap[numericId] = attachment.url || '';
+                    }
+                }
+            });
+        }
+
+        var markup = new Array(ids.length);
+        var pending = 0;
+
+        ids.forEach(function(id, index){
+            markup[index] = '';
+            var numericId = parseAttachmentId(id);
+
+            if (!numericId) {
+                return;
+            }
+
+            if (attachmentMap[numericId]) {
+                markup[index] = getPreviewMarkup(attachmentMap[numericId]);
+                return;
+            }
+
+            if (typeof wp === 'undefined' || !wp.media || !wp.media.attachment) {
+                markup[index] = '';
+                return;
+            }
+
+            pending++;
+            wp.media.attachment(numericId).fetch().done(function(model){
+                var url = '';
+
+                if (model && typeof model.get === 'function') {
+                    url = model.get('url') || '';
+                } else if (model && model.url) {
+                    url = model.url;
+                }
+
+                if (url) {
+                    markup[index] = getPreviewMarkup(url);
+                }
+            }).always(function(){
+                pending--;
+
+                if (pending <= 0) {
+                    $preview.html(markup.join(''));
+                }
+            });
+        });
+
+        if (pending === 0) {
+            $preview.html(markup.join(''));
+        } else {
+            $preview.empty();
+        }
+    }
+
+    function setSingleImageField($input, $preview, attachment){
+        if (!$input || !$input.length) {
+            return;
+        }
+
+        var id = attachment && typeof attachment.id !== 'undefined' ? parseAttachmentId(attachment.id) : 0;
+
+        $input.val(id ? id : '');
+        renderSingleImagePreview($preview, id, attachment && attachment.url ? attachment.url : '');
+    }
+
+    function setGalleryField($input, $preview, ids, attachments){
+        if (!$input || !$input.length) {
+            return;
+        }
+
+        var cleanedIds = Array.isArray(ids) ? ids : [];
+        cleanedIds = cleanedIds.map(function(id){
+            return parseAttachmentId(id);
+        }).filter(function(id){
+            return id > 0;
+        });
+
+        $input.val(cleanedIds.join(','));
+        renderGalleryPreview($preview, cleanedIds, attachments);
+    }
+
+    function refreshMediaPreviews($context){
+        var $scope = $context && $context.length ? $context : $(document);
+
+        $scope.find('.sd-media-input').each(function(){
+            var $input = $(this);
+            var mediaType = $input.data('media-type');
+            var previewSelector = '#' + $input.attr('id') + '-preview';
+            var $preview = $(previewSelector);
+
+            if ('gallery' === mediaType) {
+                var ids = parseGalleryIds($input.val());
+                renderGalleryPreview($preview, ids);
+            } else {
+                var id = parseAttachmentId($input.val());
+                renderSingleImagePreview($preview, id);
+            }
+        });
+    }
+
     function extractAjaxMessage(response){
         if (!response) {
             return '';
@@ -156,11 +356,16 @@ jQuery(document).ready(function($){
                             $container.find('.sd-item-row').slice(1).remove();
                             $container.find('.sd-item-field').val('');
                         });
+
+                        $form.find('.sd-media-input').val('');
+                        $form.find('.sd-media-preview').empty();
                     }
 
                     if (typeof settings.onSuccess === 'function') {
                         settings.onSuccess(response, $form);
                     }
+
+                    refreshMediaPreviews($form);
                 } else {
                     var errorMessage = message || settings.errorMessage || sdAdmin.error || '';
 
@@ -203,6 +408,8 @@ jQuery(document).ready(function($){
     handleForm('#sd-create-form', 'sd_save_main_entity', { successMessage: sdAdmin.saved });
     handleForm('#sd-general-settings-form', 'sd_save_main_entity', { successMessage: sdAdmin.changesSaved });
 
+    refreshMediaPreviews($('.sd-flex-form'));
+
     function formatString(template){
         if (typeof template !== 'string') {
             return '';
@@ -236,15 +443,71 @@ jQuery(document).ready(function($){
         });
     }
 
-    $(document).on('click','.sd-upload',function(e){
+    $(document).on('click', '.sd-upload', function(e){
         e.preventDefault();
-        var target=$(this).data('target');
-        var frame=wp.media({title:sdAdmin.mediaTitle,button:{text:sdAdmin.mediaButton},multiple:false});
-        frame.on('select',function(){
-            var attachment=frame.state().get('selection').first().toJSON();
-            $(target).val(attachment.id);
-            $(target+'-preview').html('<img src="'+attachment.url+'" style="max-width:100px;height:auto;" />');
+
+        if (typeof wp === 'undefined' || !wp.media) {
+            return;
+        }
+
+        var target = $(this).data('target');
+        var $input = target ? $(target) : $();
+        var $preview = target ? $(target + '-preview') : $();
+        var frame = wp.media({
+            title: sdAdmin.mediaTitle || sdAdmin.selectImage || '',
+            button: { text: sdAdmin.mediaButton || sdAdmin.selectImage || '' },
+            multiple: false
         });
+
+        frame.on('select', function(){
+            var selection = frame.state().get('selection');
+            var attachment = selection && selection.first ? selection.first().toJSON() : null;
+
+            setSingleImageField($input, $preview, attachment);
+        });
+
+        frame.open();
+    });
+
+    $(document).on('click', '.sd-upload-gallery', function(e){
+        e.preventDefault();
+
+        if (typeof wp === 'undefined' || !wp.media) {
+            return;
+        }
+
+        var target = $(this).data('target');
+        var $input = target ? $(target) : $();
+        var $preview = target ? $(target + '-preview') : $();
+        var frame = wp.media({
+            title: sdAdmin.selectImages || sdAdmin.mediaTitle || '',
+            button: { text: sdAdmin.selectImages || sdAdmin.mediaButton || '' },
+            multiple: true
+        });
+
+        frame.on('select', function(){
+            var selection = frame.state().get('selection');
+            var ids = [];
+            var attachments = [];
+
+            if (selection && typeof selection.each === 'function') {
+                selection.each(function(model){
+                    if (!model) {
+                        return;
+                    }
+
+                    var attachment = model.toJSON();
+
+                    if (attachment && typeof attachment.id !== 'undefined') {
+                        ids.push(attachment.id);
+                        attachments.push(attachment);
+                    }
+                });
+            }
+
+            setGalleryField($input, $preview, ids, attachments);
+        });
+
         frame.open();
     });
 
@@ -356,6 +619,24 @@ jQuery(document).ready(function($){
                     return $('<div/>').html(stringValue).text() || emptyValue;
                 case 'textarea':
                     return stringValue === '' ? emptyValue : String(stringValue);
+                case 'image':
+                    return stringValue ? (sdAdmin.imageSelected || sdAdmin.selectImage || emptyValue) : emptyValue;
+                case 'gallery':
+                    var galleryIds = parseGalleryIds(stringValue);
+
+                    if (!galleryIds.length){
+                        return emptyValue;
+                    }
+
+                    if (galleryIds.length === 1){
+                        return sdAdmin.galleryImageSingle || '1 image';
+                    }
+
+                    if (sdAdmin.galleryImagesCount){
+                        return formatString(sdAdmin.galleryImagesCount, galleryIds.length);
+                    }
+
+                    return galleryIds.length + ' images';
                 default:
                     if (name === 'featured_image_id'){
                         return stringValue ? (sdAdmin.mediaButton || sdAdmin.mediaTitle || 'Select Image') : emptyValue;
@@ -617,29 +898,49 @@ jQuery(document).ready(function($){
                         type: 'hidden',
                         name: fieldName,
                         id: inputId,
-                        value: stringValue
+                        value: stringValue,
+                        'class': 'sd-media-input',
+                        'data-media-type': 'image'
                     });
                     var $button = $('<button/>', {
                         type: 'button',
                         'class': 'button sd-upload',
                         'data-target': '#' + inputId
-                    }).text(sdAdmin.mediaTitle);
+                    }).text(sdAdmin.selectImage || sdAdmin.mediaTitle || 'Select Image');
                     var previewId = inputId + '-preview';
                     var $preview = $('<div/>', {
                         id: previewId,
-                        style: 'margin-top:10px;'
+                        'class': 'sd-media-preview',
+                        'aria-live': 'polite'
                     });
-                    var urlKey = fieldName + '_url';
-
-                    if (entity && entity[urlKey]){
-                        $preview.append($('<img/>', {
-                            src: entity[urlKey],
-                            alt: field.label || '',
-                            style: 'max-width:100px;height:auto;'
-                        }));
-                    }
 
                     $container.append($hidden, $button, $preview);
+                    renderSingleImagePreview($preview, stringValue);
+                    break;
+                case 'gallery':
+                    var galleryId = baseId;
+                    var $galleryInput = $('<input/>', {
+                        type: 'hidden',
+                        name: fieldName,
+                        id: galleryId,
+                        value: stringValue,
+                        'class': 'sd-media-input',
+                        'data-media-type': 'gallery'
+                    });
+                    var $galleryButton = $('<button/>', {
+                        type: 'button',
+                        'class': 'button sd-upload-gallery',
+                        'data-target': '#' + galleryId
+                    }).text(sdAdmin.selectImages || sdAdmin.mediaTitle || 'Select Images');
+                    var galleryPreviewId = galleryId + '-preview';
+                    var $galleryPreview = $('<div/>', {
+                        id: galleryPreviewId,
+                        'class': 'sd-media-preview sd-media-preview--gallery',
+                        'aria-live': 'polite'
+                    });
+
+                    $container.append($galleryInput, $galleryButton, $galleryPreview);
+                    renderGalleryPreview($galleryPreview, parseGalleryIds(stringValue));
                     break;
                 case 'editor':
                     var editorId = baseId;
@@ -872,6 +1173,8 @@ jQuery(document).ready(function($){
             });
 
             updatePagination(total, totalPages, currentPage);
+
+            refreshMediaPreviews($entityTableBody);
 
             if (typeof wp !== 'undefined' && wp.editor && typeof wp.editor.initialize === 'function'){
                 $entityTableBody.find('.sd-editor-field').each(function(){

@@ -75,6 +75,8 @@ class SD_Ajax {
             'youtube_url'              => $this->sanitize_url_value( 'youtube_url' ),
             'linkedin_url'             => $this->sanitize_url_value( 'linkedin_url' ),
             'google_business_url'      => $this->sanitize_url_value( 'google_business_url' ),
+            'logo_attachment_id'       => $this->sanitize_attachment_id_value( 'logo_attachment_id' ),
+            'gallery_image_ids'        => $this->sanitize_gallery_ids_value( 'gallery_image_ids' ),
             'updated_at'               => $now,
         );
 
@@ -214,6 +216,9 @@ class SD_Ajax {
                         $entity[ $text_key ] = '';
                     }
                 }
+
+                $entity['logo_attachment_id'] = isset( $entity['logo_attachment_id'] ) ? absint( $entity['logo_attachment_id'] ) : 0;
+                $entity['gallery_image_ids']  = isset( $entity['gallery_image_ids'] ) ? $this->normalize_gallery_ids_value( $entity['gallery_image_ids'] ) : '';
             }
             unset( $entity );
         }
@@ -516,6 +521,52 @@ class SD_Ajax {
         }
 
         return wp_kses_post( $value );
+    }
+
+    private function sanitize_attachment_id_value( $key ) {
+        $value = $this->get_post_value( $key );
+
+        if ( null === $value ) {
+            return 0;
+        }
+
+        if ( is_array( $value ) ) {
+            $value = reset( $value );
+        }
+
+        return absint( $value );
+    }
+
+    private function sanitize_gallery_ids_value( $key ) {
+        $value = $this->get_post_value( $key );
+
+        if ( null === $value ) {
+            return '';
+        }
+
+        if ( is_array( $value ) ) {
+            $value = implode( ',', $value );
+        }
+
+        return $this->normalize_gallery_ids_value( $value );
+    }
+
+    private function normalize_gallery_ids_value( $value ) {
+        if ( null === $value || '' === $value ) {
+            return '';
+        }
+
+        $ids = is_array( $value ) ? $value : explode( ',', (string) $value );
+
+        $ids = array_map( 'absint', $ids );
+        $ids = array_filter( $ids );
+        $ids = array_values( array_unique( $ids ) );
+
+        if ( empty( $ids ) ) {
+            return '';
+        }
+
+        return implode( ',', $ids );
     }
 
     private function format_editor_content_for_response( $value ) {

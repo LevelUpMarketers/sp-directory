@@ -48,3 +48,4 @@
 46. 2025-11-06: Auto-generated directory pages on save, applied the SuperDirectory template, and revamped the generated content log with accordion listings.
 47. 2025-11-06: Populated the directory entry template with listing data, added public-facing styles, and removed legacy shortcode content from generated pages.
 48. 2025-11-06: Forced generated pages to persist the SuperDirectory template, backfilled legacy slugs, and refreshed template registration so editors can see the custom option.
+49. 2025-11-06: Added logo and gallery media fields to the Directory Listing workflow, wiring up schema support, AJAX sanitization, and live previews powered by the WordPress media picker.

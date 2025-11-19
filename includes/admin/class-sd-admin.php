@@ -75,6 +75,11 @@ class SD_Admin {
             'none'            => __( 'No entries found.', 'super-directory' ),
             'mediaTitle'      => __( 'Select Image', 'super-directory' ),
             'mediaButton'     => __( 'Use this image', 'super-directory' ),
+            'selectImage'     => __( 'Select Image', 'super-directory' ),
+            'selectImages'    => __( 'Select Images', 'super-directory' ),
+            'imageSelected'   => __( 'Image selected', 'super-directory' ),
+            'galleryImageSingle' => __( '1 image', 'super-directory' ),
+            'galleryImagesCount' => __( '%d images', 'super-directory' ),
             'itemPlaceholder' => __( 'Item #%d', 'super-directory' ),
             'addAnotherItem'  => __( '+ Add Another Item', 'super-directory' ),
             'makeSelection'   => __( 'Make a Selection...', 'super-directory' ),
@@ -299,6 +304,25 @@ class SD_Admin {
                         'type'      => 'select',
                         'options'   => $service_model_options,
                         'tooltip'   => __( 'Clarify the service footprint so prospects know where support is available.', 'super-directory' ),
+                    ),
+                ),
+            ),
+            'imagery' => array(
+                'label'       => __( 'Logos & Imagery', 'super-directory' ),
+                'description' => __( 'Upload a brand logo and supporting gallery assets for the listing.', 'super-directory' ),
+                'fields'      => array(
+                    array(
+                        'name'    => 'logo_attachment_id',
+                        'label'   => __( 'Logo Image', 'super-directory' ),
+                        'type'    => 'image',
+                        'tooltip' => __( 'Select a primary logo for the resource card and header.', 'super-directory' ),
+                    ),
+                    array(
+                        'name'       => 'gallery_image_ids',
+                        'label'      => __( 'Gallery Images', 'super-directory' ),
+                        'type'       => 'gallery',
+                        'tooltip'    => __( 'Choose supporting images that can power a gallery on the front-end template.', 'super-directory' ),
+                        'full_width' => true,
                     ),
                 ),
             ),
@@ -629,9 +653,15 @@ class SD_Admin {
                         break;
                     case 'image':
                         $input_id = sanitize_html_class( $field['name'] );
-                        echo '<input type="hidden" name="' . esc_attr( $field['name'] ) . '" id="' . esc_attr( $input_id ) . '" />';
+                        echo '<input type="hidden" class="sd-media-input" data-media-type="image" name="' . esc_attr( $field['name'] ) . '" id="' . esc_attr( $input_id ) . '" />';
                         echo '<button type="button" class="button sd-upload" data-target="#' . esc_attr( $input_id ) . '">' . esc_html__( 'Select Image', 'super-directory' ) . '</button>';
-                        echo '<div id="' . esc_attr( $input_id ) . '-preview" style="margin-top:10px;"></div>';
+                        echo '<div id="' . esc_attr( $input_id ) . '-preview" class="sd-media-preview" aria-live="polite"></div>';
+                        break;
+                    case 'gallery':
+                        $input_id = sanitize_html_class( $field['name'] );
+                        echo '<input type="hidden" class="sd-media-input" data-media-type="gallery" name="' . esc_attr( $field['name'] ) . '" id="' . esc_attr( $input_id ) . '" />';
+                        echo '<button type="button" class="button sd-upload-gallery" data-target="#' . esc_attr( $input_id ) . '">' . esc_html__( 'Select Images', 'super-directory' ) . '</button>';
+                        echo '<div id="' . esc_attr( $input_id ) . '-preview" class="sd-media-preview sd-media-preview--gallery" aria-live="polite"></div>';
                         break;
                     default:
                         $attrs = isset( $field['attrs'] ) ? ' ' . $field['attrs'] : '';

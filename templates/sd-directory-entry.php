@@ -295,7 +295,6 @@ article{
                         <div class="sd-entry__path"><p>/ <?php echo esc_html( $category_label ? $category_label : __( 'Category', 'super-directory' ) ); ?> <?php esc_html_e( 'Resources', 'super-directory' ); ?> /</p></div>
 
                         <header class="entry-header">
-                            <h1 class="sd-entry__title"><?php echo esc_html( $company_name ); ?></h1>
                             <?php if ( ! empty( $entity['short_description'] ) ) : ?>
                                 <p class="sd-entry__intro"><?php echo wp_kses_post( $entity['short_description'] ); ?></p>
                             <?php endif; ?>

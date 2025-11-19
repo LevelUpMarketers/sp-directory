@@ -51,3 +51,4 @@
 49. 2025-11-06: Added logo and gallery media fields to the Directory Listing workflow, wiring up schema support, AJAX sanitization, and live previews powered by the WordPress media picker.
 50. 2025-11-19: Displayed saved listing logos beneath the entry heading with supporting template styles for consistent sizing.
 51. 2025-11-19: Backfilled a helper to refetch stored logo IDs when cached entities lag schema updates so templates reliably render imagery.
+52. 2025-11-19: Synced the directory entry template with the requested front-end layout so hero banners, logo placement, and supporting styles match production.

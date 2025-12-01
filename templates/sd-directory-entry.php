@@ -282,6 +282,13 @@ article{
             $industry_vertical_label = SD_Main_Entity_Helper::get_industry_label( $entity['industry_vertical'] );
         }
 
+        $sd_icon_base_url         = trailingslashit( SD_PLUGIN_URL . 'assets/images' );
+        $sd_category_icon_url     = $sd_icon_base_url . 'categories.svg';
+        $sd_service_model_icon_url = $sd_icon_base_url . 'customer.svg';
+        $sd_industry_icon_url     = $sd_category_icon_url;
+        $sd_location_icon_url     = $sd_icon_base_url . 'location.svg';
+        $sd_email_icon_url        = $sd_icon_base_url . 'emai.svg';
+
         $has_content = ( '' !== trim( get_the_content() ) );
         ?>
         <article id="post-<?php the_ID(); ?>" <?php post_class( 'sd-directory-entry' ); ?>>
@@ -400,7 +407,7 @@ article{
                             <dl class="sd-meta">
                                 <?php if ( $category_label ) : ?>
                                     <div class="sd-meta__row">
-                                        <img src="https://superpath.com/wp-content/uploads/2025/07/phone-call-1.svg" alt="" class="sd-meta__icon">
+                                        <img src="<?php echo esc_url( $sd_category_icon_url ); ?>" alt="" class="sd-meta__icon">
                                         <div class="sd-meta__text">
                                             <dt><?php esc_html_e( 'Category', 'super-directory' ); ?></dt>
                                             <dd><?php echo esc_html( $category_label ); ?></dd>
@@ -409,7 +416,7 @@ article{
                                 <?php endif; ?>
                                 <?php if ( $service_model ) : ?>
                                     <div class="sd-meta__row">
-                                        <img src="https://superpath.com/wp-content/uploads/2025/07/phone-call-1.svg" alt="" class="sd-meta__icon">
+                                        <img src="<?php echo esc_url( $sd_service_model_icon_url ); ?>" alt="" class="sd-meta__icon">
                                         <div class="sd-meta__text">
                                             <dt><?php esc_html_e( 'Service Model', 'super-directory' ); ?></dt>
                                             <dd><?php echo esc_html( ucfirst( $service_model ) ); ?></dd>
@@ -418,7 +425,7 @@ article{
                                 <?php endif; ?>
                                 <?php if ( $industry_vertical_label ) : ?>
                                     <div class="sd-meta__row">
-                                        <img src="https://superpath.com/wp-content/uploads/2025/07/phone-call-1.svg" alt="" class="sd-meta__icon">
+                                        <img src="<?php echo esc_url( $sd_industry_icon_url ); ?>" alt="" class="sd-meta__icon">
                                         <div class="sd-meta__text">
                                             <dt><?php esc_html_e( 'Industies Served', 'super-directory' ); ?></dt>
                                             <dd><?php echo esc_html( $industry_vertical_label ); ?></dd>
@@ -431,7 +438,7 @@ article{
                                 <h3 style="margin-top:16px;"><?php esc_html_e( 'Location', 'super-directory' ); ?></h3>
                                 <address class="sd-address">
                                     <div class="sd-address__row">
-                                        <img src="https://superpath.com/wp-content/uploads/2025/07/phone-call-1.svg" alt="" class="sd-address__icon">
+                                        <img src="<?php echo esc_url( $sd_location_icon_url ); ?>" alt="" class="sd-address__icon">
                                         <div>
                                             <?php
                                             $address_parts = array_filter(
@@ -461,7 +468,7 @@ article{
                                     <?php endif; ?>
                                     <?php if ( ! empty( $entity['email_address'] ) ) : ?>
                                         <div class="sd-contact__row">
-                                            <img src="https://superpath.com/wp-content/uploads/2025/07/phone-call-1.svg" alt="<?php esc_attr_e( 'Email', 'super-directory' ); ?>" style="width:15px;height:15px;margin-right:8px;vertical-align:middle;">
+                                            <img src="<?php echo esc_url( $sd_email_icon_url ); ?>" alt="<?php esc_attr_e( 'Email', 'super-directory' ); ?>" style="width:15px;height:15px;margin-right:8px;vertical-align:middle;">
                                             <?php
                                             $email = sanitize_email( $entity['email_address'] );
                                             if ( ! empty( $email ) ) :

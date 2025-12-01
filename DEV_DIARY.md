@@ -68,3 +68,4 @@
 64. 2025-11-19: Added a settings-page bulk importer that accepts CSV/TSV spreadsheets, maps SuperDirectory columns, sanitizes long-form limits, and creates listings with media IDs and generated pages.
 65. 2025-11-19: Normalized bulk import headers to strip UTF-8 byte order marks so spreadsheets with prefixed BOMs map columns correctly.
 66. 2025-11-19: Fixed directory entry displays to humanize categories, consolidate address lines, and accept misspelled media ID headers during bulk import.
+67. 2025-11-19: Added another homepage screenshot attachment header alias so bulk imports capture screenshot IDs even with alternate misspellings.

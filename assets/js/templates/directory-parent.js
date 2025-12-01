@@ -150,7 +150,34 @@
     };
 
     const scrollToResults = () => {
-        resultsContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        const targetY = Math.max(resultsContainer.getBoundingClientRect().top + window.scrollY - 120, 0);
+        const startY = window.scrollY;
+        const distance = targetY - startY;
+
+        if (!distance) {
+            return;
+        }
+
+        const duration = Math.min(900, Math.max(450, Math.abs(distance)));
+        let startTime;
+
+        const step = (timestamp) => {
+            if (!startTime) {
+                startTime = timestamp;
+            }
+
+            const elapsed = timestamp - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+
+            window.scrollTo({ top: startY + distance * eased, behavior: 'auto' });
+
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            }
+        };
+
+        window.requestAnimationFrame(step);
     };
 
     const resetForm = () => {

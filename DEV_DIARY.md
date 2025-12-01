@@ -73,3 +73,4 @@
 69. 2025-11-19: Corrected the email icon filename and routed phone contact rows to the new bundled phone SVG.
 70. 2025-11-19: Linked resource addresses to Google Maps with consistent typography and made phone numbers clickable tel links without altering their styling.
 71. 2025-11-19: Expanded Connect section text links to full-width buttons to keep non-social calls-to-action aligned.
+72. 2025-11-19: Added "Multiple Industries" handling to bulk imports and refreshed directory search dropdowns with guided placeholders for category, industry, and state.

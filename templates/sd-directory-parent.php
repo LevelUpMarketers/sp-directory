@@ -52,6 +52,38 @@ get_header();
         ?>
 
         <article id="post-<?php the_ID(); ?>" <?php post_class( 'sd-directory-parent__article' ); ?>>
+            <style>
+    
+
+    .jre-hacked-context-row{
+        max-width: var(--wpex-container-max-width);
+        width: var(--wpex-container-width);
+        padding-top: 60px !important;
+        padding-bottom: 60px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+    }
+</style>
+
+<div class="jre-hacked-context-row vc_row wpb_row vc_row-fluid vc_custom_1747761079977 vc_column-gap-15 vc_row-o-content-middle vc_row-flex wpex-relative wpex-cols-right"><div class="wpb_column vc_column_container vc_col-sm-6"><div class="vc_column-inner"><div class="wpb_wrapper">
+    <div style="color:#c73e1d;font-size:15px;letter-spacing:2px;font-weight:600;text-transform:uppercase;" class="wpb_text_column has-custom-color wpex-child-inherit-color wpb_content_element vc_custom_1748960952483">
+        <div class="wpb_wrapper">
+            <p>/&nbsp; RESOURCES TO GROW YOUR BUSINESS&nbsp; /</p>
+
+        </div>
+    </div>
+<style>.vcex-heading.vcex_692de10a2ca5e{margin-block-end:20px;}</style><h1 class="vcex-heading vcex-heading-plain vcex-module wpex-h1 vcex_692de10a2ca5e"><span class="vcex-heading-inner wpex-inline-block">Don't Spend Hours Researching Solutions -  <span style="color: #6485FF">Browse Superpath's Vetted Resources for the Trades</span></span></h1>
+    <div class="wpb_text_column wpb_content_element">
+        <div class="wpb_wrapper">
+            <p>If you run a home-services business, you already know how overwhelming it can be to sort through hundreds of tools, vendors, and platforms promising to make your life easier. From CRMs and phone systems to scheduling tools, review platforms, and marketing solutions, it’s hard to know what actually works for the trades - and what’s just noise.</p>
+<p>Superpath takes the guesswork out by curating and vetting the most trusted providers in the industry. Our resource library lets you quickly search for trusted tools built to help trades businesses run smoother, grow faster, and serve customers better. Every listing is carefully reviewed so you can find what you need - and make confident decisions.</p>
+
+        </div>
+    </div>
+</div></div></div><div class="wpb_column vc_column_container vc_col-sm-6"><div class="vc_column-inner"><div class="wpb_wrapper"><style>.vcex-image.vcex_692de10a2ce7f .vcex-image-img{border-radius:20px;height:450px;object-position:left;}</style><figure class="vcex-image vcex-module wpex-text-center vcex_692de10a2ce7f"><div class="vcex-image-inner wpex-relative wpex-w-100"><img loading="lazy" class="vcex-image-img wpex-align-middle wpex-w-100 wpex-object-cover" alt="SEO Marketing for Home Service Companies" decoding="async" src="http://superpath.local/wp-content/uploads/2025/06/seo-h1-section-2-600x400.jpg" srcset="http://superpath.local/wp-content/uploads/2025/06/seo-h1-section-2-600x400.jpg 600w, http://superpath.local/wp-content/uploads/2025/06/seo-h1-section-2-300x200.jpg 300w, http://superpath.local/wp-content/uploads/2025/06/seo-h1-section-2-1024x682.jpg 1024w, http://superpath.local/wp-content/uploads/2025/06/seo-h1-section-2-768x512.jpg 768w, http://superpath.local/wp-content/uploads/2025/06/seo-h1-section-2-1536x1024.jpg 1536w, http://superpath.local/wp-content/uploads/2025/06/seo-h1-section-2-200x133.jpg 200w, http://superpath.local/wp-content/uploads/2025/06/seo-h1-section-2.jpg 2000w" width="600" height="400"></div></figure></div></div></div></div>
+
+
+
             <div class="sd-parent-wrap">
                 <div class="sd-entry__path_header_holder">
                     <div class="sd-entry__path"><p>/ <?php echo esc_html( $path_label ); ?> /</p></div>
@@ -79,7 +111,6 @@ get_header();
                         <div>
                             <label for="sd-directory-search-category"><?php esc_html_e( 'Category', 'super-directory' ); ?></label>
                             <select id="sd-directory-search-category" name="category">
-                                <option value="" disabled selected><?php esc_html_e( 'Choose a Category...', 'super-directory' ); ?></option>
                                 <option value=""><?php esc_html_e( 'Any category', 'super-directory' ); ?></option>
                                 <?php foreach ( $categories as $category_value ) : ?>
                                     <option value="<?php echo esc_attr( $category_value ); ?>"><?php echo esc_html( SD_Main_Entity_Helper::get_category_label( $category_value ) ); ?></option>
@@ -89,7 +120,6 @@ get_header();
                         <div>
                             <label for="sd-directory-search-industry"><?php esc_html_e( 'Industry', 'super-directory' ); ?></label>
                             <select id="sd-directory-search-industry" name="industry">
-                                <option value="" disabled selected><?php esc_html_e( 'Choose an Industry...', 'super-directory' ); ?></option>
                                 <option value=""><?php esc_html_e( 'Any industry', 'super-directory' ); ?></option>
                                 <?php foreach ( $industries as $industry_value ) : ?>
                                     <option value="<?php echo esc_attr( $industry_value ); ?>"><?php echo esc_html( SD_Main_Entity_Helper::get_industry_label( $industry_value ) ); ?></option>
@@ -99,7 +129,6 @@ get_header();
                         <div>
                             <label for="sd-directory-search-state"><?php esc_html_e( 'State', 'super-directory' ); ?></label>
                             <select id="sd-directory-search-state" name="state">
-                                <option value="" disabled selected><?php esc_html_e( 'Choose a State...', 'super-directory' ); ?></option>
                                 <option value=""><?php esc_html_e( 'Any state', 'super-directory' ); ?></option>
                                 <?php foreach ( $states as $state_value ) : ?>
                                     <option value="<?php echo esc_attr( $state_value ); ?>"><?php echo esc_html( $state_value ); ?></option>

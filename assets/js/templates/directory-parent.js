@@ -150,7 +150,7 @@
     };
 
     const scrollToResults = () => {
-        const targetY = Math.max(resultsContainer.getBoundingClientRect().top + window.scrollY - 120, 0);
+        const targetY = Math.max(resultsContainer.getBoundingClientRect().top + window.scrollY - 220, 0);
         const startY = window.scrollY;
         const distance = targetY - startY;
 

@@ -129,20 +129,25 @@ article{
 
 .sd-connect-text{
     display:flex;
-    flex-wrap:wrap;
+    flex-direction:column;
     gap:10px;
     margin:12px 0 0;
     padding:0;
     list-style:none;
 }
+.sd-connect-text li{
+    width:100%;
+}
 .sd-connect-text a{
-    display:inline-block;
+    display:block;
+    width:100%;
     border:1px solid #e5e7eb;
     border-radius:999px;
     padding:6px 10px;
     text-decoration:none;
     color:#0f172a;
     background:#fff;
+    text-align:center;
 }
 .sd-connect-text a:hover{text-decoration:underline;border-color:#cbd5e1}
 

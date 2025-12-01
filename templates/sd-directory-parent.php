@@ -111,7 +111,7 @@ get_header();
                         <div>
                             <label for="sd-directory-search-category"><?php esc_html_e( 'Category', 'super-directory' ); ?></label>
                             <select id="sd-directory-search-category" name="category">
-                                <option value=""><?php esc_html_e( 'Any category', 'super-directory' ); ?></option>
+                                <option value="" disabled selected><?php esc_html_e( 'Select a Category...', 'super-directory' ); ?></option>
                                 <?php foreach ( $categories as $category_value ) : ?>
                                     <option value="<?php echo esc_attr( $category_value ); ?>"><?php echo esc_html( SD_Main_Entity_Helper::get_category_label( $category_value ) ); ?></option>
                                 <?php endforeach; ?>
@@ -120,7 +120,7 @@ get_header();
                         <div>
                             <label for="sd-directory-search-industry"><?php esc_html_e( 'Industry', 'super-directory' ); ?></label>
                             <select id="sd-directory-search-industry" name="industry">
-                                <option value=""><?php esc_html_e( 'Any industry', 'super-directory' ); ?></option>
+                                <option value="" disabled selected><?php esc_html_e( 'Select an Industry...', 'super-directory' ); ?></option>
                                 <?php foreach ( $industries as $industry_value ) : ?>
                                     <option value="<?php echo esc_attr( $industry_value ); ?>"><?php echo esc_html( SD_Main_Entity_Helper::get_industry_label( $industry_value ) ); ?></option>
                                 <?php endforeach; ?>
@@ -129,7 +129,7 @@ get_header();
                         <div>
                             <label for="sd-directory-search-state"><?php esc_html_e( 'State', 'super-directory' ); ?></label>
                             <select id="sd-directory-search-state" name="state">
-                                <option value=""><?php esc_html_e( 'Any state', 'super-directory' ); ?></option>
+                                <option value="" disabled selected><?php esc_html_e( 'Select a State...', 'super-directory' ); ?></option>
                                 <?php foreach ( $states as $state_value ) : ?>
                                     <option value="<?php echo esc_attr( $state_value ); ?>"><?php echo esc_html( $state_value ); ?></option>
                                 <?php endforeach; ?>

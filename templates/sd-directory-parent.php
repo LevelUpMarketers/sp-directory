@@ -46,7 +46,7 @@ get_header();
         $categories       = SD_Main_Entity_Helper::get_distinct_values( 'category' );
         $industries       = SD_Main_Entity_Helper::get_distinct_values( 'industry_vertical' );
         $states           = SD_Main_Entity_Helper::get_distinct_values( 'state' );
-        $initial_results  = SD_Main_Entity_Helper::search_directory_entries( array( 'page' => 1, 'per_page' => 12 ) );
+        $initial_results  = SD_Main_Entity_Helper::search_directory_entries( array( 'page' => 1, 'per_page' => 9 ) );
         $initial_items    = isset( $initial_results['items'] ) ? $initial_results['items'] : array();
         $card_button_text = __( 'Learn More', 'super-directory' );
         ?>
@@ -147,6 +147,9 @@ get_header();
                             </article>
                         <?php endif; ?>
                     <?php endforeach; ?>
+                    <div class="sd-directory-load-sentinel" aria-hidden="true">
+                        <div class="sd-directory-load-indicator"></div>
+                    </div>
                 </div>
                 <div class="sd-directory-pagination"></div>
             </div>
@@ -168,7 +171,7 @@ wp_localize_script(
     array(
         'ajaxUrl'  => admin_url( 'admin-ajax.php' ),
         'nonce'    => wp_create_nonce( 'sd_directory_search' ),
-        'perPage'  => isset( $initial_results['per_page'] ) ? (int) $initial_results['per_page'] : 12,
+        'perPage'  => isset( $initial_results['per_page'] ) ? (int) $initial_results['per_page'] : 9,
         'initial'  => $initial_results,
         'strings'  => array(
             'noResults'    => __( 'No resources match your filters yet.', 'super-directory' ),

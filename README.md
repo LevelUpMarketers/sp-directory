@@ -44,8 +44,8 @@ SuperDirectory groups the directory authoring experience into clear sections so 
 
 ### Descriptions & messaging
 - Short Description
-- Long Description 1
-- Long Description 2
+- What This Resource Does
+- Why We Recommend This Resource
 
 ### Social & listings
 - Facebook URL

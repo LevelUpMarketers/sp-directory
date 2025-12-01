@@ -625,6 +625,7 @@ class SD_Ajax {
             'csr_training'         => __( 'CSR Training', 'super-directory' ),
             'business_development' => __( 'Business Development', 'super-directory' ),
             'onboarding_companies' => __( 'Onboarding Companies', 'super-directory' ),
+            'review_solicitation'  => __( 'Review Solicitation', 'super-directory' ),
         );
 
         $options = apply_filters( 'sd_directory_categories', $options );

@@ -114,6 +114,7 @@ class SD_Admin {
             'csr_training'          => __( 'CSR Training', 'super-directory' ),
             'business_development'  => __( 'Business Development', 'super-directory' ),
             'onboarding_companies'  => __( 'Onboarding Companies', 'super-directory' ),
+            'review_solicitation'   => __( 'Review Solicitation', 'super-directory' ),
         );
 
         $options = apply_filters( 'sd_directory_categories', $options );
@@ -442,14 +443,14 @@ class SD_Admin {
                     ),
                     array(
                         'name'       => 'long_description_primary',
-                        'label'      => __( 'Long Description 1', 'super-directory' ),
+                        'label'      => __( 'What This Resource Does', 'super-directory' ),
                         'type'       => 'editor',
                         'tooltip'    => __( 'Primary body content for the generated detail page.', 'super-directory' ),
                         'full_width' => true,
                     ),
                     array(
                         'name'       => 'long_description_secondary',
-                        'label'      => __( 'Long Description 2', 'super-directory' ),
+                        'label'      => __( 'Why We Recommend This Resource', 'super-directory' ),
                         'type'       => 'editor',
                         'tooltip'    => __( 'Secondary narrative space for testimonials, processes, or offers.', 'super-directory' ),
                         'full_width' => true,

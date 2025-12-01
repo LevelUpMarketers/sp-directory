@@ -63,3 +63,5 @@
 61. 2025-11-19: Surfaced homepage screenshots on resource cards as blurred, translucent backdrops and wired search payloads to include the imagery URLs.
 
 62. 2025-11-19: Adjusted directory card background styling to use the provided screenshot blur treatment.
+
+63. 2025-11-19: Renamed long-form description fields for clarity, added a Review Solicitation category option, and introduced infinite-scroll loading on the Resources page with a leaner initial batch.

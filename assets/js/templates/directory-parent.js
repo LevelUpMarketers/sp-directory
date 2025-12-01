@@ -1,19 +1,22 @@
 (function(){
     const form = document.querySelector('.sd-directory-search__form');
     const resultsContainer = document.querySelector('.sd-directory-results');
-    const paginationContainer = document.querySelector('.sd-directory-pagination');
     const status = document.querySelector('.sd-directory-status');
     const resetButton = document.querySelector('.sd-directory-search__reset');
     const submitButton = document.querySelector('.sd-directory-search__submit');
+    let loadSentinel = document.querySelector('.sd-directory-load-sentinel');
+    let loadIndicator = loadSentinel ? loadSentinel.querySelector('.sd-directory-load-indicator') : null;
 
-    if (!form || !resultsContainer || !paginationContainer || !status || typeof sdDirectoryParent === 'undefined') {
+    if (!form || !resultsContainer || !status || typeof sdDirectoryParent === 'undefined') {
         return;
     }
 
     const strings = sdDirectoryParent.strings || {};
-    const perPage = parseInt(sdDirectoryParent.perPage, 10) || 12;
+    const perPage = parseInt(sdDirectoryParent.perPage, 10) || 9;
     let currentPage = sdDirectoryParent.initial && sdDirectoryParent.initial.page ? parseInt(sdDirectoryParent.initial.page, 10) : 1;
     let totalPages = sdDirectoryParent.initial && sdDirectoryParent.initial.total_pages ? parseInt(sdDirectoryParent.initial.total_pages, 10) : 0;
+    let isFetching = false;
+    let observer;
 
     const setLoading = (isLoading) => {
         if (isLoading) {
@@ -27,21 +30,58 @@
         }
     };
 
+    const setLoadingMore = (isLoadingMore) => {
+        resultsContainer.classList.toggle('is-loading-more', isLoadingMore);
+
+        if (loadIndicator) {
+            loadIndicator.style.opacity = isLoadingMore ? '1' : '0';
+        }
+    };
+
+    const ensureLoadSentinel = () => {
+        if (!loadSentinel) {
+            loadSentinel = document.createElement('div');
+            loadSentinel.className = 'sd-directory-load-sentinel';
+
+            loadIndicator = document.createElement('div');
+            loadIndicator.className = 'sd-directory-load-indicator';
+
+            loadSentinel.appendChild(loadIndicator);
+        }
+
+        if (!loadIndicator) {
+            loadIndicator = loadSentinel.querySelector('.sd-directory-load-indicator');
+        }
+
+        if (!resultsContainer.contains(loadSentinel)) {
+            resultsContainer.appendChild(loadSentinel);
+        }
+
+        return loadSentinel;
+    };
+
     const renderStatus = (message) => {
         status.textContent = message || '';
     };
 
-    const renderCards = (items) => {
-        resultsContainer.innerHTML = '';
+    const renderCards = (items, { append = false } = {}) => {
+        const sentinel = ensureLoadSentinel();
 
-        if (!items || !items.length) {
+        if (!append) {
+            resultsContainer.innerHTML = '';
+            resultsContainer.appendChild(sentinel);
+        }
+
+        if (!append && (!items || !items.length)) {
             renderStatus(strings.noResults || '');
             return;
         }
 
-        renderStatus('');
+        if (!append) {
+            renderStatus('');
+        }
 
-        items.forEach((item) => {
+        (items || []).forEach((item) => {
             const elementTag = item.permalink ? 'a' : 'article';
             const card = document.createElement(elementTag);
             card.className = 'sd-directory-card';
@@ -81,36 +121,35 @@
             card.appendChild(meta);
             card.appendChild(link);
 
-            resultsContainer.appendChild(card);
+            resultsContainer.insertBefore(card, sentinel);
         });
     };
 
-    const renderPagination = (page, pages) => {
-        paginationContainer.innerHTML = '';
+    const updateInfiniteScroll = () => {
+        const sentinel = ensureLoadSentinel();
 
-        if (!pages || pages < 2) {
+        if (!sentinel) {
             return;
         }
 
-        const prev = document.createElement('button');
-        prev.type = 'button';
-        prev.textContent = strings.prev || '';
-        prev.disabled = page <= 1;
-        prev.addEventListener('click', () => fetchResults(page - 1));
+        if (!observer) {
+            observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry) => {
+                    if (entry.isIntersecting && !isFetching && currentPage < totalPages) {
+                        fetchResults(currentPage + 1, { append: true });
+                    }
+                });
+            }, { rootMargin: '320px 0px' });
+        }
 
-        const next = document.createElement('button');
-        next.type = 'button';
-        next.textContent = strings.next || '';
-        next.disabled = page >= pages;
-        next.addEventListener('click', () => fetchResults(page + 1));
+        observer.disconnect();
 
-        const summary = document.createElement('span');
-        summary.textContent = strings.pageOf ? strings.pageOf.replace('%1$s', page).replace('%2$s', pages) : '';
-        summary.className = 'sd-directory-pagination__summary';
-
-        paginationContainer.appendChild(prev);
-        paginationContainer.appendChild(summary);
-        paginationContainer.appendChild(next);
+        if (totalPages > 1 && currentPage < totalPages) {
+            sentinel.style.display = 'flex';
+            observer.observe(sentinel);
+        } else {
+            sentinel.style.display = 'none';
+        }
     };
 
     const serializeForm = () => {
@@ -123,9 +162,23 @@
         return data;
     };
 
-    const fetchResults = (page = 1) => {
-        currentPage = page;
-        setLoading(true);
+    const fetchResults = (page = 1, { append = false } = {}) => {
+        if (isFetching) {
+            return;
+        }
+
+        isFetching = true;
+
+        if (!append) {
+            totalPages = 0;
+            updateInfiniteScroll();
+        }
+
+        if (append) {
+            setLoadingMore(true);
+        } else {
+            setLoading(true);
+        }
 
         const data = serializeForm();
         data.set('page', page);
@@ -143,15 +196,27 @@
 
                 const payload = json.data;
                 totalPages = payload.total_pages || 0;
-                renderCards(payload.items || []);
-                renderPagination(payload.page || 1, payload.total_pages || 0);
+                currentPage = payload.page || page;
+                renderCards(payload.items || [], { append });
+                if (!append) {
+                    renderStatus(payload.items && payload.items.length ? '' : strings.noResults || '');
+                }
+                updateInfiniteScroll();
             })
             .catch(() => {
                 renderStatus(strings.error || '');
-                renderCards([]);
-                renderPagination(1, 0);
+                if (!append) {
+                    renderCards([]);
+                    totalPages = 0;
+                    currentPage = 1;
+                    updateInfiniteScroll();
+                }
             })
-            .finally(() => setLoading(false));
+            .finally(() => {
+                isFetching = false;
+                setLoading(false);
+                setLoadingMore(false);
+            });
     };
 
     const scrollToResults = () => {
@@ -188,6 +253,8 @@
     const resetForm = () => {
         form.reset();
         currentPage = 1;
+        totalPages = 0;
+        updateInfiniteScroll();
         fetchResults(currentPage);
     };
 
@@ -206,8 +273,8 @@
 
     if (sdDirectoryParent.initial) {
         renderCards(sdDirectoryParent.initial.items || []);
-        renderPagination(sdDirectoryParent.initial.page || 1, sdDirectoryParent.initial.total_pages || 0);
         renderStatus(sdDirectoryParent.initial.items && sdDirectoryParent.initial.items.length ? '' : strings.noResults || '');
+        updateInfiniteScroll();
     } else {
         fetchResults(currentPage);
     }

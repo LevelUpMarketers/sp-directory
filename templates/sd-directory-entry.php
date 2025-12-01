@@ -282,12 +282,13 @@ article{
             $industry_vertical_label = SD_Main_Entity_Helper::get_industry_label( $entity['industry_vertical'] );
         }
 
-        $sd_icon_base_url         = trailingslashit( SD_PLUGIN_URL . 'assets/images' );
-        $sd_category_icon_url     = $sd_icon_base_url . 'categories.svg';
+        $sd_icon_base_url          = trailingslashit( SD_PLUGIN_URL . 'assets/images' );
+        $sd_category_icon_url      = $sd_icon_base_url . 'categories.svg';
         $sd_service_model_icon_url = $sd_icon_base_url . 'customer.svg';
-        $sd_industry_icon_url     = $sd_category_icon_url;
-        $sd_location_icon_url     = $sd_icon_base_url . 'location.svg';
-        $sd_email_icon_url        = $sd_icon_base_url . 'emai.svg';
+        $sd_industry_icon_url      = $sd_category_icon_url;
+        $sd_location_icon_url      = $sd_icon_base_url . 'location.svg';
+        $sd_email_icon_url         = $sd_icon_base_url . 'email.svg';
+        $sd_phone_icon_url         = $sd_icon_base_url . 'phone.svg';
 
         $has_content = ( '' !== trim( get_the_content() ) );
         ?>
@@ -462,7 +463,7 @@ article{
                                 <div class="sd-contact">
                                     <?php if ( ! empty( $entity['phone_number'] ) ) : ?>
                                         <div class="sd-contact__row">
-                                            <img src="https://superpath.com/wp-content/uploads/2025/07/phone-call-1.svg" alt="<?php esc_attr_e( 'Phone', 'super-directory' ); ?>" style="width:15px;height:15px;margin-right:8px;vertical-align:middle;">
+                                            <img src="<?php echo esc_url( $sd_phone_icon_url ); ?>" alt="<?php esc_attr_e( 'Phone', 'super-directory' ); ?>" style="width:15px;height:15px;margin-right:8px;vertical-align:middle;">
                                             <span><?php echo esc_html( $entity['phone_number'] ); ?></span>
                                         </div>
                                     <?php endif; ?>

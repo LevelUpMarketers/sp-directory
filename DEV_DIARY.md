@@ -70,3 +70,4 @@
 66. 2025-11-19: Fixed directory entry displays to humanize categories, consolidate address lines, and accept misspelled media ID headers during bulk import.
 67. 2025-11-19: Added another homepage screenshot attachment header alias so bulk imports capture screenshot IDs even with alternate misspellings.
 68. 2025-11-19: Swapped resource overview icons to bundled assets for categories, service model, location, and email rows.
+69. 2025-11-19: Corrected the email icon filename and routed phone contact rows to the new bundled phone SVG.

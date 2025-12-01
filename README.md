@@ -9,6 +9,7 @@ SuperDirectory is a WordPress plugin that streamlines the process of collecting 
 - Responsive front-end styling that highlights each listing's overview, contact channels, address, and social profiles.
 - Log management tools that surface generated content history for quick auditing and cleanup.
 - Gutenberg block and shortcode for rendering directory listings on the front end.
+- Bulk CSV/TSV importer on the SuperDirectory Settings page for loading multiple resources in one upload.
 
 ## Installation
 1. Upload the `sp-directory` folder to the `/wp-content/plugins/` directory or install via the WordPress admin dashboard.
@@ -19,6 +20,32 @@ SuperDirectory is a WordPress plugin that streamlines the process of collecting 
 - Run `find . -name "*.php" -not -path "*/vendor/*" -print0 | xargs -0 -n1 php -l` to verify PHP syntax.
 - JavaScript and CSS assets live under `assets/` and are prepped for modular enhancements.
 - All user-facing strings leverage the `super-directory` text domain; update `languages/super-directory.pot` when adding translations.
+
+## Bulk upload
+
+Use **SuperDirectory Settings → General Settings** to upload a CSV or TSV file that follows the expected column order. The importer maps your spreadsheet to the directory table and creates individual listing pages automatically. Each row should supply the following headings in order:
+
+1. Resource/Company/Vendor Name
+2. Category
+3. Website URL
+4. Phone
+5. Email
+6. Related Trade/Industry/Vertical
+7. Serving Only Local Customers, Virtual/National, or Both?
+8. State
+9. City
+10. Street Address
+11. Zip Code
+12. Short description/lead-in teaser sentence about the company (98 characters max)
+13. What [COMPANY NAME] Does (770 characters max)
+14. Why We Recommend [COMPANY NAME] (770 characters max)
+15. Facebook URL
+16. Instagram URL
+17. YouTube URL
+18. LinkedIn URL
+19. Google Business Listing URL
+20. Logo WordPress media library attachment ID #
+21. Homepage Screenshot WordPress media library attachment ID #
 
 ## Directory entry fields
 
@@ -44,8 +71,8 @@ SuperDirectory groups the directory authoring experience into clear sections so 
 
 ### Descriptions & messaging
 - Short Description
-- Long Description 1
-- Long Description 2
+- What This Resource Does
+- Why We Recommend This Resource
 
 ### Social & listings
 - Facebook URL

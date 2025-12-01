@@ -80,6 +80,16 @@ article{
     font-weight: bold;
     font-size: 18px;
 }
+.sd-address__link{
+    color: inherit;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: initial;
+}
+.sd-address__link:hover,
+.sd-address__link:focus-visible{
+    text-decoration: none;
+}
 .sd-address__row{
     display:flex;
     align-items:flex-start;
@@ -119,20 +129,25 @@ article{
 
 .sd-connect-text{
     display:flex;
-    flex-wrap:wrap;
+    flex-direction:column;
     gap:10px;
     margin:12px 0 0;
     padding:0;
     list-style:none;
 }
+.sd-connect-text li{
+    width:100%;
+}
 .sd-connect-text a{
-    display:inline-block;
+    display:block;
+    width:100%;
     border:1px solid #e5e7eb;
     border-radius:999px;
     padding:6px 10px;
     text-decoration:none;
     color:#0f172a;
     background:#fff;
+    text-align:center;
 }
 .sd-connect-text a:hover{text-decoration:underline;border-color:#cbd5e1}
 
@@ -151,6 +166,14 @@ article{
 
 .sd-contact__row span{
     color: #6485ff;
+}
+.sd-contact__link{
+    color: #6485ff;
+    text-decoration: none;
+}
+.sd-contact__link:hover,
+.sd-contact__link:focus-visible{
+    text-decoration: none;
 }
 
 .sd-gallery{margin-top:0;}
@@ -273,62 +296,22 @@ article{
         echo $html4;
 
         
-        // Creating human-readable variables for category display
-        $sd_category_labels = array(
-            // Generic options
-            'all'                           => 'All Industries',
-            'multiple'                      => 'Multiple',
+        $category_raw   = isset( $entity['category'] ) ? trim( $entity['category'] ) : '';
+        $category_label = SD_Main_Entity_Helper::get_category_label( $category_raw );
 
-            // Home service business categories (top 30)
-            'appliance_repair'              => 'Appliance Repair',
-            'carpet_cleaning'               => 'Carpet Cleaning',
-            'concrete_masonry'              => 'Concrete & Masonry',
-            'deck_patio'                    => 'Deck & Patio',
-            'electrical'                    => 'Electrical',
-            'fencing'                       => 'Fencing',
-            'flooring'                      => 'Flooring',
-            'garage_door'                   => 'Garage Door',
-            'general_contractor_remodel'    => 'General Contractor & Remodeling',
-            'gutter_services'               => 'Gutter Services',
-            'handyman'                      => 'Handyman',
-            'hardscaping'                   => 'Hardscaping',
-            'house_cleaning_maid'           => 'House Cleaning & Maid',
-            'hvac'                          => 'HVAC',
-            'insulation'                    => 'Insulation',
-            'irrigation_sprinklers'         => 'Irrigation & Sprinklers',
-            'junk_removal'                  => 'Junk Removal',
-            'landscaping'                   => 'Landscaping',
-            'moving_storage'                => 'Moving & Storage',
-            'painting'                      => 'Painting',
-            'pest_control'                  => 'Pest Control',
-            'plumbing'                      => 'Plumbing',
-            'pool_spa_services'             => 'Pool & Spa Services',
-            'pressure_washing'              => 'Pressure Washing',
-            'roofing'                       => 'Roofing',
-            'security_smart_home'           => 'Security & Smart Home',
-            'siding'                        => 'Siding',
-            'solar_energy'                  => 'Solar Energy',
-            'tree_services'                 => 'Tree Services',
-            'water_mold_restoration'        => 'Water & Mold Damage Restoration',
+        $industry_vertical_label = '';
 
-            // Legacy / software-adjacent categories (for backward compatibility)
-            'crm'                           => 'CRM',
-            'chatbots'                      => 'Chatbots',
-            'hiring_platform'               => 'Hiring Platform',
-            'lead_generation'               => 'Lead Generation',
-            'answering_service'             => 'Answering Service',
-            'csr_training'                  => 'CSR Training',
-            'business_development'          => 'Business Development',
-            'onboarding_companies'          => 'Onboarding Companies',
-        );
+        if ( ! empty( $entity['industry_vertical'] ) ) {
+            $industry_vertical_label = SD_Main_Entity_Helper::get_industry_label( $entity['industry_vertical'] );
+        }
 
-        // Grab raw DB value
-        $category_raw = isset( $entity['category'] ) ? trim( $entity['category'] ) : '';
-
-        // Convert to human-readable label (fallback to raw value)
-        $category_label = isset( $sd_category_labels[ $category_raw ] )
-            ? $sd_category_labels[ $category_raw ]
-            : $category_raw;
+        $sd_icon_base_url          = trailingslashit( SD_PLUGIN_URL . 'assets/images' );
+        $sd_category_icon_url      = $sd_icon_base_url . 'categories.svg';
+        $sd_service_model_icon_url = $sd_icon_base_url . 'customer.svg';
+        $sd_industry_icon_url      = $sd_category_icon_url;
+        $sd_location_icon_url      = $sd_icon_base_url . 'location.svg';
+        $sd_email_icon_url         = $sd_icon_base_url . 'email.svg';
+        $sd_phone_icon_url         = $sd_icon_base_url . 'phone.svg';
 
         $has_content = ( '' !== trim( get_the_content() ) );
         ?>
@@ -448,7 +431,7 @@ article{
                             <dl class="sd-meta">
                                 <?php if ( $category_label ) : ?>
                                     <div class="sd-meta__row">
-                                        <img src="https://superpath.com/wp-content/uploads/2025/07/phone-call-1.svg" alt="" class="sd-meta__icon">
+                                        <img src="<?php echo esc_url( $sd_category_icon_url ); ?>" alt="" class="sd-meta__icon">
                                         <div class="sd-meta__text">
                                             <dt><?php esc_html_e( 'Category', 'super-directory' ); ?></dt>
                                             <dd><?php echo esc_html( $category_label ); ?></dd>
@@ -457,19 +440,19 @@ article{
                                 <?php endif; ?>
                                 <?php if ( $service_model ) : ?>
                                     <div class="sd-meta__row">
-                                        <img src="https://superpath.com/wp-content/uploads/2025/07/phone-call-1.svg" alt="" class="sd-meta__icon">
+                                        <img src="<?php echo esc_url( $sd_service_model_icon_url ); ?>" alt="" class="sd-meta__icon">
                                         <div class="sd-meta__text">
                                             <dt><?php esc_html_e( 'Service Model', 'super-directory' ); ?></dt>
                                             <dd><?php echo esc_html( ucfirst( $service_model ) ); ?></dd>
                                         </div>
                                     </div>
                                 <?php endif; ?>
-                                <?php if ( $industry_vertical ) : ?>
+                                <?php if ( $industry_vertical_label ) : ?>
                                     <div class="sd-meta__row">
-                                        <img src="https://superpath.com/wp-content/uploads/2025/07/phone-call-1.svg" alt="" class="sd-meta__icon">
+                                        <img src="<?php echo esc_url( $sd_industry_icon_url ); ?>" alt="" class="sd-meta__icon">
                                         <div class="sd-meta__text">
                                             <dt><?php esc_html_e( 'Industies Served', 'super-directory' ); ?></dt>
-                                            <dd><?php echo esc_html( ucfirst( $industry_vertical ) ); ?></dd>
+                                            <dd><?php echo esc_html( $industry_vertical_label ); ?></dd>
                                         </div>
                                     </div>
                                 <?php endif; ?>
@@ -479,23 +462,27 @@ article{
                                 <h3 style="margin-top:16px;"><?php esc_html_e( 'Location', 'super-directory' ); ?></h3>
                                 <address class="sd-address">
                                     <div class="sd-address__row">
-                                        <img src="https://superpath.com/wp-content/uploads/2025/07/phone-call-1.svg" alt="" class="sd-address__icon">
+                                        <img src="<?php echo esc_url( $sd_location_icon_url ); ?>" alt="" class="sd-address__icon">
                                         <div>
-                                            <?php if ( ! empty( $entity['street_address'] ) ) : ?>
-                                                <div><?php echo esc_html( $entity['street_address'] ); ?></div>
-                                            <?php endif; ?>
-                                            <div>
-                                                <?php
-                                                $city_state_zip = array_filter(
-                                                    array(
-                                                        ! empty( $entity['city'] ) ? $entity['city'] : '',
-                                                        ! empty( $entity['state'] ) ? $entity['state'] : '',
-                                                        ! empty( $entity['zip_code'] ) ? $entity['zip_code'] : '',
-                                                    )
-                                                );
-                                                echo esc_html( implode( ', ', $city_state_zip ) );
+                                            <?php
+                                            $address_parts = array_filter(
+                                                array(
+                                                    ! empty( $entity['street_address'] ) ? $entity['street_address'] : '',
+                                                    ! empty( $entity['city'] ) ? $entity['city'] : '',
+                                                    ! empty( $entity['state'] ) ? $entity['state'] : '',
+                                                    ! empty( $entity['zip_code'] ) ? $entity['zip_code'] : '',
+                                                )
+                                            );
+
+                                            $address_text = implode( ', ', $address_parts );
+
+                                            if ( $address_text ) :
+                                                $maps_url = 'https://www.google.com/maps/search/?api=1&query=' . rawurlencode( $address_text );
                                                 ?>
-                                            </div>
+                                                <a class="sd-address__link" href="<?php echo esc_url( $maps_url ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $address_text ); ?></a>
+                                                <?php
+                                            endif;
+                                            ?>
                                         </div>
                                     </div>
                                 </address>
@@ -506,13 +493,23 @@ article{
                                 <div class="sd-contact">
                                     <?php if ( ! empty( $entity['phone_number'] ) ) : ?>
                                         <div class="sd-contact__row">
-                                            <img src="https://superpath.com/wp-content/uploads/2025/07/phone-call-1.svg" alt="<?php esc_attr_e( 'Phone', 'super-directory' ); ?>" style="width:15px;height:15px;margin-right:8px;vertical-align:middle;">
-                                            <span><?php echo esc_html( $entity['phone_number'] ); ?></span>
+                                            <img src="<?php echo esc_url( $sd_phone_icon_url ); ?>" alt="<?php esc_attr_e( 'Phone', 'super-directory' ); ?>" style="width:15px;height:15px;margin-right:8px;vertical-align:middle;">
+                                            <?php
+                                            $raw_phone   = wp_strip_all_tags( $entity['phone_number'] );
+                                            $tel_phone   = preg_replace( '/[^\d\+]/', '', $raw_phone );
+                                            $phone_label = trim( $raw_phone );
+
+                                            if ( ! empty( $tel_phone ) && ! empty( $phone_label ) ) :
+                                                ?>
+                                                <a class="sd-contact__link" href="tel:<?php echo esc_attr( $tel_phone ); ?>"><?php echo esc_html( $phone_label ); ?></a>
+                                                <?php
+                                            endif;
+                                            ?>
                                         </div>
                                     <?php endif; ?>
                                     <?php if ( ! empty( $entity['email_address'] ) ) : ?>
                                         <div class="sd-contact__row">
-                                            <img src="https://superpath.com/wp-content/uploads/2025/07/phone-call-1.svg" alt="<?php esc_attr_e( 'Email', 'super-directory' ); ?>" style="width:15px;height:15px;margin-right:8px;vertical-align:middle;">
+                                            <img src="<?php echo esc_url( $sd_email_icon_url ); ?>" alt="<?php esc_attr_e( 'Email', 'super-directory' ); ?>" style="width:15px;height:15px;margin-right:8px;vertical-align:middle;">
                                             <?php
                                             $email = sanitize_email( $entity['email_address'] );
                                             if ( ! empty( $email ) ) :

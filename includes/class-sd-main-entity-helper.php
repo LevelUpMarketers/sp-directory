@@ -26,6 +26,7 @@ class SD_Main_Entity_Helper {
             'csr_training'         => __( 'CSR Training', 'super-directory' ),
             'business_development' => __( 'Business Development', 'super-directory' ),
             'onboarding_companies' => __( 'Onboarding Companies', 'super-directory' ),
+            'review_solicitation'  => __( 'Review Solicitation', 'super-directory' ),
         );
 
         $options = apply_filters( 'sd_directory_categories', $options );
@@ -286,9 +287,14 @@ class SD_Main_Entity_Helper {
                 $entity    = self::prepare_template_entity( $row );
                 $permalink = isset( $entity['directory_page_id'] ) && $entity['directory_page_id'] ? get_permalink( (int) $entity['directory_page_id'] ) : '';
                 $logo_url  = '';
+                $screenshot_url = '';
 
                 if ( ! empty( $entity['logo_attachment_id'] ) ) {
                     $logo_url = wp_get_attachment_image_url( $entity['logo_attachment_id'], 'medium' );
+                }
+
+                if ( ! empty( $entity['homepage_screenshot_id'] ) ) {
+                    $screenshot_url = wp_get_attachment_image_url( $entity['homepage_screenshot_id'], 'large' );
                 }
 
                 $items[] = array(
@@ -300,6 +306,7 @@ class SD_Main_Entity_Helper {
                     'industry_label'   => isset( $entity['industry_vertical'] ) ? self::get_industry_label( $entity['industry_vertical'] ) : '',
                     'state'            => isset( $entity['state'] ) ? $entity['state'] : '',
                     'logo'             => $logo_url,
+                    'homepage_screenshot' => $screenshot_url,
                     'permalink'        => $permalink,
                 );
             }
@@ -424,6 +431,41 @@ class SD_Main_Entity_Helper {
     }
 
     /**
+     * Retrieve the stored homepage screenshot attachment identifier for an entity.
+     *
+     * Mirrors the logo helper so templates can refetch the value if cached
+     * payloads lag behind schema updates.
+     *
+     * @param int $entity_id Directory Listing identifier.
+     *
+     * @return int
+     */
+    public static function get_homepage_screenshot_id( $entity_id ) {
+        $entity_id = absint( $entity_id );
+
+        if ( ! $entity_id ) {
+            return 0;
+        }
+
+        $table_name = self::get_main_table_name();
+
+        if ( ! self::table_exists( $table_name ) ) {
+            return 0;
+        }
+
+        global $wpdb;
+
+        $value = $wpdb->get_var(
+            $wpdb->prepare(
+                "SELECT homepage_screenshot_id FROM $table_name WHERE id = %d",
+                $entity_id
+            )
+        );
+
+        return $value ? absint( $value ) : 0;
+    }
+
+    /**
      * Retrieve the stored gallery attachment identifiers for an entity.
      *
      * Provides a lightweight way for templates to refetch the gallery data
@@ -525,6 +567,7 @@ class SD_Main_Entity_Helper {
         $prepared['long_description_secondary'] = isset( $row['long_description_secondary'] ) ? wp_kses_post( (string) $row['long_description_secondary'] ) : '';
 
         $prepared['logo_attachment_id'] = isset( $row['logo_attachment_id'] ) ? absint( $row['logo_attachment_id'] ) : 0;
+        $prepared['homepage_screenshot_id'] = isset( $row['homepage_screenshot_id'] ) ? absint( $row['homepage_screenshot_id'] ) : 0;
         $prepared['gallery_image_ids']  = isset( $row['gallery_image_ids'] ) ? self::parse_gallery_ids( $row['gallery_image_ids'] ) : array();
 
         $prepared['id']                = isset( $row['id'] ) ? absint( $row['id'] ) : 0;

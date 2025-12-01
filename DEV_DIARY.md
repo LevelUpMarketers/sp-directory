@@ -59,3 +59,17 @@
 57. 2025-11-19: Made directory search results clickable cards with smooth-scroll searching, loading overlay spinner, and updated “Learn More” calls to action.
 58. 2025-11-19: Softened the directory search scroll animation with a gentler offset so results stay below the sticky header.
 59. 2025-11-19: Increased the directory search scroll offset to sit further below the header when jumping to results.
+60. 2025-11-19: Added a homepage screenshot media field to the directory listing schema and admin create/edit forms so saved entries can store dedicated hero imagery.
+61. 2025-11-19: Surfaced homepage screenshots on resource cards as blurred, translucent backdrops and wired search payloads to include the imagery URLs.
+
+62. 2025-11-19: Adjusted directory card background styling to use the provided screenshot blur treatment.
+
+63. 2025-11-19: Renamed long-form description fields for clarity, added a Review Solicitation category option, and introduced infinite-scroll loading on the Resources page with a leaner initial batch.
+64. 2025-11-19: Added a settings-page bulk importer that accepts CSV/TSV spreadsheets, maps SuperDirectory columns, sanitizes long-form limits, and creates listings with media IDs and generated pages.
+65. 2025-11-19: Normalized bulk import headers to strip UTF-8 byte order marks so spreadsheets with prefixed BOMs map columns correctly.
+66. 2025-11-19: Fixed directory entry displays to humanize categories, consolidate address lines, and accept misspelled media ID headers during bulk import.
+67. 2025-11-19: Added another homepage screenshot attachment header alias so bulk imports capture screenshot IDs even with alternate misspellings.
+68. 2025-11-19: Swapped resource overview icons to bundled assets for categories, service model, location, and email rows.
+69. 2025-11-19: Corrected the email icon filename and routed phone contact rows to the new bundled phone SVG.
+70. 2025-11-19: Linked resource addresses to Google Maps with consistent typography and made phone numbers clickable tel links without altering their styling.
+71. 2025-11-19: Expanded Connect section text links to full-width buttons to keep non-social calls-to-action aligned.

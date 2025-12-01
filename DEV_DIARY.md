@@ -76,3 +76,4 @@
 72. 2025-11-19: Added "Multiple Industries" handling to bulk imports and refreshed directory search dropdowns with guided placeholders for category, industry, and state.
 73. 2025-11-20: Synced the directory parent template with the updated hero content and default search dropdown options from the manual edits.
 74. 2025-11-20: Restored the "Select a…" placeholder options for category, industry, and state on the directory search form.
+75. 2025-11-20: Allowed bulk imports to preserve unmapped categories by sanitizing the original values so new options show in directory filters.

@@ -1224,7 +1224,9 @@ class SD_Ajax {
             }
         }
 
-        return '';
+        $fallback = sanitize_key( sanitize_title( $normalized_value ) );
+
+        return $fallback;
     }
 
     private function map_service_model_value( $value, $options ) {

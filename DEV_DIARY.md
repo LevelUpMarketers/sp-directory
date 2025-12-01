@@ -56,3 +56,6 @@
 54. 2025-11-19: Reflowed the directory entry grid so the gallery sits beneath the descriptive section at full width with consistent spacing.
 55. 2025-11-19: Removed the gallery lightbox caption from the directory entry template to keep the modal uncluttered.
 56. 2025-11-19: Added a parent directory template with AJAX-powered search, responsive resource cards, and shared styling/assets for browsing listings.
+57. 2025-11-19: Made directory search results clickable cards with smooth-scroll searching, loading overlay spinner, and updated “Learn More” calls to action.
+58. 2025-11-19: Softened the directory search scroll animation with a gentler offset so results stay below the sticky header.
+59. 2025-11-19: Increased the directory search scroll offset to sit further below the header when jumping to results.

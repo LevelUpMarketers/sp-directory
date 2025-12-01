@@ -19,9 +19,11 @@
         if (isLoading) {
             form.classList.add('is-loading');
             submitButton.disabled = true;
+            resultsContainer.classList.add('is-loading');
         } else {
             form.classList.remove('is-loading');
             submitButton.disabled = false;
+            resultsContainer.classList.remove('is-loading');
         }
     };
 
@@ -40,8 +42,12 @@
         renderStatus('');
 
         items.forEach((item) => {
-            const card = document.createElement('article');
+            const elementTag = item.permalink ? 'a' : 'article';
+            const card = document.createElement(elementTag);
             card.className = 'sd-directory-card';
+            if (item.permalink) {
+                card.href = item.permalink;
+            }
 
             const logo = document.createElement('div');
             logo.className = 'sd-directory-card__logo';
@@ -61,9 +67,8 @@
             meta.className = 'sd-directory-card__meta';
             meta.textContent = [item.category_label, item.industry_label].filter(Boolean).join(' • ');
 
-            const link = document.createElement('a');
-            link.className = 'sd-directory-card__link';
-            link.href = item.permalink || '#';
+            const link = document.createElement('span');
+            link.className = 'sd-directory-card__cta';
             link.textContent = strings.viewResource || '';
 
             card.appendChild(logo);
@@ -144,6 +149,37 @@
             .finally(() => setLoading(false));
     };
 
+    const scrollToResults = () => {
+        const targetY = Math.max(resultsContainer.getBoundingClientRect().top + window.scrollY - 220, 0);
+        const startY = window.scrollY;
+        const distance = targetY - startY;
+
+        if (!distance) {
+            return;
+        }
+
+        const duration = Math.min(900, Math.max(450, Math.abs(distance)));
+        let startTime;
+
+        const step = (timestamp) => {
+            if (!startTime) {
+                startTime = timestamp;
+            }
+
+            const elapsed = timestamp - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3);
+
+            window.scrollTo({ top: startY + distance * eased, behavior: 'auto' });
+
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            }
+        };
+
+        window.requestAnimationFrame(step);
+    };
+
     const resetForm = () => {
         form.reset();
         currentPage = 1;
@@ -152,6 +188,7 @@
 
     form.addEventListener('submit', (event) => {
         event.preventDefault();
+        scrollToResults();
         fetchResults(1);
     });
 

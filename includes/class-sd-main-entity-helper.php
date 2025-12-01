@@ -286,9 +286,14 @@ class SD_Main_Entity_Helper {
                 $entity    = self::prepare_template_entity( $row );
                 $permalink = isset( $entity['directory_page_id'] ) && $entity['directory_page_id'] ? get_permalink( (int) $entity['directory_page_id'] ) : '';
                 $logo_url  = '';
+                $screenshot_url = '';
 
                 if ( ! empty( $entity['logo_attachment_id'] ) ) {
                     $logo_url = wp_get_attachment_image_url( $entity['logo_attachment_id'], 'medium' );
+                }
+
+                if ( ! empty( $entity['homepage_screenshot_id'] ) ) {
+                    $screenshot_url = wp_get_attachment_image_url( $entity['homepage_screenshot_id'], 'large' );
                 }
 
                 $items[] = array(
@@ -300,6 +305,7 @@ class SD_Main_Entity_Helper {
                     'industry_label'   => isset( $entity['industry_vertical'] ) ? self::get_industry_label( $entity['industry_vertical'] ) : '',
                     'state'            => isset( $entity['state'] ) ? $entity['state'] : '',
                     'logo'             => $logo_url,
+                    'homepage_screenshot' => $screenshot_url,
                     'permalink'        => $permalink,
                 );
             }

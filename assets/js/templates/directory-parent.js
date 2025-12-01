@@ -49,6 +49,11 @@
                 card.href = item.permalink;
             }
 
+            if (item.homepage_screenshot) {
+                card.classList.add('has-screenshot');
+                card.style.setProperty('--sd-card-screenshot', `url("${item.homepage_screenshot}")`);
+            }
+
             const logo = document.createElement('div');
             logo.className = 'sd-directory-card__logo';
 

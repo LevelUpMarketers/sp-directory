@@ -119,10 +119,19 @@ get_header();
                 </div>
                 <div class="sd-directory-results">
                     <?php foreach ( $initial_items as $item ) : ?>
+                        <?php
+                        $card_classes = array( 'sd-directory-card' );
+                        $card_style   = '';
+
+                        if ( ! empty( $item['homepage_screenshot'] ) ) {
+                            $card_classes[] = 'has-screenshot';
+                            $card_style     = sprintf( '--sd-card-screenshot: url("%s");', esc_url( $item['homepage_screenshot'] ) );
+                        }
+                        ?>
                         <?php if ( ! empty( $item['permalink'] ) ) : ?>
-                            <a class="sd-directory-card" href="<?php echo esc_url( $item['permalink'] ); ?>">
+                            <a class="<?php echo esc_attr( implode( ' ', $card_classes ) ); ?>" href="<?php echo esc_url( $item['permalink'] ); ?>" style="<?php echo esc_attr( $card_style ); ?>">
                         <?php else : ?>
-                            <article class="sd-directory-card">
+                            <article class="<?php echo esc_attr( implode( ' ', $card_classes ) ); ?>" style="<?php echo esc_attr( $card_style ); ?>">
                         <?php endif; ?>
                                 <div class="sd-directory-card__logo">
                                     <?php if ( ! empty( $item['logo'] ) ) : ?>

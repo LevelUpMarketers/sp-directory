@@ -66,3 +66,4 @@
 
 63. 2025-11-19: Renamed long-form description fields for clarity, added a Review Solicitation category option, and introduced infinite-scroll loading on the Resources page with a leaner initial batch.
 64. 2025-11-19: Added a settings-page bulk importer that accepts CSV/TSV spreadsheets, maps SuperDirectory columns, sanitizes long-form limits, and creates listings with media IDs and generated pages.
+65. 2025-11-19: Normalized bulk import headers to strip UTF-8 byte order marks so spreadsheets with prefixed BOMs map columns correctly.

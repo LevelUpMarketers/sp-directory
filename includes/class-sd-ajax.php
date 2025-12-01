@@ -1368,6 +1368,7 @@ class SD_Ajax {
 
     private function normalize_bulk_header( $value ) {
         $value = strtolower( (string) $value );
+        $value = preg_replace( '/^\xEF\xBB\xBF/', '', $value );
         $value = preg_replace( '/\s+/', ' ', $value );
         $value = trim( $value );
 

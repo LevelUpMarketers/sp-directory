@@ -26,7 +26,7 @@
 .sd-directory-results.is-loading::before,.sd-directory-results.is-loading::after{opacity:1;visibility:visible;}
 .sd-directory-card{background:rgba(255,255,255,0.92);border-radius:18px;padding:20px;box-shadow:0 10px 30px rgba(0,0,0,0.08);border:1px solid #e2e8f0;display:flex;flex-direction:column;align-items:center;text-align:center;min-height:260px;transition:transform 0.2s ease,box-shadow 0.2s ease,color 0.2s ease;position:relative;overflow:hidden;color:#0f172a;text-decoration:none;}
 .sd-directory-card::before,.sd-directory-card::after{content:"";position:absolute;inset:0;pointer-events:none;transition:opacity 0.25s ease;}
-.sd-directory-card::before{background-image:var(--sd-card-screenshot);background-size:cover;background-position:center;opacity:0;filter:blur(18px);transform:scale(1.08);}
+.sd-directory-card::before{background-image:var(--sd-card-screenshot);background-size:cover;background-position:top;background-repeat:no-repeat;opacity:0;filter:blur(4px);transform:scale(1.08);}
 .sd-directory-card::after{background:linear-gradient(180deg,rgba(255,255,255,0.84),rgba(255,255,255,0.9));opacity:0;}
 .sd-directory-card.has-screenshot::before,.sd-directory-card.has-screenshot::after{opacity:0.55;}
 .sd-directory-card:hover{transform:translateY(-2px);box-shadow:0 15px 34px rgba(0,0,0,0.12);}

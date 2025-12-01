@@ -61,3 +61,5 @@
 59. 2025-11-19: Increased the directory search scroll offset to sit further below the header when jumping to results.
 60. 2025-11-19: Added a homepage screenshot media field to the directory listing schema and admin create/edit forms so saved entries can store dedicated hero imagery.
 61. 2025-11-19: Surfaced homepage screenshots on resource cards as blurred, translucent backdrops and wired search payloads to include the imagery URLs.
+
+62. 2025-11-19: Adjusted directory card background styling to use the provided screenshot blur treatment.

@@ -80,6 +80,16 @@ article{
     font-weight: bold;
     font-size: 18px;
 }
+.sd-address__link{
+    color: inherit;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: initial;
+}
+.sd-address__link:hover,
+.sd-address__link:focus-visible{
+    text-decoration: none;
+}
 .sd-address__row{
     display:flex;
     align-items:flex-start;
@@ -151,6 +161,14 @@ article{
 
 .sd-contact__row span{
     color: #6485ff;
+}
+.sd-contact__link{
+    color: #6485ff;
+    text-decoration: none;
+}
+.sd-contact__link:hover,
+.sd-contact__link:focus-visible{
+    text-decoration: none;
 }
 
 .sd-gallery{margin-top:0;}
@@ -451,7 +469,14 @@ article{
                                                 )
                                             );
 
-                                            echo esc_html( implode( ', ', $address_parts ) );
+                                            $address_text = implode( ', ', $address_parts );
+
+                                            if ( $address_text ) :
+                                                $maps_url = 'https://www.google.com/maps/search/?api=1&query=' . rawurlencode( $address_text );
+                                                ?>
+                                                <a class="sd-address__link" href="<?php echo esc_url( $maps_url ); ?>" target="_blank" rel="noopener noreferrer"><?php echo esc_html( $address_text ); ?></a>
+                                                <?php
+                                            endif;
                                             ?>
                                         </div>
                                     </div>
@@ -464,7 +489,17 @@ article{
                                     <?php if ( ! empty( $entity['phone_number'] ) ) : ?>
                                         <div class="sd-contact__row">
                                             <img src="<?php echo esc_url( $sd_phone_icon_url ); ?>" alt="<?php esc_attr_e( 'Phone', 'super-directory' ); ?>" style="width:15px;height:15px;margin-right:8px;vertical-align:middle;">
-                                            <span><?php echo esc_html( $entity['phone_number'] ); ?></span>
+                                            <?php
+                                            $raw_phone   = wp_strip_all_tags( $entity['phone_number'] );
+                                            $tel_phone   = preg_replace( '/[^\d\+]/', '', $raw_phone );
+                                            $phone_label = trim( $raw_phone );
+
+                                            if ( ! empty( $tel_phone ) && ! empty( $phone_label ) ) :
+                                                ?>
+                                                <a class="sd-contact__link" href="tel:<?php echo esc_attr( $tel_phone ); ?>"><?php echo esc_html( $phone_label ); ?></a>
+                                                <?php
+                                            endif;
+                                            ?>
                                         </div>
                                     <?php endif; ?>
                                     <?php if ( ! empty( $entity['email_address'] ) ) : ?>

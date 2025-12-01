@@ -78,6 +78,7 @@ class SD_Ajax {
             'linkedin_url'             => $this->sanitize_url_value( 'linkedin_url' ),
             'google_business_url'      => $this->sanitize_url_value( 'google_business_url' ),
             'logo_attachment_id'       => $this->sanitize_attachment_id_value( 'logo_attachment_id' ),
+            'homepage_screenshot_id'   => $this->sanitize_attachment_id_value( 'homepage_screenshot_id' ),
             'gallery_image_ids'        => $this->sanitize_gallery_ids_value( 'gallery_image_ids' ),
             'updated_at'               => $now,
         );
@@ -220,6 +221,7 @@ class SD_Ajax {
                 }
 
                 $entity['logo_attachment_id'] = isset( $entity['logo_attachment_id'] ) ? absint( $entity['logo_attachment_id'] ) : 0;
+                $entity['homepage_screenshot_id'] = isset( $entity['homepage_screenshot_id'] ) ? absint( $entity['homepage_screenshot_id'] ) : 0;
                 $entity['gallery_image_ids']  = isset( $entity['gallery_image_ids'] ) ? $this->normalize_gallery_ids_value( $entity['gallery_image_ids'] ) : '';
             }
             unset( $entity );

@@ -318,6 +318,12 @@ class SD_Admin {
                         'tooltip' => __( 'Select a primary logo for the resource card and header.', 'super-directory' ),
                     ),
                     array(
+                        'name'    => 'homepage_screenshot_id',
+                        'label'   => __( 'Homepage Screenshot', 'super-directory' ),
+                        'type'    => 'image',
+                        'tooltip' => __( 'Upload a homepage screenshot to feature on the listing.', 'super-directory' ),
+                    ),
+                    array(
                         'name'       => 'gallery_image_ids',
                         'label'      => __( 'Gallery Images', 'super-directory' ),
                         'type'       => 'gallery',

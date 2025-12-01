@@ -40,6 +40,7 @@ class SD_Activator {
             linkedin_url varchar(255) DEFAULT '',
             google_business_url varchar(255) DEFAULT '',
             logo_attachment_id bigint(20) unsigned NOT NULL DEFAULT 0,
+            homepage_screenshot_id bigint(20) unsigned NOT NULL DEFAULT 0,
             gallery_image_ids longtext,
             directory_page_id bigint(20) unsigned NOT NULL DEFAULT 0,
             created_at datetime NOT NULL,

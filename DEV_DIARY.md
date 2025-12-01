@@ -65,3 +65,4 @@
 62. 2025-11-19: Adjusted directory card background styling to use the provided screenshot blur treatment.
 
 63. 2025-11-19: Renamed long-form description fields for clarity, added a Review Solicitation category option, and introduced infinite-scroll loading on the Resources page with a leaner initial batch.
+64. 2025-11-19: Added a settings-page bulk importer that accepts CSV/TSV spreadsheets, maps SuperDirectory columns, sanitizes long-form limits, and creates listings with media IDs and generated pages.

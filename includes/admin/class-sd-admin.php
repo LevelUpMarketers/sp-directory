@@ -840,14 +840,56 @@ class SD_Admin {
     }
 
     private function render_general_settings_tab() {
-        echo '<form id="sd-general-settings-form">';
-        echo '<label>' . esc_html__( 'Option', 'super-directory' ) . ' <span class="sd-tooltip-icon dashicons dashicons-editor-help" data-tooltip="' . esc_attr__( 'Tooltip placeholder text for Option', 'super-directory' ) . '"></span></label>';
-        echo '<input type="text" name="option" />';
-        $submit_button = get_submit_button( __( 'Save Settings', 'super-directory' ), 'primary', 'submit', false );
+        echo '<div class="sd-settings-panel">';
+        echo '<h3>' . esc_html__( 'Bulk Directory Upload', 'super-directory' ) . '</h3>';
+        echo '<p class="description">' . esc_html__( 'Upload a CSV or TSV export that follows the provided column order to import multiple resources at once.', 'super-directory' ) . '</p>';
+
+        echo '<form id="sd-bulk-import-form" class="sd-form sd-form--stacked" enctype="multipart/form-data">';
+        echo '<div class="sd-field sd-field--file">';
+        echo '<label>' . esc_html__( 'Upload spreadsheet', 'super-directory' ) . ' <span class="sd-tooltip-icon dashicons dashicons-editor-help" data-tooltip="' . esc_attr__( 'Use the provided column headings to map values into the directory automatically.', 'super-directory' ) . '"></span></label>';
+        echo '<input type="file" name="sd_bulk_file" id="sd_bulk_file" accept=".csv,.tsv,.txt" />';
+        echo '</div>';
+
+        echo '<details class="sd-bulk-import-details">';
+        echo '<summary>' . esc_html__( 'Expected column headings (in order)', 'super-directory' ) . '</summary>';
+        echo '<ol class="sd-bulk-import-columns">';
+        $columns = array(
+            __( 'Resource/Company/Vendor Name', 'super-directory' ),
+            __( 'Category', 'super-directory' ),
+            __( 'Website URL', 'super-directory' ),
+            __( 'Phone', 'super-directory' ),
+            __( 'Email', 'super-directory' ),
+            __( 'Related Trade/Industry/Vertical', 'super-directory' ),
+            __( 'Serving Only Local Customers, Virtual/National, or Both?', 'super-directory' ),
+            __( 'State', 'super-directory' ),
+            __( 'City', 'super-directory' ),
+            __( 'Street Address', 'super-directory' ),
+            __( 'Zip Code', 'super-directory' ),
+            __( 'Short description/lead-in teaser sentence about the company (no longer thatn 98 characters, including spaces and punctuation)', 'super-directory' ),
+            __( 'What [COMPANY NAME] Does', 'super-directory' ),
+            __( 'Why We Recommend [COMPANY NAME]', 'super-directory' ),
+            __( 'Facebook URL', 'super-directory' ),
+            __( 'Instagram URL', 'super-directory' ),
+            __( 'YouTube URL', 'super-directory' ),
+            __( 'Linkedin URL', 'super-directory' ),
+            __( 'Google Business Listing URL', 'super-directory' ),
+            __( 'Logo WordPress media library attachment ID #', 'super-directory' ),
+            __( 'Homepage Screenshot WordPress media library attachment ID #', 'super-directory' ),
+        );
+
+        foreach ( $columns as $column ) {
+            echo '<li>' . esc_html( $column ) . '</li>';
+        }
+
+        echo '</ol>';
+        echo '</details>';
+
+        $submit_button = get_submit_button( __( 'Upload and Import', 'super-directory' ), 'primary', 'submit', false );
         echo '<p class="submit">' . $submit_button;
-        echo '<span class="sd-feedback-area sd-feedback-area--inline"><span id="sd-spinner" class="spinner" aria-hidden="true"></span><span id="sd-feedback" role="status" aria-live="polite"></span></span>';
+        echo '<span class="sd-feedback-area sd-feedback-area--inline"><span id="sd-bulk-import-spinner" class="spinner" aria-hidden="true"></span><span id="sd-bulk-import-feedback" role="status" aria-live="polite"></span></span>';
         echo '</p>';
         echo '</form>';
+        echo '</div>';
     }
 
     public function render_logs_page() {

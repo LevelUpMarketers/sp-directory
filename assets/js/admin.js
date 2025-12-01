@@ -406,7 +406,89 @@ jQuery(document).ready(function($){
     }
 
     handleForm('#sd-create-form', 'sd_save_main_entity', { successMessage: sdAdmin.saved });
-    handleForm('#sd-general-settings-form', 'sd_save_main_entity', { successMessage: sdAdmin.changesSaved });
+
+    var $bulkForm = $('#sd-bulk-import-form');
+
+    if ($bulkForm.length) {
+        var $bulkSpinner = $('#sd-bulk-import-spinner');
+        var $bulkFeedback = $('#sd-bulk-import-feedback');
+        var messagesSelector = '.sd-bulk-import-messages';
+
+        $bulkForm.on('submit', function(event){
+            event.preventDefault();
+
+            if ($bulkSpinner.length) {
+                $bulkSpinner.addClass('is-active');
+            }
+
+            if ($bulkFeedback.length) {
+                clearFeedbackMessage($bulkFeedback);
+            }
+
+            var $existingMessages = $bulkForm.find(messagesSelector);
+
+            if ($existingMessages.length) {
+                $existingMessages.remove();
+            }
+
+            if (!$bulkForm.length || !$bulkForm[0]) {
+                return;
+            }
+
+            var payload = new FormData($bulkForm[0]);
+            payload.append('action', 'sd_bulk_import_main_entities');
+            payload.append('_ajax_nonce', sdAjax.nonce);
+
+            $.ajax({
+                url: sdAjax.ajaxurl,
+                method: 'POST',
+                data: payload,
+                processData: false,
+                contentType: false,
+                dataType: 'json'
+            }).done(function(response){
+                var message = extractAjaxMessage(response) || sdAdmin.saved || '';
+                var details = response && response.data && Array.isArray(response.data.details) ? response.data.details : [];
+
+                if ($bulkFeedback.length) {
+                    showFeedbackMessage($bulkFeedback, message, response && response.success ? 'success' : 'error');
+                }
+
+                if (details.length) {
+                    var $list = $('<ul/>', { 'class': 'sd-bulk-import-messages' });
+
+                    details.forEach(function(item){
+                        $('<li/>').text(item).appendTo($list);
+                    });
+
+                    $list.insertAfter($bulkForm.find('.submit').first());
+                }
+            }).fail(function(jqXHR){
+                var fallback = sdAdmin.error || '';
+                var parsed = '';
+
+                if (jqXHR && jqXHR.responseJSON) {
+                    parsed = extractAjaxMessage(jqXHR.responseJSON);
+                }
+
+                if (!parsed && jqXHR && typeof jqXHR.responseText === 'string') {
+                    parsed = jqXHR.responseText.replace(/<[^>]+>/g, '').trim();
+                }
+
+                var message = parsed || fallback;
+
+                if ($bulkFeedback.length) {
+                    showFeedbackMessage($bulkFeedback, message, 'error');
+                }
+            }).always(function(){
+                if ($bulkSpinner.length) {
+                    setTimeout(function(){
+                        $bulkSpinner.removeClass('is-active');
+                    }, 150);
+                }
+            });
+        });
+    }
 
     refreshMediaPreviews($('.sd-flex-form'));
 

@@ -13,6 +13,7 @@ class SD_Ajax {
         add_action( 'wp_ajax_sd_read_main_entity', array( $this, 'read_main_entity' ) );
         add_action( 'wp_ajax_sd_search_directory', array( $this, 'search_directory' ) );
         add_action( 'wp_ajax_nopriv_sd_search_directory', array( $this, 'search_directory' ) );
+        add_action( 'wp_ajax_sd_bulk_import_main_entities', array( $this, 'bulk_import_main_entities' ) );
     }
 
     private function maybe_delay( $start, $minimum_time = SD_MIN_EXECUTION_TIME ) {
@@ -235,6 +236,86 @@ class SD_Ajax {
                 'per_page'    => $per_page,
                 'total'       => $total,
                 'total_pages' => $total_pages,
+            )
+        );
+    }
+
+    public function bulk_import_main_entities() {
+        $start = microtime( true );
+        check_ajax_referer( 'sd_ajax_nonce' );
+
+        if ( ! current_user_can( 'manage_options' ) ) {
+            $this->maybe_delay( $start );
+            wp_send_json_error(
+                array(
+                    'message' => __( 'You do not have permission to import directory entries.', 'super-directory' ),
+                )
+            );
+        }
+
+        if ( empty( $_FILES['sd_bulk_file'] ) || ! isset( $_FILES['sd_bulk_file']['tmp_name'] ) ) {
+            $this->maybe_delay( $start );
+            wp_send_json_error(
+                array(
+                    'message' => __( 'Please choose a CSV or TSV file to upload.', 'super-directory' ),
+                )
+            );
+        }
+
+        $file    = $_FILES['sd_bulk_file'];
+        $allowed = array(
+            'csv' => 'text/csv',
+            'tsv' => 'text/tab-separated-values',
+            'txt' => 'text/plain',
+        );
+
+        $upload = wp_handle_upload(
+            $file,
+            array(
+                'test_form' => false,
+                'mimes'     => $allowed,
+            )
+        );
+
+        if ( isset( $upload['error'] ) ) {
+            $this->maybe_delay( $start );
+            wp_send_json_error(
+                array(
+                    'message' => wp_kses_post( $upload['error'] ),
+                )
+            );
+        }
+
+        if ( empty( $upload['file'] ) || ! file_exists( $upload['file'] ) ) {
+            $this->maybe_delay( $start );
+            wp_send_json_error(
+                array(
+                    'message' => __( 'The uploaded file could not be found. Please try again.', 'super-directory' ),
+                )
+            );
+        }
+
+        $result = $this->process_bulk_import_file( $upload['file'] );
+
+        if ( file_exists( $upload['file'] ) ) {
+            wp_delete_file( $upload['file'] );
+        }
+
+        $this->maybe_delay( $start );
+
+        if ( $result['imported'] < 1 ) {
+            wp_send_json_error(
+                array(
+                    'message' => $result['message'],
+                    'details' => $result['details'],
+                )
+            );
+        }
+
+        wp_send_json_success(
+            array(
+                'message' => $result['message'],
+                'details' => $result['details'],
             )
         );
     }
@@ -616,6 +697,42 @@ class SD_Ajax {
     }
 
     private function get_directory_category_keys() {
+        $options = $this->get_directory_categories();
+
+        $keys = array();
+
+        foreach ( $options as $value => $label ) {
+            $keys[] = sanitize_key( $value );
+        }
+
+        return array_values( array_unique( $keys ) );
+    }
+
+    private function get_directory_industry_keys() {
+        $options = $this->get_directory_industries();
+
+        $keys = array();
+
+        foreach ( $options as $value => $label ) {
+            $keys[] = sanitize_key( $value );
+        }
+
+        return array_values( array_unique( $keys ) );
+    }
+
+    private function get_service_model_keys() {
+        $options = $this->get_directory_service_models();
+
+        $keys = array();
+
+        foreach ( $options as $value => $label ) {
+            $keys[] = sanitize_key( $value );
+        }
+
+        return array_values( array_unique( $keys ) );
+    }
+
+    private function get_directory_categories() {
         $options = array(
             'crm'                  => __( 'CRM', 'super-directory' ),
             'chatbots'             => __( 'Chatbots', 'super-directory' ),
@@ -630,16 +747,16 @@ class SD_Ajax {
 
         $options = apply_filters( 'sd_directory_categories', $options );
 
-        $keys = array();
+        $normalized = array();
 
         foreach ( $options as $value => $label ) {
-            $keys[] = sanitize_key( $value );
+            $normalized[ sanitize_key( $value ) ] = wp_strip_all_tags( (string) $label );
         }
 
-        return array_values( array_unique( $keys ) );
+        return $normalized;
     }
 
-    private function get_directory_industry_keys() {
+    private function get_directory_industries() {
         $options = array(
             'all'                           => __( 'All Industries', 'super-directory' ),
             'multiple'                      => __( 'Multiple', 'super-directory' ),
@@ -677,31 +794,610 @@ class SD_Ajax {
 
         $options = apply_filters( 'sd_directory_industries', $options );
 
-        $keys = array();
+        $normalized = array();
 
         foreach ( $options as $value => $label ) {
-            $keys[] = sanitize_key( $value );
+            $normalized[ sanitize_key( $value ) ] = wp_strip_all_tags( (string) $label );
         }
 
-        return array_values( array_unique( $keys ) );
+        return $normalized;
     }
 
-    private function get_service_model_keys() {
+    private function get_directory_service_models() {
         $options = array(
-            'local'  => __( 'Local Customers Only', 'super-directory' ),
+            'local'   => __( 'Local Customers Only', 'super-directory' ),
             'virtual' => __( 'Virtual / National', 'super-directory' ),
             'both'    => __( 'Both Local & National', 'super-directory' ),
         );
 
         $options = apply_filters( 'sd_directory_service_models', $options );
 
-        $keys = array();
+        $normalized = array();
 
         foreach ( $options as $value => $label ) {
-            $keys[] = sanitize_key( $value );
+            $normalized[ sanitize_key( $value ) ] = wp_strip_all_tags( (string) $label );
         }
 
-        return array_values( array_unique( $keys ) );
+        return $normalized;
+    }
+
+    private function process_bulk_import_file( $file_path ) {
+        $details  = array();
+        $imported = 0;
+        $skipped  = 0;
+
+        $handle = fopen( $file_path, 'r' );
+
+        if ( ! $handle ) {
+            return array(
+                'imported' => 0,
+                'skipped'  => 0,
+                'message'  => __( 'Unable to read the uploaded file. Please try again.', 'super-directory' ),
+                'details'  => array(),
+            );
+        }
+
+        $first_line = fgets( $handle );
+
+        if ( false === $first_line ) {
+            fclose( $handle );
+
+            return array(
+                'imported' => 0,
+                'skipped'  => 0,
+                'message'  => __( 'The uploaded file appears to be empty.', 'super-directory' ),
+                'details'  => array(),
+            );
+        }
+
+        $delimiter = $this->detect_bulk_delimiter( $first_line );
+        $headers   = str_getcsv( $first_line, $delimiter );
+        $map       = $this->get_bulk_header_map();
+        $columns   = array();
+
+        foreach ( $headers as $index => $header ) {
+            $normalized = $this->normalize_bulk_header( $header );
+
+            if ( isset( $map[ $normalized ] ) ) {
+                $columns[ $map[ $normalized ] ] = (int) $index;
+            }
+        }
+
+        if ( ! isset( $columns['name'] ) ) {
+            fclose( $handle );
+
+            return array(
+                'imported' => 0,
+                'skipped'  => 0,
+                'message'  => __( 'The file is missing the Resource/Company/Vendor Name column.', 'super-directory' ),
+                'details'  => array(),
+            );
+        }
+
+        $line        = 1;
+        $categories  = $this->get_directory_categories();
+        $industries  = $this->get_directory_industries();
+        $services    = $this->get_directory_service_models();
+        $states      = $this->get_us_states();
+        $full_states = $this->get_us_states_and_territories();
+
+        while ( ( $row = fgetcsv( $handle, 0, $delimiter ) ) !== false ) {
+            $line++;
+            $row_data = array();
+
+            foreach ( $columns as $key => $index ) {
+                $row_data[ $key ] = isset( $row[ $index ] ) ? $row[ $index ] : '';
+            }
+
+            $prepared = $this->prepare_bulk_row( $row_data, $categories, $industries, $services, $states, $full_states );
+
+            if ( ! empty( $prepared['error'] ) ) {
+                $skipped++;
+                $details[] = sprintf( __( 'Row %1$d skipped: %2$s', 'super-directory' ), $line, $prepared['error'] );
+                continue;
+            }
+
+            $inserted = $this->insert_bulk_entity( $prepared['data'] );
+
+            if ( ! $inserted ) {
+                $skipped++;
+                $details[] = sprintf( __( 'Row %d could not be saved.', 'super-directory' ), $line );
+                continue;
+            }
+
+            $imported++;
+
+            if ( ! empty( $prepared['notices'] ) ) {
+                foreach ( $prepared['notices'] as $notice ) {
+                    $details[] = sprintf( __( 'Row %1$d note: %2$s', 'super-directory' ), $line, $notice );
+                }
+            }
+        }
+
+        fclose( $handle );
+
+        if ( $imported < 1 ) {
+            return array(
+                'imported' => 0,
+                'skipped'  => $skipped,
+                'message'  => __( 'No directory entries were imported.', 'super-directory' ),
+                'details'  => $details,
+            );
+        }
+
+        $summary = sprintf(
+            __( 'Imported %1$d entr%s. Skipped %2$d.', 'super-directory' ),
+            $imported,
+            1 === $imported ? 'y' : 'ies',
+            $skipped
+        );
+
+        return array(
+            'imported' => $imported,
+            'skipped'  => $skipped,
+            'message'  => $summary,
+            'details'  => $details,
+        );
+    }
+
+    private function insert_bulk_entity( $data ) {
+        global $wpdb;
+
+        $table = $wpdb->prefix . 'sd_main_entity';
+        $now   = current_time( 'mysql' );
+
+        $record = array_merge(
+            array(
+                'category'                 => '',
+                'industry_vertical'        => '',
+                'service_model'            => '',
+                'website_url'              => '',
+                'phone_number'             => '',
+                'email_address'            => '',
+                'state'                    => '',
+                'city'                     => '',
+                'street_address'           => '',
+                'zip_code'                 => '',
+                'country'                  => '',
+                'short_description'        => '',
+                'long_description_primary' => '',
+                'long_description_secondary' => '',
+                'facebook_url'             => '',
+                'instagram_url'            => '',
+                'youtube_url'              => '',
+                'linkedin_url'             => '',
+                'google_business_url'      => '',
+                'logo_attachment_id'       => 0,
+                'homepage_screenshot_id'   => 0,
+                'gallery_image_ids'        => '',
+                'directory_page_id'        => 0,
+            ),
+            $data,
+            array(
+                'created_at' => $now,
+                'updated_at' => $now,
+            )
+        );
+
+        $formats = array(
+            '%s', // name
+            '%s', // category
+            '%s', // industry_vertical
+            '%s', // service_model
+            '%s', // website_url
+            '%s', // phone_number
+            '%s', // email_address
+            '%s', // state
+            '%s', // city
+            '%s', // street_address
+            '%s', // zip_code
+            '%s', // country
+            '%s', // short_description
+            '%s', // long_description_primary
+            '%s', // long_description_secondary
+            '%s', // facebook_url
+            '%s', // instagram_url
+            '%s', // youtube_url
+            '%s', // linkedin_url
+            '%s', // google_business_url
+            '%d', // logo_attachment_id
+            '%d', // homepage_screenshot_id
+            '%s', // gallery_image_ids
+            '%d', // directory_page_id
+            '%s', // created_at
+            '%s', // updated_at
+        );
+
+        $insert = $wpdb->insert(
+            $table,
+            array(
+                'name'                     => isset( $record['name'] ) ? $record['name'] : '',
+                'category'                 => $record['category'],
+                'industry_vertical'        => $record['industry_vertical'],
+                'service_model'            => $record['service_model'],
+                'website_url'              => $record['website_url'],
+                'phone_number'             => $record['phone_number'],
+                'email_address'            => $record['email_address'],
+                'state'                    => $record['state'],
+                'city'                     => $record['city'],
+                'street_address'           => $record['street_address'],
+                'zip_code'                 => $record['zip_code'],
+                'country'                  => $record['country'],
+                'short_description'        => $record['short_description'],
+                'long_description_primary' => $record['long_description_primary'],
+                'long_description_secondary' => $record['long_description_secondary'],
+                'facebook_url'             => $record['facebook_url'],
+                'instagram_url'            => $record['instagram_url'],
+                'youtube_url'              => $record['youtube_url'],
+                'linkedin_url'             => $record['linkedin_url'],
+                'google_business_url'      => $record['google_business_url'],
+                'logo_attachment_id'       => absint( $record['logo_attachment_id'] ),
+                'homepage_screenshot_id'   => absint( $record['homepage_screenshot_id'] ),
+                'gallery_image_ids'        => $record['gallery_image_ids'],
+                'directory_page_id'        => absint( $record['directory_page_id'] ),
+                'created_at'               => $record['created_at'],
+                'updated_at'               => $record['updated_at'],
+            ),
+            $formats
+        );
+
+        if ( false === $insert ) {
+            return false;
+        }
+
+        $entity_id = (int) $wpdb->insert_id;
+
+        if ( $entity_id > 0 ) {
+            $page_id = $this->create_directory_page( $entity_id, $record['name'] );
+
+            if ( $page_id ) {
+                $wpdb->update(
+                    $table,
+                    array( 'directory_page_id' => $page_id ),
+                    array( 'id' => $entity_id ),
+                    array( '%d' ),
+                    array( '%d' )
+                );
+            }
+        }
+
+        return true;
+    }
+
+    private function prepare_bulk_row( $row_data, $categories, $industries, $services, $states, $extended_states ) {
+        $notices = array();
+
+        $name = $this->sanitize_import_text( isset( $row_data['name'] ) ? $row_data['name'] : '' );
+
+        if ( '' === $name ) {
+            return array(
+                'error' => __( 'Missing resource name.', 'super-directory' ),
+            );
+        }
+
+        $category          = $this->map_import_option_value( isset( $row_data['category'] ) ? $row_data['category'] : '', $categories );
+        $industry_vertical = $this->map_import_option_value( isset( $row_data['industry_vertical'] ) ? $row_data['industry_vertical'] : '', $industries );
+        $service_model     = $this->map_service_model_value( isset( $row_data['service_model'] ) ? $row_data['service_model'] : '', $services );
+
+        $state = $this->map_state_value( isset( $row_data['state'] ) ? $row_data['state'] : '', $states, $extended_states );
+
+        $short_description = $this->sanitize_import_textarea( isset( $row_data['short_description'] ) ? $row_data['short_description'] : '' );
+        $short_description = $this->enforce_length( $short_description, 98, $notices, __( 'Short description trimmed to 98 characters.', 'super-directory' ) );
+
+        $primary = isset( $row_data['long_description_primary'] ) ? $row_data['long_description_primary'] : '';
+        $primary = $this->sanitize_import_editor( $primary );
+        $primary = $this->enforce_html_length( $primary, 770, $notices, __( 'What This Resource Does was shortened to 770 characters.', 'super-directory' ) );
+
+        $secondary = isset( $row_data['long_description_secondary'] ) ? $row_data['long_description_secondary'] : '';
+        $secondary = $this->sanitize_import_editor( $secondary );
+        $secondary = $this->enforce_html_length( $secondary, 770, $notices, __( 'Why We Recommend This Resource was shortened to 770 characters.', 'super-directory' ) );
+
+        $facebook  = $this->sanitize_import_url( isset( $row_data['facebook_url'] ) ? $row_data['facebook_url'] : '' );
+        $instagram = $this->sanitize_import_url( isset( $row_data['instagram_url'] ) ? $row_data['instagram_url'] : '' );
+        $youtube   = $this->sanitize_import_url( isset( $row_data['youtube_url'] ) ? $row_data['youtube_url'] : '' );
+        $linkedin  = $this->sanitize_import_url( isset( $row_data['linkedin_url'] ) ? $row_data['linkedin_url'] : '' );
+        $gmb       = $this->sanitize_import_url( isset( $row_data['google_business_url'] ) ? $row_data['google_business_url'] : '' );
+
+        $data = array(
+            'name'                     => $name,
+            'category'                 => $category,
+            'industry_vertical'        => $industry_vertical,
+            'service_model'            => $service_model,
+            'website_url'              => $this->sanitize_import_url( isset( $row_data['website_url'] ) ? $row_data['website_url'] : '' ),
+            'phone_number'             => $this->sanitize_import_text( isset( $row_data['phone_number'] ) ? $row_data['phone_number'] : '' ),
+            'email_address'            => $this->sanitize_import_email( isset( $row_data['email_address'] ) ? $row_data['email_address'] : '' ),
+            'state'                    => $state,
+            'city'                     => $this->sanitize_import_text( isset( $row_data['city'] ) ? $row_data['city'] : '' ),
+            'street_address'           => $this->sanitize_import_text( isset( $row_data['street_address'] ) ? $row_data['street_address'] : '' ),
+            'zip_code'                 => $this->sanitize_import_text( isset( $row_data['zip_code'] ) ? $row_data['zip_code'] : '' ),
+            'country'                  => '',
+            'short_description'        => $short_description,
+            'long_description_primary' => $primary,
+            'long_description_secondary' => $secondary,
+            'facebook_url'             => $facebook,
+            'instagram_url'            => $instagram,
+            'youtube_url'              => $youtube,
+            'linkedin_url'             => $linkedin,
+            'google_business_url'      => $gmb,
+            'logo_attachment_id'       => absint( isset( $row_data['logo_attachment_id'] ) ? $row_data['logo_attachment_id'] : 0 ),
+            'homepage_screenshot_id'   => absint( isset( $row_data['homepage_screenshot_id'] ) ? $row_data['homepage_screenshot_id'] : 0 ),
+        );
+
+        return array(
+            'data'    => $data,
+            'notices' => $notices,
+        );
+    }
+
+    private function enforce_length( $value, $limit, &$notices, $notice_text ) {
+        $clean = $value;
+
+        if ( $limit > 0 && function_exists( 'mb_strlen' ) && mb_strlen( $clean ) > $limit ) {
+            $clean      = mb_substr( $clean, 0, $limit );
+            $notices[] = $notice_text;
+        }
+
+        if ( $limit > 0 && ! function_exists( 'mb_strlen' ) && strlen( $clean ) > $limit ) {
+            $clean      = substr( $clean, 0, $limit );
+            $notices[] = $notice_text;
+        }
+
+        return $clean;
+    }
+
+    private function enforce_html_length( $value, $limit, &$notices, $notice_text ) {
+        $clean = $value;
+
+        if ( $limit > 0 ) {
+            $length = function_exists( 'mb_strlen' ) ? mb_strlen( wp_strip_all_tags( $clean ) ) : strlen( wp_strip_all_tags( $clean ) );
+
+            if ( $length > $limit ) {
+                $clean     = wp_html_excerpt( $clean, $limit, '' );
+                $notices[] = $notice_text;
+            }
+        }
+
+        return $clean;
+    }
+
+    private function sanitize_import_text( $value ) {
+        if ( is_array( $value ) ) {
+            $value = implode( ',', $value );
+        }
+
+        return sanitize_text_field( (string) $value );
+    }
+
+    private function sanitize_import_textarea( $value ) {
+        if ( is_array( $value ) ) {
+            $value = implode( "\n", $value );
+        }
+
+        return sanitize_textarea_field( (string) $value );
+    }
+
+    private function sanitize_import_email( $value ) {
+        if ( is_array( $value ) ) {
+            $value = reset( $value );
+        }
+
+        $email = sanitize_email( $value );
+
+        return $email ? $email : '';
+    }
+
+    private function sanitize_import_url( $value ) {
+        if ( is_array( $value ) ) {
+            $value = reset( $value );
+        }
+
+        $url = esc_url_raw( $value );
+
+        if ( '' === $url ) {
+            return '';
+        }
+
+        return $url;
+    }
+
+    private function sanitize_import_editor( $value ) {
+        if ( is_array( $value ) ) {
+            $value = implode( "\n", $value );
+        }
+
+        return wp_kses_post( (string) $value );
+    }
+
+    private function map_import_option_value( $value, $options ) {
+        if ( empty( $value ) ) {
+            return '';
+        }
+
+        $normalized_value = $this->normalize_bulk_header( $value );
+
+        foreach ( $options as $key => $label ) {
+            $key_compare   = $this->normalize_bulk_header( $key );
+            $label_compare = $this->normalize_bulk_header( $label );
+
+            if ( $normalized_value === $key_compare || $normalized_value === $label_compare ) {
+                return sanitize_key( $key );
+            }
+        }
+
+        return '';
+    }
+
+    private function map_service_model_value( $value, $options ) {
+        if ( empty( $value ) ) {
+            return '';
+        }
+
+        $normalized_value = $this->normalize_bulk_header( $value );
+
+        foreach ( $options as $key => $label ) {
+            $key_compare   = $this->normalize_bulk_header( $key );
+            $label_compare = $this->normalize_bulk_header( $label );
+
+            if ( $normalized_value === $key_compare || $normalized_value === $label_compare ) {
+                return sanitize_key( $key );
+            }
+        }
+
+        if ( false !== strpos( $normalized_value, 'local' ) ) {
+            return 'local';
+        }
+
+        if ( false !== strpos( $normalized_value, 'virtual' ) || false !== strpos( $normalized_value, 'national' ) ) {
+            return 'virtual';
+        }
+
+        if ( false !== strpos( $normalized_value, 'both' ) ) {
+            return 'both';
+        }
+
+        return '';
+    }
+
+    private function map_state_value( $value, $states, $extended_states ) {
+        if ( empty( $value ) ) {
+            return '';
+        }
+
+        $value = trim( (string) $value );
+
+        if ( strlen( $value ) === 2 ) {
+            $map = $this->get_state_abbreviation_map();
+            $key = strtoupper( $value );
+
+            if ( isset( $map[ $key ] ) ) {
+                $value = $map[ $key ];
+            }
+        }
+
+        if ( in_array( $value, $extended_states, true ) ) {
+            return $value;
+        }
+
+        foreach ( $states as $state ) {
+            if ( $this->normalize_bulk_header( $state ) === $this->normalize_bulk_header( $value ) ) {
+                return $state;
+            }
+        }
+
+        return '';
+    }
+
+    private function get_state_abbreviation_map() {
+        return array(
+            'AL' => __( 'Alabama', 'super-directory' ),
+            'AK' => __( 'Alaska', 'super-directory' ),
+            'AZ' => __( 'Arizona', 'super-directory' ),
+            'AR' => __( 'Arkansas', 'super-directory' ),
+            'CA' => __( 'California', 'super-directory' ),
+            'CO' => __( 'Colorado', 'super-directory' ),
+            'CT' => __( 'Connecticut', 'super-directory' ),
+            'DE' => __( 'Delaware', 'super-directory' ),
+            'FL' => __( 'Florida', 'super-directory' ),
+            'GA' => __( 'Georgia', 'super-directory' ),
+            'HI' => __( 'Hawaii', 'super-directory' ),
+            'ID' => __( 'Idaho', 'super-directory' ),
+            'IL' => __( 'Illinois', 'super-directory' ),
+            'IN' => __( 'Indiana', 'super-directory' ),
+            'IA' => __( 'Iowa', 'super-directory' ),
+            'KS' => __( 'Kansas', 'super-directory' ),
+            'KY' => __( 'Kentucky', 'super-directory' ),
+            'LA' => __( 'Louisiana', 'super-directory' ),
+            'ME' => __( 'Maine', 'super-directory' ),
+            'MD' => __( 'Maryland', 'super-directory' ),
+            'MA' => __( 'Massachusetts', 'super-directory' ),
+            'MI' => __( 'Michigan', 'super-directory' ),
+            'MN' => __( 'Minnesota', 'super-directory' ),
+            'MS' => __( 'Mississippi', 'super-directory' ),
+            'MO' => __( 'Missouri', 'super-directory' ),
+            'MT' => __( 'Montana', 'super-directory' ),
+            'NE' => __( 'Nebraska', 'super-directory' ),
+            'NV' => __( 'Nevada', 'super-directory' ),
+            'NH' => __( 'New Hampshire', 'super-directory' ),
+            'NJ' => __( 'New Jersey', 'super-directory' ),
+            'NM' => __( 'New Mexico', 'super-directory' ),
+            'NY' => __( 'New York', 'super-directory' ),
+            'NC' => __( 'North Carolina', 'super-directory' ),
+            'ND' => __( 'North Dakota', 'super-directory' ),
+            'OH' => __( 'Ohio', 'super-directory' ),
+            'OK' => __( 'Oklahoma', 'super-directory' ),
+            'OR' => __( 'Oregon', 'super-directory' ),
+            'PA' => __( 'Pennsylvania', 'super-directory' ),
+            'RI' => __( 'Rhode Island', 'super-directory' ),
+            'SC' => __( 'South Carolina', 'super-directory' ),
+            'SD' => __( 'South Dakota', 'super-directory' ),
+            'TN' => __( 'Tennessee', 'super-directory' ),
+            'TX' => __( 'Texas', 'super-directory' ),
+            'UT' => __( 'Utah', 'super-directory' ),
+            'VT' => __( 'Vermont', 'super-directory' ),
+            'VA' => __( 'Virginia', 'super-directory' ),
+            'WA' => __( 'Washington', 'super-directory' ),
+            'WV' => __( 'West Virginia', 'super-directory' ),
+            'WI' => __( 'Wisconsin', 'super-directory' ),
+            'WY' => __( 'Wyoming', 'super-directory' ),
+            'DC' => __( 'District of Columbia', 'super-directory' ),
+            'AS' => __( 'American Samoa', 'super-directory' ),
+            'GU' => __( 'Guam', 'super-directory' ),
+            'MP' => __( 'Northern Mariana Islands', 'super-directory' ),
+            'PR' => __( 'Puerto Rico', 'super-directory' ),
+            'VI' => __( 'U.S. Virgin Islands', 'super-directory' ),
+        );
+    }
+
+    private function detect_bulk_delimiter( $sample ) {
+        $comma     = substr_count( $sample, ',' );
+        $tab       = substr_count( $sample, "\t" );
+        $semicolon = substr_count( $sample, ';' );
+
+        $max = max( $comma, $tab, $semicolon );
+
+        if ( $max === $tab ) {
+            return "\t";
+        }
+
+        if ( $max === $semicolon ) {
+            return ';';
+        }
+
+        return ',';
+    }
+
+    private function normalize_bulk_header( $value ) {
+        $value = strtolower( (string) $value );
+        $value = preg_replace( '/\s+/', ' ', $value );
+        $value = trim( $value );
+
+        return $value;
+    }
+
+    private function get_bulk_header_map() {
+        return array(
+            'resource/company/vendor name' => 'name',
+            'category' => 'category',
+            'website url' => 'website_url',
+            'phone' => 'phone_number',
+            'email' => 'email_address',
+            'related trade/industry/vertical' => 'industry_vertical',
+            'serving only local customers, virtual/national, or both?' => 'service_model',
+            'state' => 'state',
+            'city' => 'city',
+            'street address' => 'street_address',
+            'zip code' => 'zip_code',
+            'short description/lead-in teaser sentence about the company (no longer thatn 98 characters, including spaces and punctuation)' => 'short_description',
+            'what [company name] does - one or two paragraphs of text summarizing the company, what they do, who they help, how they help, the problems and challenges they solve, and a little bit of their history. can be multiple paragraphs and can include bullet points (<ul>), or numbered lists (<ol>). the total amount of text cannot exceed 770 characters, including all spaces and punctuation.' => 'long_description_primary',
+            'why we recommend [company name] - more text discussing why we (superpath.com), recommends this company as a trusted and helpful resource for our home services clients. can be multiple paragraphs and can include bullet points (<ul>), or numbered lists (<ol>). the total amount of text cannot exceed 770 characters, including all spaces and punctuation.' => 'long_description_secondary',
+            'facebook url' => 'facebook_url',
+            'instagram url' => 'instagram_url',
+            'youtube url' => 'youtube_url',
+            'linkedin url' => 'linkedin_url',
+            'google business listing url' => 'google_business_url',
+            'logo wordpress media library attachment id #' => 'logo_attachment_id',
+            'homepage screenshot wordpress media library attachment id #' => 'homepage_screenshot_id',
+        );
     }
 
     private function get_us_states() {

@@ -1397,7 +1397,9 @@ class SD_Ajax {
             'linkedin url' => 'linkedin_url',
             'google business listing url' => 'google_business_url',
             'logo wordpress media library attachment id #' => 'logo_attachment_id',
+            'logo wordpress media library attatchment id #' => 'logo_attachment_id',
             'homepage screenshot wordpress media library attachment id #' => 'homepage_screenshot_id',
+            'homepage screenshot wordpress media library attatchment id #' => 'homepage_screenshot_id',
         );
     }
 

@@ -14,15 +14,27 @@ class SD_Admin {
     }
 
     public function add_menu() {
+        $parent_slug = 'sd-main-entity';
+
         add_menu_page(
             __( 'SuperDirectory Directory', 'super-directory' ),
             __( 'SuperDirectory Directory', 'super-directory' ),
             'manage_options',
-            'sd-main-entity',
+            $parent_slug,
             array( $this, 'render_main_entity_page' )
         );
 
-        add_menu_page(
+        add_submenu_page(
+            $parent_slug,
+            __( 'SuperDirectory Directory', 'super-directory' ),
+            __( 'Directory', 'super-directory' ),
+            'manage_options',
+            $parent_slug,
+            array( $this, 'render_main_entity_page' )
+        );
+
+        add_submenu_page(
+            $parent_slug,
             __( 'SuperDirectory Settings', 'super-directory' ),
             __( 'SuperDirectory Settings', 'super-directory' ),
             'manage_options',
@@ -30,7 +42,8 @@ class SD_Admin {
             array( $this, 'render_settings_page' )
         );
 
-        add_menu_page(
+        add_submenu_page(
+            $parent_slug,
             __( 'SuperDirectory Logs', 'super-directory' ),
             __( 'SuperDirectory Logs', 'super-directory' ),
             'manage_options',
@@ -1013,7 +1026,7 @@ class SD_Admin {
             foreach ( $entries as $entry ) {
                 $post = get_post( $entry->post_id );
 
-                if ( ! $post ) {
+                if ( ! $post || 'trash' === $post->post_status ) {
                     continue;
                 }
 

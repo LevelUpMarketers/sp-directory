@@ -145,6 +145,11 @@ class SD_Ajax {
             }
         }
 
+        SD_Deep_Link_Manager::record_links_for_values(
+            isset( $data['category'] ) ? $data['category'] : '',
+            isset( $data['industry_vertical'] ) ? $data['industry_vertical'] : ''
+        );
+
         $this->maybe_delay( $start );
         wp_send_json_success( array( 'message' => $message ) );
     }
@@ -906,6 +911,11 @@ class SD_Ajax {
             }
 
             $imported++;
+
+            SD_Deep_Link_Manager::record_links_for_values(
+                isset( $prepared['data']['category'] ) ? $prepared['data']['category'] : '',
+                isset( $prepared['data']['industry_vertical'] ) ? $prepared['data']['industry_vertical'] : ''
+            );
 
             if ( ! empty( $prepared['notices'] ) ) {
                 foreach ( $prepared['notices'] as $notice ) {

@@ -77,3 +77,4 @@
 73. 2025-11-20: Synced the directory parent template with the updated hero content and default search dropdown options from the manual edits.
 74. 2025-11-20: Restored the "Select a…" placeholder options for category, industry, and state on the directory search form.
 75. 2025-11-20: Allowed bulk imports to preserve unmapped categories by sanitizing the original values so new options show in directory filters.
+76. 2025-11-20: Added deep-link storage, admin listing, and front-end URL prefill so directory searches can be shared by category and industry.

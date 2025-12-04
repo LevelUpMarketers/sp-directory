@@ -890,6 +890,49 @@ class SD_Admin {
         echo '</p>';
         echo '</form>';
         echo '</div>';
+
+        $links = SD_Deep_Link_Manager::get_links();
+
+        echo '<div class="sd-settings-panel">';
+        echo '<h3>' . esc_html__( 'Directory Deep Links', 'super-directory' ) . '</h3>';
+        echo '<p class="description">' . esc_html__( 'Copy these URLs to link visitors directly to filtered resource views.', 'super-directory' ) . '</p>';
+
+        if ( empty( $links ) ) {
+            echo '<p class="description">' . esc_html__( 'Deep links will appear after you add resources with categories or industries.', 'super-directory' ) . '</p>';
+        } else {
+            echo '<ul class="sd-deep-link-list">';
+
+            foreach ( $links as $link ) {
+                $label_parts = array();
+
+                if ( ! empty( $link['category'] ) ) {
+                    $label_parts[] = sprintf(
+                        /* translators: %s is a resource category label. */
+                        esc_html__( 'Category: %s', 'super-directory' ),
+                        esc_html( SD_Main_Entity_Helper::get_category_label( $link['category'] ) )
+                    );
+                }
+
+                if ( ! empty( $link['industry'] ) ) {
+                    $label_parts[] = sprintf(
+                        /* translators: %s is an industry label. */
+                        esc_html__( 'Industry: %s', 'super-directory' ),
+                        esc_html( SD_Main_Entity_Helper::get_industry_label( $link['industry'] ) )
+                    );
+                }
+
+                $label = ! empty( $label_parts ) ? implode( ' • ', $label_parts ) : esc_html__( 'All resources', 'super-directory' );
+                $url   = ! empty( $link['url'] ) ? $link['url'] : SD_Deep_Link_Manager::build_url( '', '' );
+
+                echo '<li class="sd-deep-link-list__item">';
+                echo '<a href="' . esc_url( $url ) . '" target="_blank" rel="noopener noreferrer">' . $label . '</a>';
+                echo '</li>';
+            }
+
+            echo '</ul>';
+        }
+
+        echo '</div>';
     }
 
     public function render_logs_page() {

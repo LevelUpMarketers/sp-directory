@@ -48,7 +48,7 @@ class SD_Main_Entity_Helper {
     public static function get_industry_labels() {
         $options = array(
             'all'                        => __( 'All Industries', 'super-directory' ),
-            'multiple'                   => __( 'Multiple', 'super-directory' ),
+            'multiple'                   => __( 'Multiple Industries', 'super-directory' ),
             'appliance_repair'           => __( 'Appliance Repair', 'super-directory' ),
             'carpet_cleaning'            => __( 'Carpet Cleaning', 'super-directory' ),
             'concrete_masonry'           => __( 'Concrete & Masonry', 'super-directory' ),

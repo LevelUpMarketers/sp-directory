@@ -258,6 +258,44 @@
         fetchResults(currentPage);
     };
 
+    const setSelectValueIfPresent = (select, value) => {
+        if (!select || !value) {
+            return false;
+        }
+
+        const normalized = String(value).toLowerCase();
+        const match = Array.from(select.options).find((option) => option.value.toLowerCase() === normalized);
+
+        if (!match) {
+            return false;
+        }
+
+        select.value = match.value;
+
+        return true;
+    };
+
+    const applyQueryFilters = () => {
+        const params = new URLSearchParams(window.location.search);
+
+        let shouldSubmit = false;
+
+        if (params.has('category')) {
+            const categoryValue = params.get('category');
+            shouldSubmit = setSelectValueIfPresent(document.getElementById('sd-directory-search-category'), categoryValue) || shouldSubmit;
+        }
+
+        if (params.has('industry')) {
+            const industryValue = params.get('industry');
+            shouldSubmit = setSelectValueIfPresent(document.getElementById('sd-directory-search-industry'), industryValue) || shouldSubmit;
+        }
+
+        if (shouldSubmit) {
+            fetchResults(1);
+            scrollToResults();
+        }
+    };
+
     form.addEventListener('submit', (event) => {
         event.preventDefault();
         scrollToResults();
@@ -278,4 +316,6 @@
     } else {
         fetchResults(currentPage);
     }
+
+    applyQueryFilters();
 })();

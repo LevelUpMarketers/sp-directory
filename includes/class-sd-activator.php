@@ -16,6 +16,7 @@ class SD_Activator {
         $main_table      = $wpdb->prefix . 'sd_main_entity';
         $settings_table  = $wpdb->prefix . 'sd_settings';
         $content_log     = $wpdb->prefix . 'sd_content_log';
+        $deep_links      = $wpdb->prefix . 'sd_deep_links';
 
         $sql_main = "CREATE TABLE $main_table (
             id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
@@ -67,8 +68,20 @@ class SD_Activator {
             KEY entity_id (entity_id)
         ) $charset_collate;";
 
+        $sql_deep_links = "CREATE TABLE $deep_links (
+            id bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+            category varchar(191) DEFAULT '',
+            industry varchar(191) DEFAULT '',
+            url text NOT NULL,
+            created_at datetime NOT NULL,
+            updated_at datetime NOT NULL,
+            PRIMARY KEY  (id),
+            UNIQUE KEY category_industry (category, industry)
+        ) $charset_collate;";
+
         dbDelta( $sql_main );
         dbDelta( $sql_settings );
         dbDelta( $sql_content_log );
+        dbDelta( $sql_deep_links );
     }
 }

@@ -26,6 +26,7 @@ define( 'SD_DIRECTORY_PARENT_TEMPLATE_SLUG', 'templates/sd-directory-parent.php'
 require_once SD_PLUGIN_DIR . 'includes/class-sd-activator.php';
 require_once SD_PLUGIN_DIR . 'includes/class-sd-deactivator.php';
 require_once SD_PLUGIN_DIR . 'includes/class-sd-i18n.php';
+require_once SD_PLUGIN_DIR . 'includes/class-sd-deep-link-manager.php';
 require_once SD_PLUGIN_DIR . 'includes/class-sd-main-entity-helper.php';
 require_once SD_PLUGIN_DIR . 'includes/class-sd-ajax.php';
 require_once SD_PLUGIN_DIR . 'includes/admin/class-sd-admin.php';

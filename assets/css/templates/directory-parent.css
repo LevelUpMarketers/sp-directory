@@ -7,7 +7,7 @@
 .sd-directory-parent .sd-entry__logo{margin:0 auto 35px;max-width:240px;text-align:center;}
 .sd-directory-parent .sd-entry__logo-image{width:100%;height:auto;display:block;margin:0 auto;object-fit:contain;}
 
-.sd-directory-search{background:#000f3a url(/wp-content/uploads/2025/05/hero-gradient-shape-background3.png?id=1775) center/cover no-repeat;border-radius:30px;padding:32px 26px;margin-bottom:30px;box-shadow:0 15px 30px rgba(0,0,0,0.15);} 
+.sd-directory-search{background:#000f3a url(/wp-content/uploads/2025/05/hero-gradient-shape-background3.png) center/cover no-repeat;border-radius:30px;padding:32px 26px;margin-bottom:30px;box-shadow:0 15px 30px rgba(0,0,0,0.15);} 
 .sd-directory-search h2{color:#ebeae3;margin:0 0 14px;font-size:26px;}
 .sd-directory-search p{color:#e2e8f0;margin:0 0 18px;}
 .sd-directory-search__form{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;align-items:flex-end;}
@@ -34,8 +34,8 @@
 .sd-directory-card>*{position:relative;z-index:1;}
 .sd-directory-card__logo{width:140px;height:80px;margin-bottom:16px;display:flex;align-items:center;justify-content:center;border-radius:12px;overflow:hidden;}
 .sd-directory-card__logo img{max-width:100%;max-height:100%;object-fit:contain;display:block;}
-.sd-directory-card__title{margin:0 0 8px;font-size:18px;color:#0f172a;}
-.sd-directory-card__meta{margin:0;color:#475569;font-size:14px;}
+.sd-directory-card__title{margin:0 0 8px;font-size:20px;color:#0f172a;font-weight: bold;}
+.sd-directory-card__meta{margin:0;color:#0f172a;font-size:16px;font-weight: bold;margin-bottom: 10px;}
 .sd-directory-card__cta{margin-top:auto;padding:10px 14px;border-radius:10px;background:#000f3a;color:#fff;text-decoration:none;font-weight:700;display:inline-block;}
 .sd-directory-card:hover .sd-directory-card__cta{background:#c73e1d;}
 
@@ -55,7 +55,7 @@
 .vc_custom_1747758575634 {
     padding-top: 170px !important;
     padding-bottom: 40px !important;
-    background: #000F3A url(https://superpath.local/wp-content/uploads/2025/05/hero-gradient-shape-background3.png?id=1775) center / cover no-repeat !important;
+    background: #000F3A url(/wp-content/uploads/2025/05/hero-gradient-shape-background3.png) center / cover no-repeat !important;
     border-radius: 30px !important;
 }
 .vc_custom_1761850480949 {
@@ -73,8 +73,111 @@
   background:#c73e1d;
 }
 
+#contact-us-form.vc_custom_1764852117216 {
+    padding-top: 80px !important;
+    padding-bottom: 20px !important;
+    background-color: #000F3A !important;
+    padding-left: 100px;
+    padding-right: 100px;
+}
+
+#contact-us-form.vc_custom_1764852117216 .vc_custom_1753276349623 {
+    margin-top: 10px !important;
+    padding-top: 3vw !important;
+    padding-right: 3vw !important;
+    padding-bottom: 2.5vw !important;
+    padding-left: 3vw !important;
+    background-image: url(/wp-content/uploads/2025/05/footer-cta-background-gradient.svg?id=2323) !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    background-size: cover !important;
+    border-radius: 30px !important;
+}
+
+.wpb_column.contact-form-links.vc_column_container.vc_col-sm-7{
+    width: 56.333333%;
+    margin-left: auto;
+}
+
+.vc_custom_1753215450228 {
+    margin-top: 0px !important;
+    padding-top: 20px !important;
+    padding-right: 15px !important;
+    padding-bottom: 20px !important;
+    padding-left: 15px !important;
+    background-color: #000F3A !important;
+    border-radius: 25px !important;
+}
+
+
+
+@media (max-width:1050px){
+  .vc_custom_1747761186948{
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  #contact-us-form.vc_custom_1764852117216 {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  #contact-us-form .wpb_column.contact-form-links.vc_column_container.vc_col-sm-7 {
+    width: 100%;
+  }
+
+  #contact-us-form .vc_col-sm-5 {
+    width: 100%;
+  }
+
+  #contact-us-form .vc_col-sm-5 .vcex-image.vcex-module{
+    text-align:center;
+  }
+
+}
+
+@media (max-width:650px){
+  .vc_custom_1747758624185{ 
+    padding-top: 150px !important;
+    padding-bottom: 80px !important;
+    background: #000F3A url(/wp-content/uploads/2025/05/hero-gradient-shape-background3.png) !important;
+    background-position: center !important;
+    background-repeat: no-repeat !important;
+    background-size: cover !important;
+  }
+
+  .vc_custom_1761850475392{
+    margin-top:30px;
+  }
+
+  .sd-directory-search__form{
+    position: relative;
+    padding-bottom: 175px;
+  }
+
+  .sd-directory-search__actions {
+    width: 100%;
+    display: inline-block;
+    position: absolute;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+  }
+
+  .sd-directory-search__actions button {
+    width: 160px;
+    height: 55px;
+    margin-left: 5px;
+    margin-right: 5px;
+    margin-bottom: 20px;
+  }
+
+
+}
 
 @media (max-width:600px){
   .sd-directory-search__actions{width:100%;}
   .sd-directory-search__actions button{flex:1;}
 }
+
+

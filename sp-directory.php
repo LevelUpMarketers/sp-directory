@@ -1,11 +1,11 @@
 <?php
 /**
  * Plugin Name:       SuperDirectory
- * Plugin URI:        https://levelupmarketers.com
- * Description:       Administrative toolkit for managing Home Services industry resources and generating a public directory.
- * Version:           0.1.0
- * Author:            Level Up Marketers
- * Author URI:        https://levelupmarketers.com
+ * Plugin URI:        https://superpath.com
+ * Description:       A Plugin for managing Home Services industry resources and generating a public directory.
+ * Version:           1.0.0
+ * Author:            Jake Evans
+ * Author URI:        https://superpath.com
  * Text Domain:       super-directory
  * Domain Path:       /languages
  */
@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 // Plugin constants.
-define( 'SD_VERSION', '0.1.0' );
+define( 'SD_VERSION', '1.0.0' );
 define( 'SD_MIN_EXECUTION_TIME', 4 );
 define( 'SD_PLUGIN_DIR', plugin_dir_path( __FILE__ ) );
 define( 'SD_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
